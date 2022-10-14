@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "test"
+    "test": "test",
+    "publish": "npm publish --access=public",
+    "unpublish": "npm -f unpublish @fto-consult/nextjs"
   },
   "repository": {
     "type": "git",
