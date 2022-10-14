@@ -1,5 +1,5 @@
 import { removeTokenCookie } from '$nauth';
-import { SUCCESS } from '$api/status';
+import { SUCCESS } from '$capi/status';
 
 export default async function logout(req, res) {
   removeTokenCookie(res)

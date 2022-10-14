@@ -1,7 +1,8 @@
-const appConfig = require("$app/config");
-appConfig.currrent = require("../config");
+const appConfig = require("$capp/config");
 
-function MyApp({ Component, pageProps }) {
+function MyApp({ Component,config, pageProps }) {
+  config = typeof config =='object' && config ? config : {};
+  appConfig.current = config;
   return <Component {...pageProps} />
 }
 

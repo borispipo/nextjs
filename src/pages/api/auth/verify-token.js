@@ -1,8 +1,8 @@
-import {UNAUTHORIZED,NOT_ACCEPTABLE,SUCCESS} from "$api/status";
+import {UNAUTHORIZED,NOT_ACCEPTABLE,SUCCESS} from "$capi/status";
 /**** cette route permet de vérifier si le token utilisateur passé en paramètre est à jour où nom */
 import {createRouter} from "$next-connect";
 import { getUserSession } from '$nauth/utils/auth-cookies';
-import {isObj} from "$utils";
+import {isObj} from "$cutils";
 
 export default createRouter().post(async (req, res)=>{
     if(!isObj(req.body)){

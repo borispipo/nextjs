@@ -1,7 +1,7 @@
-import {UNAUTHORIZED,NOT_ACCEPTABLE} from "$api/status";
+import {UNAUTHORIZED,NOT_ACCEPTABLE} from "$capi/status";
 import { createRouter } from "$next-connect";
 import {getProvider,createUserToken} from "$nauth";
-import {isObj,defaultObj,isNonNullString} from "$utils";
+import {isObj,defaultObj,isNonNullString} from "$cutils";
 
 export default createRouter().post(async (req, res) => {
     try {
