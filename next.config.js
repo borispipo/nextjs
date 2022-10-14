@@ -13,17 +13,19 @@ module.exports = (opts)=>{
   ]);
   const alias = require("@fto-consult/common/babel.config.alias")({...opts,platform:"web",assets:path.resolve(base,"assets"),base});
   const src = alias.$src;
-  alias["$nproviders"] = path.resolve(dir,"auth","providers");
+  const next = path.resolve(dir,"src");
+  alias["$nproviders"] = path.resolve(next,"auth","providers");
   alias["$providers"] = alias["$providers"] || alias["$nproviders"];
-  alias["$nauth"] = path.resolve(dir,"auth");
-  alias["$nmiddlewares"] = path.resolve(dir,"middlewares");
+  alias["$nauth"] = path.resolve(next,"auth");
+  alias["$nmiddlewares"] = path.resolve(next,"middlewares");
   alias["$middlewares"] = alias["$middlewares"] || alias["$nmiddlewares"];
-  alias["$nmiddleware"] = path.resolve(dir,"middleware");
-  alias["$middleware"] = alias["$middleware"] || path.resolve(dir,"middleware");
-  alias["$ndatabase"] = path.resolve(dir,"database");
-  alias["$npages"] = path.resolve(dir,"pages");
+  alias["$nmiddleware"] = path.resolve(next,"middleware");
+  alias["$middleware"] = alias["$middleware"] || path.resolve(next,"middleware");
+  alias["$ndatabase"] = path.resolve(next,"database");
+  alias["$npages"] = path.resolve(next,"pages");
   alias["$page"] = path.resolve(src,"pages");
-  alias["$next-connect"] = path.resolve(dir,"next-connect");
+  alias["$next-connect"] = path.resolve(next,"next-connect");
+  alias["$next"] = next;
   
   const nextConfig = {
     reactStrictMode: true,
