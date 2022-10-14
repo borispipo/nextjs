@@ -77,10 +77,12 @@ module.exports = (opts)=>{
       ];
       config.plugins.push(require("./circular-dependencies"));
       config.module.rules.push({
-        test: /\.(js|jsx)$/,
+        test: /\.(js|jsx|ts|tsx)$/,
         include: [
             path.resolve(base),
             path.resolve(dir),
+            path.resolve(dir,"pages"),
+            path.resolve(base,"pages"),
         ],
         exclude : [
           path.resolve(dir,"node_modules"),
