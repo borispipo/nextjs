@@ -1,0 +1,38 @@
+{
+  "name": "@fto-consult/nextjs",
+  "version": "1.0.0",
+  "description": "nextjs boilerplate",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/borispipo/nextjs.git"
+  },
+  "keywords": [
+    "nextjs",
+    "boilerplate"
+  ],
+  "author": "Boris Fouomene",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/borispipo/nextjs/issues"
+  },
+  "homepage": "https://github.com/borispipo/nextjs#readme",
+  "dependencies": {
+    "@fto-consult/common": "^1.0.13",
+    "circular-dependency-plugin": "^5.2.2",
+    "edge-cors": "^0.2.1",
+    "next": "^12.3.1",
+    "next-connect": "^0.13.0",
+    "next-fonts": "^1.5.1",
+    "next-transpile-modules": "^9.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}
