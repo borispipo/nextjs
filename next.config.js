@@ -6,7 +6,7 @@ module.exports = (opts)=>{
   const dir = path.resolve(__dirname);
   opts = typeof opts =='object' && opts ? opts : {};
   const transpileModules = Array.isArray(opts.transpileModules)? opts.transpileModules : [];
-  const nodeModulesPaths = Array.isArray(opts.nodeModulesPaths)? opts.nodeModulesPaths : [];
+  //const nodeModulesPaths = Array.isArray(opts.nodeModulesPaths)? opts.nodeModulesPaths : [];
   const base = opts.base || path.resolve(__dirname);
   const withTM = require('next-transpile-modules')([
     "@fto-consult/common",
@@ -23,8 +23,8 @@ module.exports = (opts)=>{
   alias["$nmiddleware"] = path.resolve(next,"middleware");
   alias["$middleware"] = alias["$middleware"] || path.resolve(next,"middleware");
   alias["$ndatabase"] = path.resolve(next,"database");
-  alias["$npages"] = path.resolve(next,"pages");
-  alias["$page"] = path.resolve(src,"pages");
+  alias["$npages"] = path.resolve(dir,"pages");
+  alias["$pages"] = path.resolve(src,"pages");
   alias["$next-connect"] = path.resolve(next,"next-connect");
   alias["$next"] = next;
   
@@ -76,22 +76,6 @@ module.exports = (opts)=>{
         ...defaultExts,
         ".ts",
       ];
-      /**** faire en sorte que la compilation nextjs soit possible avec les modules externes */
-      config.module.rules.forEach((rule) => {
-        const ruleContainsTs = rule.test && rule.test.toString() || '';
-        if (ruleContainsTs.includes('js|jsx') && rule.use && rule.use.loader === 'next-swc-loader') {
-          rule.include = undefined;
-          /*rule.exclude = [
-            ...(Array.isArray(rule.exclude)? rule.exclude:[]),
-            ...nodeModulesPaths,
-            path.resolve(dir,"node_modules"),
-            path.resolve(base,"node_modules"),
-            path.resolve(dir, "dist/"),
-            path.resolve(base,"dist"),
-            /(node_modules|bower_components)/
-          ]*/
-        }
-      });
       if(!isServer){
         config.resolve.fallback.fs = config.resolve.fallback.net = config.resolve.fallback.path = config.resolve.fallback.os = false;
       }
