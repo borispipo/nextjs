@@ -28,6 +28,15 @@ module.exports = (opts)=>{
   alias["$npages"] = path.resolve(dir,"pages");
   alias["$pages"] = path.resolve(src,"pages");
   alias["$next-connect"] = path.resolve(next,"next-connect");
+  const database = path.resolve(next,'database');
+  r["$emodels"] = path.resolve(database,"models");
+  r["$eschema"] = path.resolve(database,"schema");
+  r["$edbschema"] = path.resolve(database,"schema");
+  r["$edataTypes"] = path.resolve(database,"schema","DataTypes");
+  r["$edata-types"] = path.resolve(database,"schema","DataTypes");
+  r["$edata-sources"] = path.resolve(database,"dataSources");
+  r["$edataSources"] = path.resolve(database,"dataSources");
+  
   alias["$next"] = next;
   
   const nextConfig = {
