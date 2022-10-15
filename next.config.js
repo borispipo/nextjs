@@ -32,17 +32,17 @@ module.exports = (opts)=>{
   alias["$next-connect"] = path.resolve(next,"next-connect");
   const database = path.resolve(next,'database');
 
-  r["$emodels"] = path.resolve(database,"models");
-  r["$models"] = r["$models"] || r["$emodels"];
+  alias["$emodels"] = path.resolve(database,"models");
+  alias["$models"] = alias["$models"] || alias["$emodels"];
   
-  r["$eschema"] = path.resolve(database,"schema");
-  r["$schema"] = r["$schema"] ||  r["$eschema"];
+  alias["$eschema"] = path.resolve(database,"schema");
+  alias["$schema"] = alias["$schema"] ||  alias["$eschema"];
 
-  r["$edataTypes"] = path.resolve(database,"schema","DataTypes");
-  r["$dataTypes"] = r["$dataTypes"] || r["$edataTypes"];
+  alias["$edataTypes"] = path.resolve(database,"schema","DataTypes");
+  alias["$dataTypes"] = alias["$dataTypes"] || alias["$edataTypes"];
 
-  r["$edataSources"] = path.resolve(database,"dataSources");
-  r["$dataSources"] = r["$dataSources"] || r["$edataSources"];
+  alias["$edataSources"] = path.resolve(database,"dataSources");
+  alias["$dataSources"] = alias["$dataSources"] || alias["$edataSources"];
   
   
   alias["$next"] = next;
