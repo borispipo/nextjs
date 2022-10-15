@@ -34,19 +34,19 @@ module.exports = (opts)=>{
   
   const database = path.resolve(next,'database');
 
-  //alias["$eentities"] = path.resolve(database,"models","entities");
-  alias["$emodels"] = path.resolve(database,"models");
-  alias["$eschema"] = path.resolve(database,"schema");
-  
+  alias["$nmodels"] = path.resolve(database,"models");
+  alias["$nschema"] = path.resolve(database,"schema");
+  alias["$nentities"] = path.resolve(database,"entities")
+
   alias["$models"] =  path.resolve(src,"database","models");
   alias["$entities"] = path.resolve(alias["$models"],"entities");
-  alias["$schema"] = alias["$schema"] ||  alias["$eschema"];
+  alias["$schema"] = alias["$schema"] ||  alias["$nschema"];
 
-  alias["$edataTypes"] = path.resolve(alias["$eschema"],"DataTypes");
-  alias["$dataTypes"] = alias["$dataTypes"] || alias["$edataTypes"];
+  alias["$ndataTypes"] = path.resolve(alias["$nschema"],"DataTypes");
+  alias["$dataTypes"] = alias["$dataTypes"] || alias["$ndataTypes"];
 
-  alias["$edataSources"] = path.resolve(database,"dataSources");
-  alias["$dataSources"] = alias["$dataSources"] || alias["$edataSources"];
+  alias["$ndataSources"] = path.resolve(database,"dataSources");
+  alias["$dataSources"] = alias["$dataSources"] || alias["$ndataSources"];
   
   
   alias["$next"] = next;
