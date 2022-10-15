@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "scripts": {
@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/borispipo/nextjs#readme",
   "dependencies": {
-    "@fto-consult/common": "^1.0.14",
+    "@fto-consult/common": "^1.0.15",
     "circular-dependency-plugin": "^5.2.2",
     "edge-cors": "^0.2.1",
     "next": "^12.3.1",

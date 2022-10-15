@@ -81,7 +81,7 @@ module.exports = (opts)=>{
         const ruleContainsTs = rule.test && rule.test.toString() || '';
         if (ruleContainsTs.includes('js|jsx') && rule.use && rule.use.loader === 'next-swc-loader') {
           rule.include = undefined;
-          rule.exclude = [
+          /*rule.exclude = [
             ...(Array.isArray(rule.exclude)? rule.exclude:[]),
             ...nodeModulesPaths,
             path.resolve(dir,"node_modules"),
@@ -89,7 +89,7 @@ module.exports = (opts)=>{
             path.resolve(dir, "dist/"),
             path.resolve(base,"dist"),
             /(node_modules|bower_components)/
-          ]
+          ]*/
         }
       });
       if(!isServer){
