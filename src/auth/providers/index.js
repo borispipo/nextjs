@@ -1,11 +1,14 @@
-export {default} from "./credentials";
-import credentials  from "./credentials";
+import providersExport  from "$providers";
+
+const providers = Array.isArray(providersExport)? providersExport : [];
+
+export default providers;
 
 export const getProvider = (providerId)=>{
     if(typeof providerId !=='string') return null;
     providerId = providerId.toLowerCase().trim();
-    for(let i in credentials){
-        const c = credentials[i];
+    for(let i in providers){
+        const c = providers[i];
         if(typeof c =='object' && c && !Array.isArray(c)){
             if(typeof c.id =='string' && c.id.toLowerCase().trim() == providerId) return c;
         }
@@ -14,7 +17,7 @@ export const getProvider = (providerId)=>{
 }
 
 export const init = ()=>{
-    credentials.map((provider)=>{
+    providers.map((provider)=>{
         if(typeof provider =="object" && provider && !Array.isArray(provider)){
             provider.initialize();
         }
