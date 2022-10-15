@@ -15,7 +15,7 @@ const all = Array.isArray(allModels) || allModels && typeof allModels =='object'
 /*** récupère un models parmis la liste passée en paramètre
  * 
  */
- export const getOne = (name,fromModels)=>{
+ export const getOneModel = (name,fromModels)=>{
     if(typeof name !== 'string' || !name) return null;
     name = name.toLowerCase().trim();
     fromModels = Array.isArray(fromModels)? fromModels : all;
@@ -28,7 +28,7 @@ const all = Array.isArray(allModels) || allModels && typeof allModels =='object'
 }
 
 /*** permet de récupérer la liste des models en fonction du filtre */
-export const getMany = (filter,fromModels)=>{
+export const getManyModels = (filter,fromModels)=>{
     const r = [];
     const f = filter;
     fromModels = Array.isArray(fromModels)? fromModels : all;
@@ -48,3 +48,5 @@ export const getMany = (filter,fromModels)=>{
     })
     return r;
 }
+
+export {all as allModels};

@@ -1,5 +1,5 @@
 import {isObj,defaultObj,defaultStr,isNonNullString,isNumber,isBool} from "$utils";
-import {get as getDataSource,isDataSource} from "../dataSources";
+import {getDataSource,isDataSource} from "../dataSources";
 
 /**** crèe un schemas de base de données 
  * @see : https://typeorm.io/usage-with-javascript

@@ -5,8 +5,6 @@ import {mysql} from "./types";
 import { isDataSource,defaultDataSource as defaultDataSourceType,isDefault,getOptions} from "./utils";
 import entities from "../models/entities";
 
-const isObj = x => x && typeof x =='object' && !Array.isArray(x);
-
 let defaultDataSource = null;
 
 const ALL = {};
@@ -15,7 +13,7 @@ export * from "./utils";
 
 
 /**** récupère une source de données puis l'initialize */
-export const get = (options)=>{
+export const getDataSource = (options)=>{
     options = typeof options =='object' && options && !Array.isArray(options)? options : {};
     let {force,type,...opts} = options;
     type = defaultStr(type,defaultDataSourceType).toLowerCase().trim();
