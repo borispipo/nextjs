@@ -1,3 +1,10 @@
+// Copyright 2022 @fto-consult/Boris Fouomene. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+/***
+ * @module $nauth/auth-cookies : fonctions utiles pour la manipulation des cookies nextjs
+ */
 import { serialize, parse } from 'cookie'
 import defaultStr from "$utils/defaultStr";
 import * as jose from 'jose';
@@ -7,6 +14,12 @@ const TOKEN_NAME = 'token'
 
 export const MAX_AGE = 3* 60 * 60 * 24 // 3 days
 
+/**** Sauvegarde/persiste un token dans l'objet res{NextResponse} 
+ * @module $nauth/auth
+ * @param {object} res, l'object NextResponse
+ * @param {string} token, le token à persister
+ * @return {object} l'objet serialisé
+*/
 export function setTokenCookie(res, token) {
   const cookie = serialize(TOKEN_NAME, token, {
     maxAge: MAX_AGE,
@@ -19,6 +32,8 @@ export function setTokenCookie(res, token) {
   res.setHeader('Set-Cookie', cookie);
   return cookie;
 }
+
+/**** */
 
 export function removeTokenCookie(res) {
   const cookie = serialize(TOKEN_NAME, '', {

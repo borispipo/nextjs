@@ -1,6 +1,11 @@
+// Copyright 2022 @fto-consult/Boris Fouomene. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 /***@see : https://nextjs.org/docs/advanced-features/middleware 
  * For upgrade guide, @see : https://nextjs.org/docs/messages/middleware-upgrade-guide
 */
+/**@module $nmiddleware, wrapperpour middleware nextJS */
 import { NextResponse } from 'next/server'
 import { middleWares } from '$middlewares';
 import { getUserSession } from '$nauth/utils/auth-cookies';
@@ -9,6 +14,7 @@ import {getAPIHost,getBaseHost} from "$capi/host/utils";
 
 const isObj = x=> x && typeof x=='object' && !Array.isArray(x);
 
+/****@function  */
 export default async function middleware(req,event) {
   const path = req.nextUrl.pathname;
   const isAdmin = path.startsWith('/admin/');

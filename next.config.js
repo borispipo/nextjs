@@ -1,4 +1,7 @@
-/** @type {import('next').NextConfig} */
+// Copyright (c) 2022 @fto-consult/Boris Fouomene
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
 const path = require("path");
 const withFonts = require('next-fonts');
 const withImages = require('next-images');
@@ -7,7 +10,6 @@ const package = require(path.resolve(dir,"package.json"));
 module.exports = (opts)=>{
   opts = typeof opts =='object' && opts ? opts : {};
   const transpileModules = Array.isArray(opts.transpileModules)? opts.transpileModules : [];
-  //const nodeModulesPaths = Array.isArray(opts.nodeModulesPaths)? opts.nodeModulesPaths : [];
   const base = opts.base || path.resolve(__dirname);
   const withTM = require('next-transpile-modules')([
     "@fto-consult/common",
@@ -29,13 +31,19 @@ module.exports = (opts)=>{
   alias["$pages"] = path.resolve(src,"pages");
   alias["$next-connect"] = path.resolve(next,"next-connect");
   const database = path.resolve(next,'database');
+
   r["$emodels"] = path.resolve(database,"models");
+  r["$models"] = r["$models"] || r["$emodels"];
+  
   r["$eschema"] = path.resolve(database,"schema");
-  r["$edbschema"] = path.resolve(database,"schema");
+  r["$schema"] = r["$schema"] ||  r["$eschema"];
+
   r["$edataTypes"] = path.resolve(database,"schema","DataTypes");
-  r["$edata-types"] = path.resolve(database,"schema","DataTypes");
-  r["$edata-sources"] = path.resolve(database,"dataSources");
+  r["$dataTypes"] = r["$dataTypes"] || r["$edataTypes"];
+
   r["$edataSources"] = path.resolve(database,"dataSources");
+  r["$dataSources"] = r["$dataSources"] || r["$edataSources"];
+  
   
   alias["$next"] = next;
   
