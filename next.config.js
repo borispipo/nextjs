@@ -36,6 +36,7 @@ module.exports = (opts)=>{
 
   alias["$nmodels"] = path.resolve(database,"models");
   alias["$BaseModel"] = path.resolve(database,"models","Base");
+  alias["$baseModel"] = alias["$BaseModel"];
   alias["$nschema"] = path.resolve(database,"schema");
   alias["$nentities"] = path.resolve(database,"entities")
 
