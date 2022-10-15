@@ -2,14 +2,16 @@
 const path = require("path");
 const withFonts = require('next-fonts');
 const withImages = require('next-images');
+const dir = path.resolve(__dirname);
+const package = require(path.resolve(dir,"package.json"));
 module.exports = (opts)=>{
-  const dir = path.resolve(__dirname);
   opts = typeof opts =='object' && opts ? opts : {};
   const transpileModules = Array.isArray(opts.transpileModules)? opts.transpileModules : [];
   //const nodeModulesPaths = Array.isArray(opts.nodeModulesPaths)? opts.nodeModulesPaths : [];
   const base = opts.base || path.resolve(__dirname);
   const withTM = require('next-transpile-modules')([
     "@fto-consult/common",
+    package.name,
     ...transpileModules,
   ]);
   const alias = require("@fto-consult/common/babel.config.alias")({...opts,platform:"web",assets:path.resolve(base,"assets"),base});
