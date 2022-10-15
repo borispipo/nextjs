@@ -19,6 +19,7 @@ module.exports = (opts)=>{
   const alias = require("@fto-consult/common/babel.config.alias")({...opts,platform:"web",assets:path.resolve(base,"assets"),base});
   const src = alias.$src;
   const next = path.resolve(dir,"src");
+
   alias["$nproviders"] = path.resolve(next,"auth","providers");
   alias["$providers"] = alias["$providers"] || alias["$nproviders"];
   alias["$nauth"] = path.resolve(next,"auth");
@@ -30,15 +31,18 @@ module.exports = (opts)=>{
   alias["$npages"] = path.resolve(dir,"pages");
   alias["$pages"] = path.resolve(src,"pages");
   alias["$next-connect"] = path.resolve(next,"next-connect");
+  
   const database = path.resolve(next,'database');
 
+  //alias["$eentities"] = path.resolve(database,"models","entities");
   alias["$emodels"] = path.resolve(database,"models");
-  alias["$models"] = alias["$models"] || alias["$emodels"];
-  
   alias["$eschema"] = path.resolve(database,"schema");
+  
+  alias["$models"] =  path.resolve(src,"database","models");
+  alias["$entities"] = path.resolve(alias["$models"],"entities");
   alias["$schema"] = alias["$schema"] ||  alias["$eschema"];
 
-  alias["$edataTypes"] = path.resolve(database,"schema","DataTypes");
+  alias["$edataTypes"] = path.resolve(alias["$eschema"],"DataTypes");
   alias["$dataTypes"] = alias["$dataTypes"] || alias["$edataTypes"];
 
   alias["$edataSources"] = path.resolve(database,"dataSources");
