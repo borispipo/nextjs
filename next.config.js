@@ -1,11 +1,12 @@
 /** @type {import('next').NextConfig} */
 const path = require("path");
 const withFonts = require('next-fonts');
+const withImages = require('next-images');
 module.exports = (opts)=>{
   const dir = path.resolve(__dirname);
-  const root = path.resolve(dir,"..");
   opts = typeof opts =='object' && opts ? opts : {};
   const transpileModules = Array.isArray(opts.transpileModules)? opts.transpileModules : [];
+  const nodeModulesPaths = Array.isArray(opts.nodeModulesPaths)? opts.nodeModulesPaths : [];
   const base = opts.base || path.resolve(__dirname);
   const withTM = require('next-transpile-modules')([
     "@fto-consult/common",
@@ -29,7 +30,7 @@ module.exports = (opts)=>{
   
   const nextConfig = {
     reactStrictMode: true,
-    swcMinify: true,
+    swcMinify: false,
     basePath: '',
     //reactStrictMode: true,
     eslint: {
@@ -75,30 +76,29 @@ module.exports = (opts)=>{
         ...defaultExts,
         ".ts",
       ];
-      config.plugins.push(require("./circular-dependencies"));
-      config.module.rules.push({
-        test: /\.(js|jsx|ts|tsx)$/,
-        include: [
-            path.resolve(base),
-            path.resolve(dir),
-            path.resolve(dir,"pages"),
-            path.resolve(base,"pages"),
-        ],
-        exclude : [
-          path.resolve(dir,"node_modules"),
-          path.resolve(root,"node_modules"),
-          path.resolve(base,"node_modules"),
-          "/node_modules/"
-        ],
-        use: [
-          options.defaultLoaders.babel,
-        ],
-      })
+      /**** faire en sorte que la compilation nextjs soit possible avec les modules externes */
+      config.module.rules.forEach((rule) => {
+        const ruleContainsTs = rule.test && rule.test.toString() || '';
+        if (ruleContainsTs.includes('js|jsx') && rule.use && rule.use.loader === 'next-swc-loader') {
+          rule.include = undefined;
+          rule.exclude = [
+            ...(Array.isArray(rule.exclude)? rule.exclude:[]),
+            ...nodeModulesPaths,
+            path.resolve(dir,"node_modules"),
+            path.resolve(base,"node_modules"),
+            path.resolve(dir, "dist/"),
+            path.resolve(base,"dist"),
+            /(node_modules|bower_components)/
+          ]
+        }
+      });
       if(!isServer){
         config.resolve.fallback.fs = config.resolve.fallback.net = config.resolve.fallback.path = config.resolve.fallback.os = false;
       }
+      config.plugins.push(require("./circular-dependencies"));
+      
       return config;
     },
   }
-  return withTM(withFonts(nextConfig));
+  return withImages(withTM(withFonts(nextConfig)));
 }
