@@ -9,7 +9,6 @@
     "start": "next start",
     "lint": "next lint",
     "test": "test",
-    "publish": "npm publish --access=public",
     "unpublish": "npm -f unpublish @fto-consult/nextjs",
     "build-api-docs": "npx next-swagger-doc-cli next-swagger-doc.json",
     "build-docs": "npx jsdoc src -r -c ./jsdoc.conf.json -d docs",
