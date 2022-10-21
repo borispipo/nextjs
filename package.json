@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "1.0.18",
+  "version": "1.1.0",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "scripts": {
@@ -32,6 +32,7 @@
   "dependencies": {
     "@emotion/react": "^11.10.4",
     "@fto-consult/common": "^1.2.1",
+    "apidoc": "^0.53.1",
     "cookie": "^0.5.0",
     "edge-cors": "^0.2.1",
     "jose": "^4.10.0",
@@ -40,11 +41,23 @@
     "next-connect": "^1.0.0-next.3",
     "next-fonts": "^1.5.1",
     "next-images": "^1.8.4",
-    "next-swagger-doc": "^0.3.6",
     "next-transpile-modules": "^9.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.3.10"
+    "typeorm": "^0.3.10",
+    "yargs": "^17.1.1-candidate.0"
+  },
+  "apidoc":{
+    "name":"boris",
+    "url":"/api"
+  },
+  "header": {
+    "title": "My own header title",
+    "filename": "header.md"
+  },
+  "footer": {
+    "title": "My own footer title",
+    "filename": "footer.md"
   }
 }
