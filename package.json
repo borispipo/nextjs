@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "scripts": {
@@ -11,6 +11,7 @@
     "test": "test",
     "publish": "npm publish --access=public",
     "unpublish": "npm -f unpublish @fto-consult/nextjs",
+    "build-api-docs": "npx next-swagger-doc-cli next-swagger-doc.json",
     "build-docs": "npx jsdoc src -r -c ./jsdoc.conf.json -d docs",
     "docs": "npm run build-docs"
   },
@@ -30,8 +31,7 @@
   "homepage": "https://github.com/borispipo/nextjs#readme",
   "dependencies": {
     "@emotion/react": "^11.10.4",
-    "@fto-consult/common": "^1.0.17",
-    "circular-dependency-plugin": "^5.2.2",
+    "@fto-consult/common": "^1.2.1",
     "cookie": "^0.5.0",
     "edge-cors": "^0.2.1",
     "jose": "^4.10.0",
@@ -40,6 +40,7 @@
     "next-connect": "^1.0.0-next.3",
     "next-fonts": "^1.5.1",
     "next-images": "^1.8.4",
+    "next-swagger-doc": "^0.3.6",
     "next-transpile-modules": "^9.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

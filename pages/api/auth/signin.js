@@ -2,6 +2,15 @@ import {UNAUTHORIZED,NOT_ACCEPTABLE} from "$capi/status";
 import { createRouter } from "$next-connect";
 import {getProvider,createUserToken} from "$nauth";
 import {isObj,defaultObj,isNonNullString} from "$cutils";
+/**
+ * @swagger
+ * /api/auth/signin:
+ *   post:
+ *     permet d'authentifier un utilisateur
+ *     responses:
+ *       200:
+ *         retourne aun token lorsque l'utilisateur est connecté
+ */
 
 export default createRouter().post(async (req, res) => {
     try {

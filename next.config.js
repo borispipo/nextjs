@@ -18,8 +18,7 @@ module.exports = (opts)=>{
   ]);
   const alias = require("@fto-consult/common/babel.config.alias")({...opts,platform:"web",assets:path.resolve(base,"assets"),base});
   const src = alias.$src;
-  const next = path.resolve(dir,"src");
-
+  const next = require("./lookup-next-path")()?path.resolve(src,"..","nextjs","src") : path.resolve(dir,"src");
   alias["$nproviders"] = path.resolve(next,"auth","providers");
   alias["$providers"] = alias["$providers"] || alias["$nproviders"];
   alias["$nauth"] = path.resolve(next,"auth");
@@ -49,8 +48,7 @@ module.exports = (opts)=>{
 
   alias["$ndataSources"] = path.resolve(database,"dataSources");
   alias["$dataSources"] = alias["$dataSources"] || alias["$ndataSources"];
-  
-  
+  alias["$next-root-path"] = path.resolve(next,"..");
   alias["$next"] = next;
   
   const nextConfig = {
@@ -104,8 +102,7 @@ module.exports = (opts)=>{
       if(!isServer){
         config.resolve.fallback.fs = config.resolve.fallback.net = config.resolve.fallback.path = config.resolve.fallback.os = false;
       }
-      config.plugins.push(require("./circular-dependencies"));
-      
+      config.plugins.push(require("@fto-consult/common/circular-dependencies"));
       return config;
     },
   }
