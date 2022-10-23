@@ -78,7 +78,7 @@ module.exports = function generateApiDocs(options){
             if(fs.existsSync){
                 configPath = p;
             }
-            console.log(configContent," is conf content")
+            //console.log(configContent," is conf content")
         } catch{}
     }
     if(src && !Array.isArray(src)){
