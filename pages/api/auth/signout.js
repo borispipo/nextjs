@@ -2,9 +2,10 @@ import { removeTokenCookie } from '$nauth';
 import { SUCCESS } from '$capi/status';
 
 /****
- * @api {get} /auth/logout Déconnecte l'utilisateur conecté
+ * @api {get} /auth/logout Déconnecter un utilisateur
  * @apiName {Logout User}
  * @apiGroup auth
+  * @apiVersion 1.0.0
  * 
  */
 export default async function logout(req, res) {

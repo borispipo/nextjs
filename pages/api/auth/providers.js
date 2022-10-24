@@ -5,6 +5,7 @@ import {isObj} from "$cutils";
  * @api {get} auth/providers liste les providers d'autentification
  * @apiName {Get Providers}
  * @apiGroup auth
+ * @apiVersion 1.0.0
  * 
  * @apiSuccess {object} data : la liste des providers supportés par l'application  
  */

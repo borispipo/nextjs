@@ -5,11 +5,12 @@ import { getUserSession } from '$nauth/utils/auth-cookies';
 import {isObj} from "$cutils";
 
 /****
- * @api {post} /auth/verify-token Vérifie si le token envoyé via la form est valide où non
+ * @api {post} /auth/verify-token Vérifie la validité d'un token
  * @apiName {Verify Token}
  * @apiGroup auth
  * @apiBody {string} token le token a vérifier
  * @apiSuccess {object} session l'objet session correspondant à la session associé au token au cas où il est valide
+ * @apiVersion 1.0.0
  */
 export default createRouter().post(async (req, res)=>{
     if(!isObj(req.body)){
