@@ -29,7 +29,7 @@
   "homepage": "https://github.com/borispipo/nextjs#readme",
   "dependencies": {
     "@emotion/react": "^11.10.4",
-    "@fto-consult/common": "^1.4.4",
+    "@fto-consult/common": "^1.4.5",
     "apidoc": "^0.53.1",
     "cookie": "^0.5.0",
     "edge-cors": "^0.2.1",
