@@ -7,10 +7,12 @@
 */
 /**@module $nmiddleware, wrapperpour middleware nextJS */
 import { NextResponse } from 'next/server'
-import { middleWares } from '$middlewares';
+import middleWares from '$middlewares';
 import { getUserSession } from '$nauth/utils/auth-cookies';
 import "$cutils/extend.prototypes";
 import {getAPIHost,getBaseHost} from "$capi/host/utils";
+import cors from 'edge-cors'
+import {SUCCESS} from "$api/status";
 
 const isObj = x=> x && typeof x=='object' && !Array.isArray(x);
 
@@ -31,11 +33,20 @@ export default async function middleware(req,event) {
       return redirectToPage(req,redirectingPath+"?error=1&status=500&message="+error?.message)
     }
   }
-  for await (const middle of middleWares) {
-      if(typeof middle =='function'){
-        const res = await middle(req, event);
-        if (res) return res
-      }
+  await cors(
+    req,
+     new Response(JSON.stringify({ message: 'can make api request' }), {
+      status: SUCCESS,
+      headers: {...req.headers,'Content-Type': 'application/json' },
+     })
+  );
+  if(typeof middleWares=='object' && middleWares){
+    for await (const middle of middleWares) {
+        if(typeof middle =='function'){
+          const res = await middle(req, event);
+          if (res) return res
+        }
+    }
   }
   return NextResponse.next();
 };
