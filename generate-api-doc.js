@@ -21,7 +21,7 @@ module.exports = function generateApiDocs(options){
     if(!packageJSON && fs.existsSync(path.resolve(dir,"package.json"))){
         packageJSON = path.resolve(dir,"package.json");
     }
-    let configPath = "";
+    let configPath = "",hasConfig = false;
     if(packageJSON){
         try {
             const json = JSON.parse(fs.readFileSync(packageJSON));
@@ -78,6 +78,7 @@ module.exports = function generateApiDocs(options){
             if(fs.existsSync){
                 configPath = p;
             }
+            hasConfig = true;
             //console.log(configContent," is conf content")
         } catch{}
     }
@@ -96,7 +97,9 @@ module.exports = function generateApiDocs(options){
         config : configPath,
     })
     if(fs.existsSync(configPath)){
-        
+        try {
+            fs.unlinkSync(configPath);
+        } catch{}
     }
     return docs;
 }
