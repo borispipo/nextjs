@@ -49,7 +49,7 @@ export default createRouter().post(async (req, res) => {
         }
       })
       // session is the payload to save in the token, it may contain basic info about the user
-      const session = { ...user,provider:p,providerId:provider.id,isCustomer:provider.id=='customer'?true:false}
+      const session = { ...user,providerId:provider.id}
       delete session.password;delete session.pass;
       const token = await createUserToken(res, session);
       res.status(200).send({ done: true,token});
