@@ -20,7 +20,7 @@ export default function createRouter(a,b,c){
             },
             onNoMatch: (req, res) => {
                 const nF = typeof onNoMatch =='function'? onNoMatch : typeof onNotFound =='function'? onNotFound : noFound;
-                console.log(req?.nextUrl?.pathname || req.url," not route found ",req)
+                console.log(req?.nextUrl?.pathname || req.url," not route found ",req.nextUrl)
                 if(typeof nF =='function' && nF({req,res,request:req,status:NOT_FOUND,response:res}) == false) return;
                 res.status(NOT_FOUND).json({message:"Page Non trouvée!! impossible d'exécuter la requête pour la méthode [{0}]; url : {1}".sprintf(req.method,req.url)});
             },
