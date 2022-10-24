@@ -49,10 +49,6 @@ module.exports = (opts)=>{
   alias["$ndataSources"] = path.resolve(database,"dataSources");
   alias["$dataSources"] = alias["$dataSources"] || alias["$ndataSources"];
   alias["$next-root-path"] = path.resolve(next,"..");
-  alias["$napiCustom"] = path.resolve(next,"api","apiCustom");
-  if(alias["$capiCustom"] == alias["$apiCustom"]){
-    alias["$apiCustom"] = alias["$napiCustom"];
-  }
   alias["$next"] = next;
   
   const nextConfig = {
