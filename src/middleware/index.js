@@ -11,7 +11,7 @@ import middleWares from '$middlewares';
 import { getUserSession } from '$nauth/utils/auth-cookies';
 import "$cutils/extend.prototypes";
 import {getAPIHost,getBaseHost} from "$capi/host/utils";
-import cors from "./cors";
+import cors from "../middlewares/cors";
 
 const isObj = x=> x && typeof x=='object' && !Array.isArray(x);
 

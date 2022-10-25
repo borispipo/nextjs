@@ -10,7 +10,7 @@ export default async function CorsMiddleware(req){
         req,
          new Response(JSON.stringify({ message: 'can make api request' }), {
             status: SUCCESS,
-            headers: {'Content-Type': 'application/json' ,...req.headers},
+            headers: {...req.headers},
          })
     );
 }
