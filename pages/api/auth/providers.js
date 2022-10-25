@@ -2,7 +2,7 @@ import {providers} from "$nauth";
 import {SUCCESS} from "$capi/status";
 import {isObj} from "$cutils";
 /**
- * @api {get} auth/providers liste les providers d'autentification
+ * @api {get} auth/providers lister les providers d'autentification
  * @apiName {Get Providers}
  * @apiGroup auth
  * @apiVersion 1.0.0
@@ -10,8 +10,8 @@ import {isObj} from "$cutils";
  * @apiSuccess {object} data : la liste des providers supportés par l'application  
  */
 export default function handler(req,res){
-    for(let i in providers){
-        const p = providers[i];
+    const prov = Object.clone(providers);
+    Object.map(prov,(p)=>{
         if(isObj(p)){
             for(let k in p){
                 if(typeof p[k] =='function'){
@@ -19,6 +19,6 @@ export default function handler(req,res){
                 }
             }
         }
-    }
-    return res.status(SUCCESS).json({data:providers})
+    });
+    return res.status(SUCCESS).json({data:prov})
 }
