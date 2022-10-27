@@ -1,7 +1,8 @@
 /***@see : https://github.com/hoangvvo/next-connect */
-import { createRouter as nCreateRouter } from "next-connect";
+import { createRouter as nCreateRouter,expressWrapper } from "next-connect";
 import {defaultObj} from "$utils";
 import {INTERNAL_SERVER_ERROR,NOT_FOUND} from "$api/status";
+import cors from "cors";
 
 export * from "next-connect";
 export default function createRouter(a,b,c){
@@ -26,7 +27,7 @@ export default function createRouter(a,b,c){
             },
         })
     };
-    return router;
+    return router.use(expressWrapper(cors()));
 }
 
 export {createRouter};

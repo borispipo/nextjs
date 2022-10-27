@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "scripts": {
@@ -32,6 +32,7 @@
     "@fto-consult/common": "^1.4.9",
     "apidoc": "^0.53.1",
     "cookie": "^0.5.0",
+    "cors": "^2.8.5",
     "edge-cors": "^0.2.1",
     "jose": "^4.10.0",
     "mysql2": "^2.3.3",
