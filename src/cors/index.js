@@ -1,7 +1,7 @@
 // Copyright 2022 @fto-consult/Boris Fouomene. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-import NextCors from 'nextjs-cors';
+import cors from 'cors'
 import {SUCCESS} from "$api/status";
 const requestHeaders = require("../../request.headers");
 
@@ -17,9 +17,13 @@ export default function CorsMiddleware(req,res,options){
             options[i] = requestHeaders[i].value;
         }
     }
-    return NextCors(
-        req,
-        res,
-        options
-    );
+    console.log(options," is optsss")
+    return new Promise((resolve,reject)=>{
+        cors(options)(req, res, (result) => {
+            if (result instanceof Error) {
+              return reject(result)
+            }
+            return resolve(result)
+        })
+    });
 }
