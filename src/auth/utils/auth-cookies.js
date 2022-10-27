@@ -72,6 +72,8 @@ export async function createUserToken(res, session) {
   setTokenCookie(res, token);
   return token;
 }
+export const createToken = createUserToken;
+
 export const getAuthorizationHeader = (req)=>{
   if(!req || !req.headers || typeof req.headers !=='object') return "";
   let authHeader = req.headers.authorization || req.headers.Authorization || '';
@@ -93,6 +95,7 @@ export async function getUserToken(req) {
   return await getTokenCookie(req);
 }
 
+export const getToken = getUserToken;
 
 ///on peut directement passer le token en paramètre pour la vérification
 export const getProviderSession = async (req,tokenString)=>{
@@ -130,6 +133,12 @@ const setSessionOnRequest = async (req,res)=>{
         },
         isCustomer : {
           value : session && typeof session =='object' && session.providerId =='customer'? true : false,
+        },
+        isProviderSession : {
+          value : (provider)=>{
+              const providerId = typeof provider =='string' ? provider.toLowerCase() : typeof provider =='object' && provider && typeof provider.id =='string' && provider.id ||'';
+              return session && typeof session =='object' && session.providerId?.toLowerCase() === providerId ? true : false;
+          }
         }
     });
   }
@@ -147,7 +156,7 @@ export function withSession(handler){
 export function withCustomerSession (handler){
   return async function handlerWithCustomerSession(req, res,a1,a2) {
     const session = await setSessionOnRequest(req,res);
-    if(!session || (typeof session=='object' && !session.isCustomer)){
+    if(!session || typeof session!='object' || !session.isCustomer){
         return res.status(UNAUTHORIZED).json({message:'Vous devez vous connecter avec un compte client afin de solliciter ce type de ressource'});
     }
     return handler(req, res,a1,a2);
@@ -181,7 +190,6 @@ export function withProviderSession (provider,handler,errorMessage){
            }
            return false;
        }
-       filter = (session,prov)=> provider(session,prov) ? true : false;
      } else {
         handler = provider;
         provider = t;
@@ -193,7 +201,7 @@ export function withProviderSession (provider,handler,errorMessage){
   }
   return async function handlerWithProviderSession(req, res,a1,a2) {
     const session = await setSessionOnRequest(req,res);
-    if(!session || (typeof session=='object' && filter && !filter(session))){
+    if(!session || typeof session!='object' || (filter && !filter(session))){
         errorMessage = errorMessage && typeof errorMessage =='string'? errorMessage : ('Vous devez vous connecter avec le gestionnaire d\'authentification '+(providerId||''));
         return res.status(UNAUTHORIZED).json({message:errorMessage});
     }
