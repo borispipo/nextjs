@@ -31,10 +31,10 @@ module.exports = function generateApiDocs(options){
                 description : json.description,
                 version : json.version,
                 title : (json.title || (desc+" | API Documentation")),
+                url : "/api",
             };
             if(typeof json.apidoc =='object' && json.apidoc){
                 configContent = {
-                    url : "/api",
                     ...configContent,
                     ...json.apidoc,
                 }
