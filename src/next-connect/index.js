@@ -2,7 +2,7 @@
 import { createRouter as nCreateRouter } from "next-connect";
 import {defaultObj} from "$utils";
 import {INTERNAL_SERVER_ERROR,NOT_FOUND} from "$api/status";
-import NextCors from 'nextjs-cors';
+const requestHeaders = require("../../request.headers");
 
 export * from "next-connect";
 export default function createRouter(a,b,c){
@@ -28,14 +28,20 @@ export default function createRouter(a,b,c){
         })
     };
     return router.use(async (req, res, next) => {
-        // Run the cors middleware
-        // nextjs-cors uses the cors package, so we invite you to check the documentation https://github.com/expressjs/cors
-        await NextCors(req, res, {
-            // Options
-            methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-            origin: '*',
-            optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-        });
+        //res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+        for(let i in requestHeaders){
+            const header = requestHeaders[i];
+            if(typeof header =='object' && header && 'value' in header){
+                if(header.isHeader !== false){
+                    res.setHeader(header.key,header.value);
+                }
+            }
+        }
+        console.log(header," is header to seeeeeee",res.headers);
+        if (req.method === 'OPTIONS') {
+            res.status(200).end()
+            return
+        }
         await next(); // call next in chain
     });
 }
