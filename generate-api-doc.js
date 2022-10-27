@@ -13,7 +13,7 @@ module.exports = function generateApiDocs(options){
     const dir = path.resolve(__dirname);
     const base = typeof options.base =='string' && options.base && fs.existsSync(options.base)? options.base : null;
     let src = Array.isArray(options.src)? options.src : options.src && typeof options.src =='string' && fs.existsSync(options.src)? options.src : base ? path.resolve(base,"pages","api") : path.resolve(__dirname, 'pages/api');
-    const dest = options.dest && typeof options.dest =='string'? options.dest : path.resolve(__dirname,"api-docs");
+    const dest = options.dest && typeof options.dest =='string'? options.dest : path.resolve(base || __dirname,"api-docs");
     let packageJSON = options.package && typeof options.package =='string' && fs.existsSync(options.package)?options.package : null;
     if(!packageJSON && base && fs.existsSync(path.resolve(base,"package.json"))){
         packageJSON = path.resolve(base,"package.json");
