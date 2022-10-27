@@ -25,5 +25,6 @@ Pour générer l'api d'une application nextJS via le boilerplate @fto-consult/ne
 6. Enfin, pour Génerer la documentation de l'api, il suffira de faire npm run generate-api-doc.
 
 Pour les instructions, concernant la syntaxe et autres, bien vouloir [consulter le lien](https://apidocjs.com=){:target="_blank"}.
-
+## Attention
+La propriété version spécifiée dans les paramètre de configuration du package doit être de la forme x.x.x
 # Descriptif de l'API
