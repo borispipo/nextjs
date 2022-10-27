@@ -1,8 +1,8 @@
 /***@see : https://github.com/hoangvvo/next-connect */
-import { createRouter as nCreateRouter,expressWrapper } from "next-connect";
+import { createRouter as nCreateRouter } from "next-connect";
 import {defaultObj} from "$utils";
 import {INTERNAL_SERVER_ERROR,NOT_FOUND} from "$api/status";
-import cors from "cors";
+import NextCors from 'nextjs-cors';
 
 export * from "next-connect";
 export default function createRouter(a,b,c){
@@ -27,7 +27,17 @@ export default function createRouter(a,b,c){
             },
         })
     };
-    return router.use(expressWrapper(cors()));
+    return router.use(async (req, res, next) => {
+        // Run the cors middleware
+        // nextjs-cors uses the cors package, so we invite you to check the documentation https://github.com/expressjs/cors
+        await NextCors(req, res, {
+            // Options
+            methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+            origin: '*',
+            optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+        });
+        await next(); // call next in chain
+    });
 }
 
 export {createRouter};
