@@ -160,26 +160,38 @@ export function withCustomerSession (handler){
  * @param {string} errorMessage - le message d'erreur l'orsque l'on n'est pas connecté avec ledit provider
  */
 export function withProviderSession (provider,handler,errorMessage){
-  let filter = null,isProviderFunc = false,providerId = "";
+  let filter = null,providerId = "";
   if(typeof provider =='string'){
-     providerId = provider;
-     filter = (session,prov) => session.providerId?.toLowerCase() == provider.toLowerCase()? true : false;  
+     providerId = provider; 
   } else if(typeof provider =='object' && provider){
-    providerId = provider.providerId?.toLowerCase();
-    filter = (session,prov) => session.providerId?.toLowerCase() == providerId? true : false
+    providerId = provider.providerId || provider.id;
   } else if(typeof provider =='function'){
      const t = handler;
      if(typeof handler =='function'){
+       filter = (session)=> {
+           for(let i in providers){
+             const prov = providers[i];
+             if(prov && typeof prov =='object' && prov.id && typeof prov.id =='string'){
+                if(provider(session,prov)){
+                   return true;
+                }
+             }
+           }
+           return false;
+       }
        filter = (session,prov)=> provider(session,prov) ? true : false;
-       isProviderFunc = true;
      } else {
         handler = provider;
         provider = t;
+        providerId = typeof provider =='string'? provider : provider && typeof provider =='object'? (provider.providerId || provider.id) : null;
      }
+  }
+  if(providerId && typeof providerId =='string'){
+     filter = (session) => session.providerId?.toLowerCase() == providerId.toLowerCase()? true : false; 
   }
   return async function handlerWithProviderSession(req, res,a1,a2) {
     const session = await setSessionOnRequest(req,res);
-    if(!session || (typeof session=='object')){
+    if(!session || (typeof session=='object' && filter && !filter(session))){
         errorMessage = errorMessage && typeof errorMessage =='string'? errorMessage : ('Vous devez vous connecter avec le gestionnaire d\'authentification '+(providerId||''));
         return res.status(UNAUTHORIZED).json({message:errorMessage});
     }
