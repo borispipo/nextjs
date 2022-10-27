@@ -30,12 +30,11 @@ export default function createRouter(options){
         })
     };
     
-    if(withCors !== false){
+    if(false && withCors !== false){
         ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"].map((v)=>{
             v = v.toLowerCase();
             if(typeof router[v] =='function'){
                 const {[v]:func} = router;
-                console.log(func," is ffffffffffffffffffffff")
                 router[v] = function(pattern,handler){
                     if(typeof pattern =='function'){
                         const t = handler;
