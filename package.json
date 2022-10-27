@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "scripts": {
@@ -32,7 +32,6 @@
     "@fto-consult/common": "^1.4.9",
     "apidoc": "^0.53.1",
     "cookie": "^0.5.0",
-    "edge-cors": "^0.2.1",
     "jose": "^4.10.0",
     "mysql2": "^2.3.3",
     "next": "^12.3.1",
@@ -41,6 +40,7 @@
     "next-images": "^1.8.4",
     "next-remote-watch": "^2.0.0",
     "next-transpile-modules": "^9.1.0",
+    "nextjs-cors": "^2.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "reflect-metadata": "^0.1.13",

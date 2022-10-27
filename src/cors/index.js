@@ -1,8 +1,7 @@
 // Copyright 2022 @fto-consult/Boris Fouomene. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-
-import cors from 'edge-cors'
+import NextCors from 'nextjs-cors';
 import {SUCCESS} from "$api/status";
 const requestHeaders = require("../../request.headers");
 
@@ -18,7 +17,7 @@ export default function CorsMiddleware(req,res,options){
             options[i] = requestHeaders[i].value;
         }
     }
-    return cors(
+    return NextCors(
         req,
         res,
         options
