@@ -3,8 +3,8 @@
 // license that can be found in the LICENSE file.
 import cors from "./index";
 export default function withCors (handler){
-    return async (req,res,event)=>{
-        await cors(req,res);
-        return await handler(req,res,event);
+    return async function (req,res,event){
+        await cors(req,res,event);
+        return handler(req,res,event);
     }
 }
