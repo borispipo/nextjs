@@ -9,6 +9,7 @@ import { serialize, parse } from 'cookie'
 import defaultStr from "$utils/defaultStr";
 import * as jose from 'jose';
 import {UNAUTHORIZED } from "$api/status";
+import providers from "../providers";
 
 const TOKEN_NAME = 'token'
 
@@ -94,7 +95,7 @@ export async function getUserToken(req) {
 
 
 ///on peut directement passer le token en paramètre pour la vérification
-export const getUserSession = async (req,tokenString)=>{
+export const getProviderSession = async (req,tokenString)=>{
   const token = typeof tokenString =='string' && tokenString || await getUserToken(req);
   delete req.session;
   if (!token) return null;
@@ -115,9 +116,11 @@ export const getUserSession = async (req,tokenString)=>{
   }
   return null;
 }
+export const getUserSession = getProviderSession;
+export const getSession = getProviderSession;
 
 const setSessionOnRequest = async (req,res)=>{
-  const session = await getUserSession(req,res);
+  const session = await getProviderSession(req,res);
   if(typeof req.session !=='object' || !req.session){
       Object.defineProperties(req,{
         session : {
@@ -142,8 +145,43 @@ export function withSession(handler){
 export function withCustomerSession (handler){
   return async function handlerWithCustomerSession(req, res,a1,a2) {
     const session = await setSessionOnRequest(req,res);
-    if(session && typeof session=='object' && !session.isCustomer){
+    if(!session || (typeof session=='object' && !session.isCustomer)){
         return res.status(UNAUTHORIZED).json({message:'Vous devez vous connecter avec un compte client afin de solliciter ce type de ressource'});
+    }
+    return handler(req, res,a1,a2);
+  };
+}
+
+/***** permet de se rassurer que l'utilisateur encours est connecté via le provider passé en paramètre
+ * @param {object|string|func} provider - l'objet provider que l'on désire utiliser pour se rassurer que l'utilisateur soit connecté, s'il s'agit d'une chaine de caractère, alors la chaine en question sera considéré comme le nom du provider
+ *        - si provider est une fonction alors la variable est subsitué avec la variable handler
+ * @param {function|object|string} - la fonction handler à utiliser au cas où l'utilisateur est connecté via la session
+ * si provider et handler sont les fonctions alors la fonction handler sera executée lorsque la boucle l'appel de la fonction provider sur les différents providers aura retourné true
+ * @param {string} errorMessage - le message d'erreur l'orsque l'on n'est pas connecté avec ledit provider
+ */
+export function withProviderSession (provider,handler,errorMessage){
+  let filter = null,isProviderFunc = false,providerId = "";
+  if(typeof provider =='string'){
+     providerId = provider;
+     filter = (session,prov) => session.providerId?.toLowerCase() == provider.toLowerCase()? true : false;  
+  } else if(typeof provider =='object' && provider){
+    providerId = provider.providerId?.toLowerCase();
+    filter = (session,prov) => session.providerId?.toLowerCase() == providerId? true : false
+  } else if(typeof provider =='function'){
+     const t = handler;
+     if(typeof handler =='function'){
+       filter = (session,prov)=> provider(session,prov) ? true : false;
+       isProviderFunc = true;
+     } else {
+        handler = provider;
+        provider = t;
+     }
+  }
+  return async function handlerWithProviderSession(req, res,a1,a2) {
+    const session = await setSessionOnRequest(req,res);
+    if(!session || (typeof session=='object')){
+        errorMessage = errorMessage && typeof errorMessage =='string'? errorMessage : ('Vous devez vous connecter avec le gestionnaire d\'authentification '+(providerId||''));
+        return res.status(UNAUTHORIZED).json({message:errorMessage});
     }
     return handler(req, res,a1,a2);
   };

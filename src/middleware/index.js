@@ -8,7 +8,7 @@
 /**@module $nmiddleware, wrapperpour middleware nextJS */
 import { NextResponse } from 'next/server'
 import middleWares from '$middlewares';
-import { getUserSession } from '$nauth/utils/auth-cookies';
+import { getProviderSession } from '$nauth/utils/auth-cookies';
 import "$cutils/extend.prototypes";
 import {getAPIHost,getBaseHost} from "$capi/host/utils";
 
@@ -22,7 +22,7 @@ export default async function middleware(req,event) {
   if(isAdmin || isProtected){
     const redirectingPath = (isApiRoute(req)? (getAPIHost().rtrim("/")+('/auth/you-are-not-signed-in')):(getBaseHost().rtrim("/")+"/"+"auth/signin")).rtrim("/");
     try {
-      const session = await getUserSession(req);
+      const session = await getProviderSession(req);
       if(!isObj(session)){
         return redirectToPage(req,redirectingPath)
       } 

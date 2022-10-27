@@ -1,7 +1,7 @@
 import {UNAUTHORIZED,NOT_ACCEPTABLE,SUCCESS} from "$capi/status";
 /**** cette route permet de vérifier si le token utilisateur passé en paramètre est à jour où nom */
 import {createRouter} from "$next-connect";
-import { getUserSession } from '$nauth/utils/auth-cookies';
+import { getProviderSession } from '$nauth/utils/auth-cookies';
 import {isObj} from "$cutils";
 import withCors from "$withCors";
 
@@ -20,7 +20,7 @@ export default createRouter().post(withCors(async (req, res)=>{
         return;
     }
     try {
-        const session = await getUserSession(req,req.body.token);
+        const session = await getProviderSession(req,req.body.token);
         if(!isObj(session)){
            return res.status(UNAUTHORIZED).json({message:'Le jeton de sécurité distant a expiré!! essayez de vous connecter sur le site distant avec votre compte client puis réessayez!!'});
         } 
