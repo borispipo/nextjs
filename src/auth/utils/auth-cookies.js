@@ -109,7 +109,9 @@ export const getProviderSession = async (req,tokenString)=>{
     if (Date.now() > expiresAt) {
       return null;
     }
-    req.session = session;
+    if(typeof req.session !=='object' || !req.session){
+      req.session = session;
+    }
     return session
   } catch (e){
       console.log(e," getting token");

@@ -106,6 +106,7 @@ module.exports = (opts)=>{
       ];
       if(!isServer){
         config.resolve.fallback.fs = config.resolve.fallback.net = config.resolve.fallback.path = config.resolve.fallback.os = false;
+        config.externals = [...config.externals,'pg', 'sqlite3', 'tedious', 'pg-hstore','react-native-sqlite-storage'];
       }
       config.plugins.push(require("@fto-consult/common/circular-dependencies"));
       return config;
