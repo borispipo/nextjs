@@ -7,7 +7,7 @@ const requestHeaders = require("../../request.headers");
 export default function CorsMiddleware(req,res,options){
     options = typeof options =='object' && options && !Array.isArray(options)? options : {};
     if(!res || typeof res =='boolean' || !res.setHeader) {
-        return;
+        return Promise.resolve({});
     }
     for(let i in requestHeaders){
         if(!(i in options) && typeof requestHeaders[i] =='object' && requestHeaders[i] && 'value' in requestHeaders[i]){

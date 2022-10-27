@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 import cors from "./index";
-export default function withCors (hanlder){
+export default function withCors (handler){
     return async (req,res,event)=>{
-        console.log(req.headers," is req heea")
         await cors(req,res);
-        return await hanlder(req,res,event);
+        return await handler(req,res,event);
     }
 }
