@@ -27,9 +27,25 @@ export default function createRouter(a,b,c){
             },
         })
     };
-    return router.use(async(req,res,next)=>{
-        return await cors (req,res);
+    
+    ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"].map((v)=>{
+        if(typeof router[v] =='function'){
+            const {[v]:func} = router;
+            router[v] = async (req,res,next)=>{
+                await cors(req,res);
+                return await func(req,res,next);
+            };
+        }
+        v = v.toLowerCase();
+        if(typeof router[v] =='function'){
+            const {[v]:func} = router;
+            router[v] = async (req,res,next)=>{
+                await cors(req,res);
+                return await func(req,res,next);
+            };
+        }
     });
+    return router;
 }
 
 export {createRouter};
