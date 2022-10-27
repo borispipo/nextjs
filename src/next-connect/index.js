@@ -28,21 +28,39 @@ export default function createRouter(a,b,c){
         })
     };
     return router.use(async (req, res, next) => {
+        let oneof = false;
+        if(req.headers.origin) {
+            res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+            oneof = true;
+        }
+        if(req.headers['access-control-request-method']) {
+            res.setHeader('Access-Control-Allow-Methods', req.headers['access-control-request-method']);
+            oneof = true;
+        }
+        if(req.headers['access-control-request-headers']) {
+            res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers']);
+            oneof = true;
+        }
+        if(oneof) {
+            res.setHeader('Access-Control-Max-Age', 60 * 60 * 24 * 365);
+        }
         //res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
         for(let i in requestHeaders){
             const header = requestHeaders[i];
             if(typeof header =='object' && header && 'value' in header){
-                if(header.isHeader !== false){
+                if(header.isHeader !== false && !res.headers[i]){
+                    console.log("setting header ",i),res.headers[i];
                     res.setHeader(header.key,header.value);
                 }
             }
         }
-        console.log(header," is header to seeeeeee",res.headers);
-        if (req.method === 'OPTIONS') {
-            res.status(200).end()
-            return
+        // intercept OPTIONS method
+        if (oneof && req.method == 'OPTIONS') {
+            res.send(200);
         }
-        await next(); // call next in chain
+        else {
+            await next();
+        }
     });
 }
 

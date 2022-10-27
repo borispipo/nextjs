@@ -17,7 +17,7 @@ module.exports =  {
     },
     allowedHeaders  : {
         key : "Access-Control-Allow-Headers",
-        value :"Access-Control-Allow-Headers, Authorization, Origin, Access-Control-Request-Method, Access-Control-Request-Headers, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
+        value :"Authorization, Origin, Access-Control-Request-Method, Access-Control-Request-Headers, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
     },
     optionsSuccessStatus: {
         isHeader : false,
