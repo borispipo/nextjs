@@ -4,6 +4,7 @@
 import cors from "./index";
 export default function withCors (hanlder){
     return async (req,res,event)=>{
+        console.log(req.headers," is req heea")
         await cors(req,res);
         return await hanlder(req,res,event);
     }
