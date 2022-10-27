@@ -35,6 +35,7 @@ export default function createRouter(options){
             v = v.toLowerCase();
             if(typeof router[v] =='function'){
                 const {[v]:func} = router;
+                console.log(func," is ffffffffffffffffffffff")
                 router[v] = function(pattern,handler){
                     if(typeof pattern =='function'){
                         const t = handler;
@@ -44,9 +45,12 @@ export default function createRouter(options){
                     pattern = typeof pattern =='string'? pattern : undefined;
                     const cbF = async function customHandler(){
                         const args = Array.prototype.slice.call(arguments,0);
+                        console.log(args," is arguemnt heeeeee")
                         try {
                             await cors(req,res);
-                        } catch{};
+                        } catch (e){
+                            console.log(e," catching cors error on middleware");
+                        }
                         return await handlder.apply(this||router,args);
                     };
                     return pattern ? func (pattern,cbF) : func(cbF);
