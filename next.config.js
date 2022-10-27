@@ -7,6 +7,7 @@ const withFonts = require('next-fonts');
 const withImages = require('next-images');
 const dir = path.resolve(__dirname);
 const package = require(path.resolve(dir,"package.json"));
+const requestHeaders = require("./request.headers");
 module.exports = (opts)=>{
   opts = typeof opts =='object' && opts ? opts : {};
   const transpileModules = Array.isArray(opts.transpileModules)? opts.transpileModules : [];
@@ -50,6 +51,7 @@ module.exports = (opts)=>{
   alias["$dataSources"] = alias["$dataSources"] || alias["$ndataSources"];
   alias["$next-root-path"] = path.resolve(next,"..");
   alias["$next"] = next;
+  alias["$withMiddleware"] = alias["$withMiddleware"] || path.resolve(next,"middleware","withMiddleware");
   
   const nextConfig = {
     reactStrictMode: true,
@@ -64,16 +66,17 @@ module.exports = (opts)=>{
     swcMinify: true,
     ///cors in vercel app
     async headers() {
+      const headers = [];
+      for(let i in requestHeaders){
+        if(typeof requestHeaders[i] =='object' && requestHeaders[i] && requestHeaders[i].isHeader !== false){
+          headers.push(requestHeaders[i]);
+        }
+      }
       return [
         {
           // matching all API routes
           source: "/api/:path*",
-          headers: [
-            { key: "Access-Control-Allow-Credentials", value: "true" },
-            { key: "Access-Control-Allow-Origin", value: "*" },
-            { key: "Access-Control-Allow-Methods", value: "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
-            { key: "Access-Control-Allow-Headers", value: "Access-Control-Allow-Headers, Authorization, Origin, Access-Control-Request-Method, Access-Control-Request-Headers, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version" },
-          ]
+          headers,
         }
       ]
     },
