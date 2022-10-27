@@ -72,6 +72,7 @@ module.exports = function generateApiDocs(options){
             if(!configContent.footer.filename){
                 configContent.footer.filename = path.resolve(dir,"api-doc","footer.md");
             }
+            console.log(configContent," is conf content");
             const fileName = sanitize(configContent.name +"-api-doc.json");
             const p = path.resolve(dir,fileName);
             fs.writeFileSync(p,JSON.stringify(configContent));
