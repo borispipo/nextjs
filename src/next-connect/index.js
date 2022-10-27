@@ -2,6 +2,7 @@
 import { createRouter as nCreateRouter } from "next-connect";
 import {defaultObj} from "$utils";
 import {INTERNAL_SERVER_ERROR,NOT_FOUND} from "$api/status";
+import cors from "../cors";
 
 export * from "next-connect";
 export default function createRouter(a,b,c){
@@ -26,7 +27,9 @@ export default function createRouter(a,b,c){
             },
         })
     };
-    return router;
+    return router.use(async(req,res,next)=>{
+        return await cors (req,res);
+    });
 }
 
 export {createRouter};
