@@ -5,8 +5,10 @@ import {INTERNAL_SERVER_ERROR,NOT_FOUND} from "$api/status";
 import cors from "../cors";
 
 export * from "next-connect";
-export default function createRouter(a,b,c){
-    const router = nCreateRouter(a,b,c);
+export default function createRouter(options){
+    options = typeof options =='object' && options && !Array.isArray(options)? options : {};
+    const {withCors,...restOptions} = options;
+    const router = nCreateRouter(restOptions);
     const {handler} = router;
     router.handler = function(options){
         options = defaultObj(options);
@@ -28,23 +30,30 @@ export default function createRouter(a,b,c){
         })
     };
     
-    ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"].map((v)=>{
-        if(typeof router[v] =='function'){
-            const {[v]:func} = router;
-            router[v] = async (req,res,next)=>{
-                await cors(req,res);
-                return await func(req,res,next);
-            };
-        }
-        v = v.toLowerCase();
-        if(typeof router[v] =='function'){
-            const {[v]:func} = router;
-            router[v] = async (req,res,next)=>{
-                await cors(req,res);
-                return await func(req,res,next);
-            };
-        }
-    });
+    if(withCors !== false){
+        ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"].map((v)=>{
+            v = v.toLowerCase();
+            if(typeof router[v] =='function'){
+                const {[v]:func} = router;
+                router[v] = function(pattern,handler){
+                    if(typeof pattern =='function'){
+                        const t = handler;
+                        handler = pattern;
+                        pattern = t;
+                    }
+                    pattern = typeof pattern =='string'? pattern : undefined;
+                    const cbF = async function customHandler(){
+                        const args = Array.prototype.slice.call(arguments,0);
+                        try {
+                            await cors(req,res);
+                        } catch{};
+                        return await handlder.apply(this||router,args);
+                    };
+                    return pattern ? func (pattern,cbF) : func(cbF);
+                };
+            }
+        });
+    }
     return router;
 }
 
