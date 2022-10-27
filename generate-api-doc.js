@@ -27,7 +27,7 @@ module.exports = function generateApiDocs(options){
             const json = JSON.parse(fs.readFileSync(packageJSON));
             const desc = json.description || json.name;
             let configContent = {
-                name : json.name,
+                name : json.name || "Unamed",
                 description : json.description,
                 version : json.version,
                 title : ((json.title || desc || "")+(" | API Documentation")),
@@ -39,6 +39,7 @@ module.exports = function generateApiDocs(options){
                     ...json.apidoc,
                 }
             }
+            configContent.description = configContent.description || configContent.name;
             ///@see : https://apidocjs.com/#param-api-define
             configContent.template = typeof configContent.template =='object' && configContent.template ? configContent.template :{};
             configContent.template = {
@@ -72,7 +73,6 @@ module.exports = function generateApiDocs(options){
             if(!configContent.footer.filename){
                 configContent.footer.filename = path.resolve(dir,"api-doc","footer.md");
             }
-            console.log(configContent," is conf content");
             const fileName = sanitize(configContent.name +"-api-doc.json");
             const p = path.resolve(dir,fileName);
             fs.writeFileSync(p,JSON.stringify(configContent));
