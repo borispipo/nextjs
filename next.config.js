@@ -52,6 +52,7 @@ module.exports = (opts)=>{
   alias["$next-root-path"] = path.resolve(next,"..");
   alias["$next"] = next;
   alias["$withMiddleware"] = alias["$withMiddleware"] || path.resolve(next,"middleware","withMiddleware");
+  alias["$cors"] = alias["$cors"] || path.resolve(next,"middlewares","cors");
   
   const nextConfig = {
     reactStrictMode: true,

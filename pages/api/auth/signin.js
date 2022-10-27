@@ -2,6 +2,7 @@ import {UNAUTHORIZED,NOT_ACCEPTABLE} from "$capi/status";
 import { createRouter } from "$next-connect";
 import {getProvider,createUserToken} from "$nauth";
 import {isObj,defaultObj,isNonNullString} from "$cutils";
+import cors from "$cors";
 /** 
  * @apiDefine ProiverNotFound lorsque le provider n'a pas été précisé dans les données passé à la requête
  */
@@ -24,6 +25,7 @@ import {isObj,defaultObj,isNonNullString} from "$cutils";
 */
 
 export default createRouter().post(async (req, res) => {
+    await cors(req,res);
     try {
       if(!isObj(req.body)){
          res.status(NOT_ACCEPTABLE).json({message:'Vous devez spécifier un nom d\'utilisateur et un mot de pass valide'});
