@@ -3,6 +3,7 @@ import {UNAUTHORIZED,NOT_ACCEPTABLE,SUCCESS} from "$capi/status";
 import {createRouter} from "$next-connect";
 import { getUserSession } from '$nauth/utils/auth-cookies';
 import {isObj} from "$cutils";
+import withCors from "$withCors";
 
 /****
  * @api {post} /auth/verify-token Vérifie la validité d'un token
@@ -13,7 +14,7 @@ import {isObj} from "$cutils";
  * @apiVersion 1.0.0
  * @apiSuccess {object} l'objet session rattaché au token lorsqu'il est valide
  */
-export default createRouter().post(async (req, res)=>{
+export default createRouter().post(withCors(async (req, res)=>{
     if(!isObj(req.body)){
         res.status(NOT_ACCEPTABLE).json({message:'Vous devez spécifier un jetton de sécurité valide'});
         return;
@@ -28,4 +29,4 @@ export default createRouter().post(async (req, res)=>{
         console.error(error," authentication user")
         res.status(error?.status||UNAUTHORIZED).send(error)
     }
-}).handler();
+})).handler();

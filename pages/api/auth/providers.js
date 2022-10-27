@@ -1,6 +1,7 @@
 import {providers} from "$nauth";
 import {SUCCESS} from "$capi/status";
 import {isObj} from "$cutils";
+import withCors from "$withCors";
 /**
  * @api {get} auth/providers lister les providers d'autentification
  * @apiName {Get Providers}
@@ -9,7 +10,7 @@ import {isObj} from "$cutils";
  * 
  * @apiSuccess {object} data : la liste des providers supportés par l'application  
  */
-export default function handler(req,res){
+export default withCors(function handler(req,res){
     const prov = Object.clone(providers);
     Object.map(prov,(p)=>{
         if(isObj(p)){
@@ -21,4 +22,4 @@ export default function handler(req,res){
         }
     });
     return res.status(SUCCESS).json({data:prov})
-}
+});
