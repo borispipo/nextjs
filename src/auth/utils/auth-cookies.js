@@ -94,8 +94,6 @@ export async function getUserToken(req) {
   return await getTokenCookie(req);
 }
 
-export const getToken = getUserToken;
-
 ///on peut directement passer le token en paramètre pour la vérification
 export const getProviderSession = async (req,tokenString)=>{
   const token = typeof tokenString =='string' && tokenString || await getUserToken(req);
