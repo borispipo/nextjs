@@ -77,7 +77,7 @@ module.exports = (opts)=>{
       return [
         {
           // matching all API routes
-          source: "/api/:path*",
+          "source": "/api/(.*)",
           headers,
         }
       ]
