@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 module.exports =  {
-    allowedHeaders : {
+    credentials : {
         key : "Access-Control-Allow-Credentials",
         value : true
     },

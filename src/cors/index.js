@@ -19,7 +19,6 @@ export default function CorsMiddleware(req,res,options){
             }
         }
     }
-    console.log(options," is options heeeeeeee");
     return new Promise((resolve,reject)=>{
         cors(options)(req, res, (result) => {
             if (result instanceof Error) {
