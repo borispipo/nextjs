@@ -121,7 +121,7 @@ export const getProviderSession = async (req,tokenString)=>{
 export const getUserSession = getProviderSession;
 export const getSession = getProviderSession;
 
-const setSessionOnRequest = async (req,res)=>{
+export const setSessionOnRequest = async (req,res)=>{
   const session = await getProviderSession(req,res);
   if(typeof req.session !=='object' || !req.session){
       Object.defineProperties(req,{
