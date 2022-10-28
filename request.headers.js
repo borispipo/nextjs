@@ -5,7 +5,8 @@
 module.exports =  {
     credentials : {
         key : "Access-Control-Allow-Credentials",
-        value : true
+        value : "true",
+        corsValue : true,
     },
     origin : {
         key : "Access-Control-Allow-Origin",
