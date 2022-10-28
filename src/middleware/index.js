@@ -45,8 +45,10 @@ export default async function middleware(req,event) {
 const isApiRoute = (req)=> req.nextUrl.pathname.startsWith("/api/");
 
 const redirectToPage = (req,path)=>{
-  req.nextUrl.searchParams.set('from', req.nextUrl.pathname);
-  req.nextUrl.searchParams.set('callbackUrl', req.nextUrl.pathname)
-  req.nextUrl.pathname = path;
+  const prevPath = req.nextUrl.pathname;
+  req.nextUrl.searchParams.set('from', prevPath);
+  req.nextUrl.searchParams.set('callbackUrl', prevPath)
+  //req.nextUrl.pathname = path;
+  return NextResponse.rewrite(new URL(prevPath, path));
   return NextResponse.redirect(req.nextUrl)
 }
