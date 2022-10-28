@@ -54,7 +54,6 @@ module.exports = (opts)=>{
   alias["$withMiddleware"] = alias["$withMiddleware"] || path.resolve(next,"middleware","withMiddleware");
   alias["$cors"] = alias["$cors"] || path.resolve(next,"cors");
   alias["$withCors"] = path.resolve(next,"cors","withCors");
-  
   const nextConfig = {
     reactStrictMode: true,
     swcMinify: false,
@@ -66,6 +65,19 @@ module.exports = (opts)=>{
       ignoreDuringBuilds: true,
     },
     swcMinify: true,
+    async rewrites() {
+      const rewriteUrl = process.env.API_REWRITE_URL;
+      const ret = [];
+      if(isValidURL(rewriteUrl)){
+          rewriteUrl = rtrim(rewriteUrl,"/");
+          rewriteUrl = rtrim(rewriteUrl,":");
+          ret.push({
+            source: '/api/:path*',
+            destination: rewriteUrl+'/:path*',
+          });
+      }
+      return ret;
+    },
     ///cors in vercel app
     async headers() {
       const headers = [];
@@ -118,3 +130,22 @@ module.exports = (opts)=>{
   }
   return withImages(withTM(withFonts(nextConfig)));
 }
+
+const rtrim = function(current,str) {
+  if(typeof current !=="string") return "";
+  if (!(str) || typeof str !=="string") {
+      return current.trim();
+  }
+  var index = current.length;
+  while(current.endsWith(str) && index >= 0) {
+      current = current.slice(0,- str.length);
+      --index;
+  }
+  return current.toString();
+}
+
+function isValidURL(string) {
+  if(!string || typeof string !='string') return false;
+  var res = string.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
+  return (res !== null)
+};
