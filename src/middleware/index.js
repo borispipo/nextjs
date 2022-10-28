@@ -8,28 +8,13 @@
 /**@module $nmiddleware, wrapperpour middleware nextJS */
 import { NextResponse } from 'next/server'
 import middleWares from '$middlewares';
-import { getProviderSession } from '$nauth/utils/auth-cookies';
-import "$cutils/extend.prototypes";
-import {getAPIHost,getBaseHost} from "$capi/host/utils";
-
-const isObj = x=> x && typeof x=='object' && !Array.isArray(x);
+import {checkRedirect} from "./utils";
 
 /****@function  */
 export default async function middleware(req,event) {
-  const path = req.nextUrl.pathname;
-  const isAdmin = path.startsWith('/admin/');
-  const isProtected = path.contains("/protected/");
-  if(isAdmin || isProtected){
-    const redirectingPath = (isApiRoute(req)? (getAPIHost().rtrim("/")+('/auth/you-are-not-signed-in')):(getBaseHost().rtrim("/")+"/"+"auth/signin")).rtrim("/");
-    try {
-      const session = await getProviderSession(req);
-      if(!isObj(session)){
-        return redirectToPage(req,redirectingPath)
-      } 
-    } catch (error) {
-      console.error(error," checking middleware error");
-      return redirectToPage(req,redirectingPath+"?error=1&status=500&message="+error?.message)
-    }
+  const r = await checkRedirect(req);
+  if(r !== false){
+     return r;
   }
   if(typeof middleWares=='object' && middleWares){
     for await (const middle of middleWares) {
@@ -42,13 +27,3 @@ export default async function middleware(req,event) {
   return NextResponse.next();
 };
 
-const isApiRoute = (req)=> req.nextUrl.pathname.startsWith("/api/");
-
-const redirectToPage = (req,path)=>{
-  const prevPath = req.nextUrl.pathname;
-  req.nextUrl.searchParams.set('from', prevPath);
-  req.nextUrl.searchParams.set('callbackUrl', prevPath)
-  req.nextUrl.pathname = path;
-  //return NextResponse.rewrite(new URL(prevPath, path));
-  return NextResponse.redirect(req.nextUrl)
-}
