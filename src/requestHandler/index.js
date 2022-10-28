@@ -89,7 +89,7 @@ export const METHODS = {
     DELETE : true,
 }
 
-Object.map(METHODS,(method)=>{
+Object.map(METHODS,(i,method)=>{
     handleRequestWithMethod[method.toLowerCase()] = (handler,options)=>{
         return handleRequest(handler,options,method);
     }
