@@ -54,6 +54,9 @@ module.exports = (opts)=>{
   alias["$withMiddleware"] = alias["$withMiddleware"] || path.resolve(next,"middleware","withMiddleware");
   alias["$cors"] = alias["$cors"] || path.resolve(next,"cors");
   alias["$withCors"] = path.resolve(next,"cors","withCors");
+  alias["$nrequestHandler"] = path.resolve(next,"requestHandler");
+  alias["$requestHandler"] = alias["$requestHandler"] || alias["$nrequestHandler"];
+
   const nextConfig = {
     reactStrictMode: true,
     swcMinify: false,
