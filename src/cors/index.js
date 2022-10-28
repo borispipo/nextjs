@@ -10,10 +10,16 @@ export default function CorsMiddleware(req,res,options){
         return Promise.resolve({});
     }
     for(let i in requestHeaders){
-        if(!(i in options) && typeof requestHeaders[i] =='object' && requestHeaders[i] && 'value' in requestHeaders[i]){
-            options[i] = requestHeaders[i].value;
+        const header = header;
+        if(!(i in options) && typeof header =='object' && header && 'value' in header){
+            if("corsValue" in header){
+                options[i] = header.corsValue;
+            } else {
+                options[i] = header.value;
+            }
         }
     }
+    console.log(options," is options heeeeeeee");
     return new Promise((resolve,reject)=>{
         cors(options)(req, res, (result) => {
             if (result instanceof Error) {

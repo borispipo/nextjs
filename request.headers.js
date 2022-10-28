@@ -10,6 +10,7 @@ module.exports =  {
     origin : {
         key : "Access-Control-Allow-Origin",
         value : "*",
+        corsValue : true,
     },
     methods : {
         key : "Access-Control-Allow-Methods",
