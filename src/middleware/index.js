@@ -9,9 +9,16 @@
 import { NextResponse } from 'next/server'
 import middleWares from '$middlewares';
 import {checkRedirect} from "./utils";
+import cors from "$cors";
 
 /****@function  */
 export default async function middleware(req,event) {
+  const method = req.method && req.method.toUpperCase && req.method.toUpperCase();
+  if(method === 'OPTIONS'){
+      const response = NextResponse.next()
+      await cors(req,response);
+      return response;
+  }
   const r = await checkRedirect(req);
   if(r !== false){
      return r;
