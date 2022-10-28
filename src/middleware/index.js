@@ -48,7 +48,7 @@ const redirectToPage = (req,path)=>{
   const prevPath = req.nextUrl.pathname;
   req.nextUrl.searchParams.set('from', prevPath);
   req.nextUrl.searchParams.set('callbackUrl', prevPath)
-  //req.nextUrl.pathname = path;
-  return NextResponse.rewrite(new URL(prevPath, path));
+  req.nextUrl.pathname = path;
+  //return NextResponse.rewrite(new URL(prevPath, path));
   return NextResponse.redirect(req.nextUrl)
 }
