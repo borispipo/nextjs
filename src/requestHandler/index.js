@@ -4,8 +4,8 @@
 import {defaultStr,defaultObj} from "$utils";
 import cors from "$cors";
 
-/***** Execute une requête d'api avec la méthode spécifiée
- * @param {function} handler la fonction qui sera utilisée lorsque la méthode sera validée
+/***** Execute une requête d'api uniquement pour la/les méthodes spécifiée(s)
+ * @param {function} handler la fonction qui sera exécutée lorsque la/les méthode(s) sera/seront validée(s)
  * @param {{method:{string}, methods : [{string}], withCors : {boolean}}} les options supplémentaires
  *  options est de la forme : {
  *      method est la méthode valide pour la requête, lorsqu'elle est définie
@@ -22,7 +22,11 @@ export default function handleRequestWithMethod(handler,options){
     const methods = Array.isArray(options.methods)? options.methods : [];
     const {withCors,onNoMatch,noFound,onNotFound} = options;
     return async function customRouteHandler(req,res){
-        const reqMethod = defaultStr(req?.method).toLowerCase();
+        const reqMethod = defaultStr(req.method).toLowerCase();
+        if(reqMethod =="options"){
+            await cors(req,res);
+            return handler(req,res);
+        }
         let canCheck = method ? true : false;
         let hasFound = false;
         if(!canCheck && methods.length){
@@ -43,7 +47,7 @@ export default function handleRequestWithMethod(handler,options){
                 methods.push(method);
             }
             const nF = typeof onNoMatch =='function'? onNoMatch : typeof onNotFound =='function'? onNotFound : noFound;
-            console.log(req?.nextUrl?.pathname || req.url," not allowed for supported methods ",methods,req.nextUrl)
+            console.log(req?.nextUrl?.pathname || req.url," not allowed for supported methods ",methods,req.nextUrl," request method is ",reqMethod)
             if(typeof nF =='function' && nF({req,res,request:req,status:NOT_FOUND,response:res}) == false) return;
             res.status(405).json({message:"Page Non trouvée!! impossible d'exécuter la requête pour la méthode [{0}]; url : {1}, la où les méthodes supportées pour la requête sont : {2}".sprintf(req.method,req.url,methods.join(","))});
             return
