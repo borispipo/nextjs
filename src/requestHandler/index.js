@@ -16,7 +16,7 @@ import cors from "$cors";
 export default function handleRequestWithMethod(handler,options){
     options = defaultObj(options);
     let method = typeof options.method =='string' && options.method.toLowerCase() || undefined;
-    if(typeof method !=='string' || !METHODS[method2.toUpperCase()]){
+    if(typeof method !=='string' || !METHODS[method.toUpperCase()]){
         method = undefined;
     }
     const methods = Array.isArray(options.methods)? options.methods : [];
