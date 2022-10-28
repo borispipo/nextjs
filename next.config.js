@@ -70,8 +70,12 @@ module.exports = (opts)=>{
     async headers() {
       const headers = [];
       for(let i in requestHeaders){
-        if(typeof requestHeaders[i] =='object' && requestHeaders[i] && requestHeaders[i].isHeader !== false){
-          headers.push(requestHeaders[i]);
+        const header = requestHeaders[i];
+        if(typeof header =='object' && header && header.isHeader !== false){
+          headers.push({
+            key : header.key,
+            value : header.value,
+          });
         }
       }
       return [
