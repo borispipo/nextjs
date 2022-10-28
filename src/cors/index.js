@@ -10,7 +10,7 @@ export default function CorsMiddleware(req,res,options){
         return Promise.resolve({});
     }
     for(let i in requestHeaders){
-        const header = header;
+        const header = requestHeaders[i];
         if(!(i in options) && typeof header =='object' && header && 'value' in header){
             if("corsValue" in header){
                 options[i] = header.corsValue;
