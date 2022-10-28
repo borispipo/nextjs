@@ -47,10 +47,9 @@ export default function handleRequestWithMethod(handler,options){
                 methods.push(method);
             }
             const nF = typeof onNoMatch =='function'? onNoMatch : typeof onNotFound =='function'? onNotFound : noFound;
-            console.log(req?.nextUrl?.pathname || req.url," not allowed for supported methods ",methods,req.nextUrl," request method is ",reqMethod)
+            console.log(req?.nextUrl?.pathname || req.url," not allowed method ",method," supported methods are ",methods,req.nextUrl)
             if(typeof nF =='function' && nF({req,res,request:req,status:NOT_FOUND,response:res}) == false) return;
-            res.status(405).json({message:"Page Non trouvée!! impossible d'exécuter la requête pour la méthode [{0}]; url : {1}, la où les méthodes supportées pour la requête sont : {2}".sprintf(req.method,req.url,methods.join(","))});
-            return
+            return res.status(405).send({message:"Page Non trouvée!! impossible d'exécuter la requête pour la méthode [{0}]; url : {1}, la où les méthodes supportées pour la requête sont : {2}".sprintf(req.method,req.url,methods.join(","))});
         }
         if(withCors !== false){
             await cors(req,res);
