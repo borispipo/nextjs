@@ -8,46 +8,43 @@ import cors from "$cors";
  * @param {function} handler la fonction qui sera exécutée lorsque la/les méthode(s) sera/seront validée(s)
  * @param {{method:{string}, methods : [{string}], withCors : {boolean}}} les options supplémentaires
  *  options est de la forme : {
- *      method est la méthode valide pour la requête, lorsqu'elle est définie
- *      methods : sont les méthodes valides pour la requêtes lorsqu'ils sont spécifiés
+ *      method est la/les méthode(s) valide(nt) pour la requête, lorsqu'elle est définie. si plusieurs méthodes sont définies,
+ *      elle peuvent être définies dans une chaine de caractère séparées par des virgules où un tableau
  *      withCors : spécifie si le cors sera utilisé
  * }
 */
 export default function handleRequestWithMethod(handler,options){
     options = defaultObj(options);
-    let method = typeof options.method =='string' && options.method.toLowerCase() || undefined;
-    if(typeof method !=='string' || !METHODS[method.toUpperCase()]){
-        method = undefined;
-    }
-    const methods = Array.isArray(options.methods)? options.methods : [];
+    const  method = Array.isArray(options.method) ? options.method : typeof options.method =='string' && options.method.toUpperCase().split(",") || [];
+    const methods = [];
+    method.map((m,i)=>{
+        if(typeof m =='string' && m){
+            m = m.toUpperCase().trim();
+            if(METHODS[m]){
+                methods.push(m);
+            }
+        }
+    })
     const {withCors,onNoMatch,noFound,onNotFound} = options;
     return async function customRouteHandler(req,res){
-        const reqMethod = defaultStr(req.method).toLowerCase();
+        const reqMethod = defaultStr(req.method).toUpperCase().trim();
         if(reqMethod =="options"){
             await cors(req,res);
             return handler(req,res);
         }
-        let canCheck = method ? true : false;
+        let canCheck = methods.length;
         let hasFound = false;
-        if(!canCheck && methods.length){
-            canCheck = true;
+        if(canCheck){
             for(let i in methods){
-                const m = methods[i];
-                if(m && typeof m =='string' && m.toLowerCase() == reqMethod){
+                if(methods[i] == reqMethod){
                     hasFound = true;
                     break;
                 }
             }
         }
-        if(!hasFound && method){
-            hasFound = method == reqMethod ? true : false;
-        }
         if (!hasFound && canCheck) {
-            if(!methods.length){
-                methods.push(method);
-            }
             const nF = typeof onNoMatch =='function'? onNoMatch : typeof onNotFound =='function'? onNotFound : noFound;
-            console.log(req?.nextUrl?.pathname || req.url," not allowed for method <<",method,">>. supported methods are ",methods,req.nextUrl)
+            console.log(req?.nextUrl?.pathname || req.url," not allowed for method <<",req.method,">>. supported methods are ",methods,req.nextUrl)
             if(typeof nF =='function' && nF({req,res,request:req,status:NOT_FOUND,response:res}) == false) return;
             return res.status(405).send({message:"Page Non trouvée!! impossible d'exécuter la requête pour la méthode [{0}]; url : {1}, la où les méthodes supportées pour la requête sont : {2}".sprintf(req.method,req.url,methods.join(","))});
         }
