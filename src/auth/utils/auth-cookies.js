@@ -104,42 +104,41 @@
    }
    return token
  }
- export async function getUserToken(req) {
+ export function getUserToken(req) {
    let token = parseBearerToken(req) || null;
-   if(!token){
-     const authHeader = getAuthorizationHeader(req);
-     if(authHeader.startsWith('bearer ') || authHeader.startsWith('Bearer ')){
-       token = authHeader.substring(7, authHeader.length);
-       if(token) return token;
-     }
+   if(token) return token;
+   const authHeader = getAuthorizationHeader(req);
+   if(authHeader.startsWith('bearer ') || authHeader.startsWith('Bearer ')){
+     token = authHeader.substring(7, authHeader.length);
+     if(token) return token;
    }
-   return await getTokenCookie(req);
+   return getTokenCookie(req);
  }
  
  ///on peut directement passer le token en paramètre pour la vérification
  export const getProviderSession = async (req,tokenString)=>{
-   const token = typeof tokenString =='string' && tokenString || await getUserToken(req);
-   delete req.session;
-   if (!token) return null;
-   try {
-     const { payload: session } = await jose.jwtVerify(
-         token, new TextEncoder().encode(TOKEN_SECRET)
-     );
-     if(session == null || !session || typeof session.createdAt !=='number' || typeof session.maxAge !== 'number') return null;
-     const expiresAt = session.createdAt + session.maxAge * 1000
-     // Validate the expiration date of the session
-     if (Date.now() > expiresAt) {
-       return null;
-     }
-     if(typeof req.session !=='object' || !req.session){
-       req.session = session;
-     }
-     return session
-   } catch (e){
-       console.log(e," getting token");
-   }
-   return null;
- }
+  const token = typeof tokenString =='string' && tokenString || getUserToken(req);
+  delete req.session;
+  if (!token) return null;
+  try {
+    const { payload: session } = await jose.jwtVerify(
+        token, new TextEncoder().encode(TOKEN_SECRET)
+    );
+    if(session == null || !session || typeof session.createdAt !=='number' || typeof session.maxAge !== 'number') return null;
+    const expiresAt = session.createdAt + session.maxAge * 1000
+    // Validate the expiration date of the session
+    if (Date.now() > expiresAt) {
+      return null;
+    }
+    if(typeof req.session !=='object' || !req.session){
+      req.session = session;
+    }
+    return session
+  } catch (e){
+      console.log(e," getting token");
+  }
+  return null;
+}
  export const getUserSession = getProviderSession;
  export const getSession = getProviderSession;
  
