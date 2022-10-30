@@ -28,7 +28,7 @@ export default function handleRequestWithMethod(handler,options){
     const {withCors,onNoMatch,noFound,onNotFound} = options;
     return async function customRouteHandler(req,res){
         const reqMethod = defaultStr(req.method).toUpperCase().trim();
-        if(reqMethod =="options"){
+        if(reqMethod =="OPTIONS"){
             await cors(req,res);
             return handler(req,res);
         }
