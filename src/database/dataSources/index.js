@@ -18,7 +18,6 @@ export const getDataSource = (options)=>{
     let {force,type,...opts} = options;
     type = defaultStr(type,defaultDataSourceType).toLowerCase().trim();
     if(ALL[type] && isDataSource(ALL[type])){
-        console.log("has found data source",type);
         return Promise.resolve(ALL[type]);
     }
     opts.type = type;
