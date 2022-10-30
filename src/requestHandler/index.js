@@ -6,7 +6,8 @@ import cors from "$cors";
 
 /***** Execute une requête d'api uniquement pour la/les méthodes spécifiée(s)
  * @param {function} handler la fonction qui sera exécutée lorsque la/les méthode(s) sera/seront validée(s)
- * @param {{method:{string}, methods : [{string}], withCors : {boolean}}} les options supplémentaires
+ * @param {string | {method:{string}, methods : [{string}], withCors : {boolean}}} les options supplémentaires
+ *  si options est une chaine de caractère, alors celle si est considérée comme la/les méthodes supportée(s) par la requête
  *  options est de la forme : {
  *      method est la/les méthode(s) valide(nt) pour la requête, lorsqu'elle est définie. si plusieurs méthodes sont définies,
  *      elle peuvent être définies dans une chaine de caractère séparées par des virgules où un tableau
@@ -14,6 +15,9 @@ import cors from "$cors";
  * }
 */
 export default function handleRequestWithMethod(handler,options){
+    if(typeof options =='string'){
+        options = {method:options};
+    }
     options = defaultObj(options);
     const  method = Array.isArray(options.method) ? options.method : typeof options.method =='string' && options.method.toUpperCase().split(",") || [];
     const methods = [];
