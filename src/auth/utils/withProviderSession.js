@@ -11,7 +11,7 @@ import providers from "../providers";
  * si provider et handler sont les fonctions alors la fonction handler sera executée lorsque la boucle l'appel de la fonction provider sur les différents providers aura retourné true
  * @param {string} errorMessage - le message d'erreur l'orsque l'on n'est pas connecté avec ledit provider
  */
- export function withProviderSession (provider,handler,errorMessage){
+ export function withProviderSession (handler,provider,errorMessage){
     let filter = null,providerId = "";
     if(typeof provider =='string'){
        providerId = provider; 

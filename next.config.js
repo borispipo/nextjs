@@ -57,6 +57,8 @@ module.exports = (opts)=>{
   alias["$nrequestHandler"] = alias["$napiRequestHandler"] = path.resolve(next,"requestHandler");
   alias["$requestHandler"] = alias["$requestHandler"] || alias["$nrequestHandler"];
   alias["$apiRequestHandler"] = alias["$apiRequestHandler"] || alias["$nrequestHandler"];
+  alias["$nauth-cookies"] = path.resolve(next,auth,"utils","auth-cookies");
+  alias["$auth-cookies"] = alias["$auth-cookies"] || path.resolve(next,auth,"utils","$auth-cookies");
 
   const nextConfig = {
     reactStrictMode: true,

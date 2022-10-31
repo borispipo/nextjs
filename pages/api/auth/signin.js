@@ -15,7 +15,7 @@ import withCors from "$withCors";
   @apiBody {Object} ...others les données supplémentaires à passer à la fonction authorize du provider pour authentifier l'utilisateur 
 * @apiSuccess {boolean} done=true pour spécifier que l'opération s'est déroulée avec succès
 * @apiSuccess {String} token  le jetton Bearer généré pour servir lors des prochaines connexions de l'utilisateur
- * @apiVersion 1.0.0
+* @apiVersion 1.0.0
 * @apiSuccessExample Success-Response:
 *     HTTP/1.1 200 OK
 *     {

@@ -9,6 +9,13 @@
  import defaultStr from "$utils/defaultStr";
  import * as jose from 'jose';
  import {UNAUTHORIZED } from "$api/status";
+
+ import * as AuthCookies from "$auth-cokies";
+
+ /**** à partir du module auth-cookies, l'on peut étendre plusieurs fonctions relatives à la manipulation des données de session utilisateur
+  * 
+  */
+ export * from "$auth-cookies";
  
  const TOKEN_NAME = 'token'
  
@@ -149,9 +156,6 @@
          session : {
            value : session,
          },
-         isCustomer : {
-           value : session && typeof session =='object' && session.providerId =='customer'? true : false,
-         },
          isProviderSession : {
            value : (provider)=>{
                const providerId = typeof provider =='string' ? provider.toLowerCase() : typeof provider =='object' && provider && typeof provider.id =='string' && provider.id ||'';
@@ -159,6 +163,10 @@
            }
          }
      });
+     ///la fonction extendRequestWithSession est utilisée pour étendre l'objet request (req)
+     if(AuthCookies && typeof AuthCookies.extendRequestWithSession ==='function'){
+        AuthCookies.extendRequestWithSession({req,session,request:req,res,response:res});
+     }
    }
    return session;
  }
@@ -174,14 +182,6 @@
    };
  }
  
- export function withCustomerSession (handler){
-   return async function handlerWithCustomerSession(req, res,a1,a2) {
-     const session = await setSessionOnRequest(req,res);
-     if(!session || typeof session!='object' || !session.isCustomer){
-         return res.status(UNAUTHORIZED).json({message:'Vous devez vous connecter avec un compte client afin de solliciter ce type de ressource'});
-     }
-     return handler(req, res,a1,a2);
-   };
- }
- 
+ export * from "./withProviderSession";
+
  
