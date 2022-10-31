@@ -16,3 +16,5 @@ export {default} from "$cauth";
 export {default as providers} from "./providers";
 
 export * from "./providers";
+
+export * from "$auth-utils";
