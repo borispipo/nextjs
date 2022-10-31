@@ -58,6 +58,7 @@ module.exports = (opts)=>{
   alias["$requestHandler"] = alias["$requestHandler"] || alias["$nrequestHandler"];
   alias["$apiRequestHandler"] = alias["$apiRequestHandler"] || alias["$nrequestHandler"];
   alias["$nauth-cookies"] = path.resolve(next,"auth","utils","auth-cookies");
+  alias["$nauth-utils"] = path.resolve(next,"auth","utils");
   alias["$auth-cookies"] = alias["$auth-cookies"] || path.resolve(next,"auth","utils","$auth-cookies");
   /**** pour étendre la fonction utils de auth */
   alias["$auth-utils"] = alias["$auth-utils"] || path.resolve(next,"auth","utils","$auth-utils");

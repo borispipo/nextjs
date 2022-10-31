@@ -10,7 +10,7 @@
  import * as jose from 'jose';
  import {UNAUTHORIZED } from "$api/status";
 
- import * as AuthCookies from "$auth-cokies";
+ import * as AuthCookies from "$auth-cookies";
 
  /**** à partir du module auth-cookies, l'on peut étendre plusieurs fonctions relatives à la manipulation des données de session utilisateur
   * 
