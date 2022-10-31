@@ -40,7 +40,7 @@ export default createRouter().post(withCors(async (req, res) => {
       }
       const loginId = await nanoid();
       const date = new Date();
-      const geo = isObj(req.geo)? req.geo : {};
+      const geo = req.geo ? req.geo : {};
       const user = await provider.authorize({loginId,dateObject:date,date : new date.toSQLFormat(),hour:date.toSQLTimeFormat(),dateTime:date.toSQLDateTimeFormat(),req,res,request:req,geo,data:req.body,query:defaultObj(req.query)})
       if(isNonNullString(user)){
         return res.status(UNAUTHORIZED).send({message: user});
