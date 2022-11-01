@@ -138,7 +138,21 @@
       return null;
     }
     if(typeof req.session !=='object' || !req.session){
-      req.session = session;
+        Object.defineProperties(req,{
+          session : {
+            value : session,
+          },
+          isProviderSession : {
+            value : (provider)=>{
+                const providerId = typeof provider =='string' ? provider.toLowerCase() : typeof provider =='object' && provider && typeof provider.id =='string' && provider.id ||'';
+                return session && typeof session =='object' && session.providerId?.toLowerCase() === providerId ? true : false;
+            }
+          }
+      });
+      ///la fonction extendRequestWithSession est utilisée pour étendre l'objet request (req)
+      if(AuthCookies && typeof AuthCookies.extendRequestWithSession ==='function'){
+        AuthCookies.extendRequestWithSession({req,session,request:req,res,response:res});
+      }
     }
     return session
   } catch (e){
@@ -150,25 +164,7 @@
  export const getSession = getProviderSession;
  
  export const setSessionOnRequest = async (req,res)=>{
-   const session = await getProviderSession(req,res);
-   if(typeof req.session !=='object' || !req.session){
-       Object.defineProperties(req,{
-         session : {
-           value : session,
-         },
-         isProviderSession : {
-           value : (provider)=>{
-               const providerId = typeof provider =='string' ? provider.toLowerCase() : typeof provider =='object' && provider && typeof provider.id =='string' && provider.id ||'';
-               return session && typeof session =='object' && session.providerId?.toLowerCase() === providerId ? true : false;
-           }
-         }
-     });
-     ///la fonction extendRequestWithSession est utilisée pour étendre l'objet request (req)
-     if(AuthCookies && typeof AuthCookies.extendRequestWithSession ==='function'){
-        AuthCookies.extendRequestWithSession({req,session,request:req,res,response:res});
-     }
-   }
-   return session;
+   return await getProviderSession(req,res);
  }
  
  /*** hoook utile pour le rendu des contenu avec les session utilisateur */
