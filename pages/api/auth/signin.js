@@ -4,8 +4,6 @@ import {getProvider,createUserToken} from "$nauth";
 import {isObj,defaultObj,isNonNullString} from "$cutils";
 import DateLib from "$date";
 import withCors from "$withCors";
-//@see : https://github.com/ai/nanoid/ Le package nanoid est utilisé pour générer un unique id pour la session
-import { nanoid } from 'nanoid/async'
 /** 
  * @apiDefine ProiverNotFound lorsque le provider n'a pas été précisé dans les données passé à la requête
  */
@@ -38,10 +36,9 @@ export default createRouter().post(withCors(async (req, res) => {
       if(!isObj(provider) || typeof provider.authorize !== 'function'){
           return res.status(NOT_ACCEPTABLE).json({message:'Vous devez spécifier un gestionnaire d\'authentification valide'});
       }
-      const loginId = await nanoid();
       const date = new Date();
       const geo = req.geo ? req.geo : {};
-      const user = await provider.authorize({loginId,date,dateSQL : date.toSQLFormat(),timeSQL:date.toSQLTimeFormat(),dateTimeSQL:date.toSQLDateTimeFormat(),req,res,request:req,geo,data:req.body,query:defaultObj(req.query)})
+      const user = await provider.authorize({date,dateSQL : date.toSQLFormat(),timeSQL:date.toSQLTimeFormat(),dateTimeSQL:date.toSQLDateTimeFormat(),req,res,request:req,geo,data:req.body,query:defaultObj(req.query)})
       if(isNonNullString(user)){
         return res.status(UNAUTHORIZED).send({message: user});
       }
