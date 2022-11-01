@@ -16,9 +16,9 @@ export default async function middleware(req,event) {
   const method = req.method && req.method.toUpperCase && req.method.toUpperCase();
   if(method === 'OPTIONS'){
       const response = NextResponse.next()
-      console.log("returning heeeeeeeeeeeeeeeeeeee",req.nextUrl)
-      await cors(req,response);
-      return response;
+      console.log("returning heeeeeeeeeeeeeeeeeeee",req)
+      //await cors(req,response);
+      //return response;
   }
   const r = await checkRedirect(req);
   if(r !== false){
