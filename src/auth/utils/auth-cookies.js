@@ -151,7 +151,7 @@
       });
       ///la fonction extendRequestWithSession est utilisée pour étendre l'objet request (req)
       if(AuthCookies && typeof AuthCookies.extendRequestWithSession ==='function'){
-        AuthCookies.extendRequestWithSession({req,session,request:req,res,response:res});
+        AuthCookies.extendRequestWithSession({req,session,request:req});
       }
     }
     return session
