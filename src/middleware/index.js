@@ -8,7 +8,7 @@
 /**@module $nmiddleware, wrapperpour middleware nextJS */
 import { NextResponse } from 'next/server'
 import middleWares from '$middlewares';
-import {checkRedirect} from "./utils";
+import {checkRedirect} from "$nmiddleware/utils";
 import cors from "$cors";
 
 /****@function  */
