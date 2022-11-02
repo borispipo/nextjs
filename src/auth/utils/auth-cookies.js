@@ -125,7 +125,6 @@
  ///on peut directement passer le token en paramètre pour la vérification
  export const getProviderSession = async (req,tokenString)=>{
   const token = typeof tokenString =='string' && tokenString || getUserToken(req);
-  delete req.session;
   if (!token) return null;
   try {
     const { payload: session } = await jose.jwtVerify(
