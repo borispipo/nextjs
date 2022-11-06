@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "scripts": {
