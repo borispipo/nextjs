@@ -55,13 +55,9 @@ export default class BaseModel {
                 error = true;
                 message = "Le champ [{0}] est requis".sprintf(fieldTitle);
             }
-            if(typeof field.minLength =='number' && field.minLength && (value+"").length < field.minLength){
+            if(typeof field.length =='number' && field.length && (value+"").length > field.length){
                 error = true;
-                message = "Le champ [{0}] doit avoir une longueur de {1} caractères minimum".sprintf(fieldTitle,field.minLength);
-            }
-            if(typeof field.maxLength =='number' && field.maxLength && (value+"").length > field.maxLength){
-                error = true;
-                message = "Le champ [{0}] doit avoir une longueur de {1} caractères maxmimum".sprintf(fieldTitle,field.maxLength);
+                message = "Le champ [{0}] doit avoir une longueur de {1} caractères maxmimum".sprintf(fieldTitle,field.length);
             }
             if(error == true && breakOnError !== false){
                 break;
