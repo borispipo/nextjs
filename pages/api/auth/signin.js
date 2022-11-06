@@ -2,7 +2,8 @@ import {UNAUTHORIZED,NOT_ACCEPTABLE} from "$capi/status";
 import {getProvider,createUserToken} from "$nauth";
 import {isObj,defaultObj,isNonNullString} from "$cutils";
 import {post} from "$napiRequestHandler";
-import {defaultObj,defaultStr,extendObj} from "$utils";
+import {defaultObj,defaultStr,extendObj,isObj} from "$utils";
+import {isJSON,parseJSON} from "$utils/json";
 /** 
  * @apiDefine ProiverNotFound lorsque le provider n'a pas été précisé dans les données passé à la requête
  */
@@ -52,11 +53,15 @@ export default post((async (req, res,options) => {
             p[i] = prov;
         }
       });
-      const {mutator} = defaultObj(options);
+      const {mutator,beforeGenerateToken} = defaultObj(options);
       ///la fonction utilisée pour muter les données de session, ie les données qui seront retournées à l'utilisateur
       // session is the payload to save in the token, it may contain basic info about the login
       const session = { ...login,providerId:provider.id}
       delete session.password;delete session.pass;
+      session.perms = isJSON(session.perms)? parseJSON(session.perms) : defaultObj(session.perms);
+      session.preferences = isJSON(session.preferences)? parseJSON(session.preferences) : defaultObj(session.preferences);
+      ////la fonction before generate token est appelée pour personnaliser le contenu devant figurer dans le token à générer
+      const bFToken = typeof beforeGenerateToken =='function' && beforeGenerateToken(session);
       const token = await createUserToken(res, session);
       const result = { done: true,token};
       res.status(200).send(typeof mutator == 'function'? extendObj({},mutator({...result,session}),result): result);
