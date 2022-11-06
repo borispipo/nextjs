@@ -50,14 +50,22 @@ export default class BaseModel {
             if(typeof filter =='function' && filter({field,fields:fields,index:i,columnField:i,name:field.name,columnDef:field,value:data[i]}) == false) {
                 continue;
             }
+            const fieldTitle = defaultStr(field.title,field.label);
             if(field.nullable === false && value == null && !isNonNullString(value) && !isNumber(value) && !isBool(value)){
                 error = true;
-                message = "Le champ [{0}] est requis".sprintf(defaultStr(field.title,field.label));
+                message = "Le champ [{0}] est requis".sprintf(fieldTitle);
+            }
+            if(typeof field.minLength =='number' && field.minLength && (value+"").length < field.minLength){
+                error = true;
+                message = "Le champ [{0}] doit avoir une longueur de {1} caractères minimum".sprintf(fieldTitle,field.minLength);
+            }
+            if(typeof field.maxLength =='number' && field.maxLength && (value+"").length > field.maxLength){
+                error = true;
+                message = "Le champ [{0}] doit avoir une longueur de {1} caractères maxmimum".sprintf(fieldTitle,field.maxLength);
             }
             if(error == true && breakOnError !== false){
                 break;
             }
-            
             result[i] = data[i];
         }
         return {data:result,error,status,message};
