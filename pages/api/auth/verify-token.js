@@ -12,7 +12,7 @@ import withCors from "$withCors";
  * @apiBody {string} token le token a vérifier
  * @apiSuccess {object} session l'objet session correspondant à la session associé au token au cas où il est valide
  * @apiVersion 1.0.0
- * @apiSuccess {object} l'objet session rattaché au token lorsqu'il est valide
+ * @apiSuccess {object} ...session l'objet session rattaché au token lorsqu'il est valide
  */
 export default createRouter().post(withCors(async (req, res)=>{
     if(!isObj(req.body)){
