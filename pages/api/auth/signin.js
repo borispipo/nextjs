@@ -1,9 +1,8 @@
 import {UNAUTHORIZED,NOT_ACCEPTABLE} from "$capi/status";
-import { createRouter } from "$next-connect";
 import {getProvider,createUserToken} from "$nauth";
 import {isObj,defaultObj,isNonNullString} from "$cutils";
-import DateLib from "$date";
-import withCors from "$withCors";
+import {post} from "$napiRequestHandler";
+import {defaultObj,defaultStr,extendObj} from "$utils";
 /** 
  * @apiDefine ProiverNotFound lorsque le provider n'a pas été précisé dans les données passé à la requête
  */
@@ -14,8 +13,9 @@ import withCors from "$withCors";
   @apiGroup auth
   @apiBody {string} providerId l'id du provider à utiliser pour l'authentification de l'utilisateur
   @apiBody {Object} ...others les données supplémentaires à passer à la fonction authorize du provider pour authentifier l'utilisateur 
-* @apiSuccess {boolean} done=true pour spécifier que l'opération s'est déroulée avec succès
-* @apiSuccess {String} token  le jetton Bearer généré pour servir lors des prochaines connexions de l'utilisateur
+* @apiSuccess (200) {boolean} done=true pour spécifier que l'opération s'est déroulée avec succès
+* @apiSuccess (200) {String} token  le jetton Bearer généré pour servir lors des prochaines connexions de l'utilisateur
+* @apiSuccess (200) {object} ...rest les données supplémentaires liées à l'authentification de l'utilisateur, celles-ci sont fonction de l'implémentation d'un backend utilisant le boiletplate
 * @apiVersion 1.0.0
 * @apiSuccessExample Success-Response:
 *     HTTP/1.1 200 OK
@@ -25,7 +25,7 @@ import withCors from "$withCors";
 *     }
 */
 
-export default createRouter().post(withCors(async (req, res) => {
+export default post((async (req, res,options) => {
     try {
       if(!isObj(req.body)){
          res.status(NOT_ACCEPTABLE).json({message:'Vous devez spécifier un nom d\'utilisateur et un mot de pass valide'});
@@ -38,27 +38,30 @@ export default createRouter().post(withCors(async (req, res) => {
       }
       const date = new Date();
       const geo = req.geo ? req.geo : {};
-      const user = await provider.authorize({date,dateSQL : date.toSQLFormat(),timeSQL:date.toSQLTimeFormat(),dateTimeSQL:date.toSQLDateTimeFormat(),req,res,request:req,geo,data:req.body,query:defaultObj(req.query)})
-      if(isNonNullString(user)){
-        return res.status(UNAUTHORIZED).send({message: user});
+      const login = await provider.authorize({date,dateSQL : date.toSQLFormat(),timeSQL:date.toSQLTimeFormat(),dateTimeSQL:date.toSQLDateTimeFormat(),req,res,request:req,geo,data:req.body,query:defaultObj(req.query)})
+      if(isNonNullString(login)){
+        return res.status(UNAUTHORIZED).send({message: login});
       }
       ///permet d'autentifier l'utilisateur en spéfiant la méthode en paramètre
-      if(!isObj(user)){
-         return res.status(UNAUTHORIZED).send({message:'Données innexistante où mot de pass incorrect'});
+      if(!isObj(login)){
+         return res.status(UNAUTHORIZED).send({message:'Données innexistante où mot de pass incorrect pour le gestionnaire d\'autentification [{0}]'.sprintf(defaultStr(provider.label,provider.name,provider.id))});
       }
       const p = {};
       Object.map(provider,(prov,i)=>{
         if(typeof prov !== 'function' && i !=='credentials' && i !='modelName' && i!='modelNames' && typeof prov !=='object'){
             p[i] = prov;
         }
-      })
-      // session is the payload to save in the token, it may contain basic info about the user
-      const session = { ...user,providerId:provider.id}
+      });
+      const {mutator} = defaultObj(options);
+      ///la fonction utilisée pour muter les données de session, ie les données qui seront retournées à l'utilisateur
+      // session is the payload to save in the token, it may contain basic info about the login
+      const session = { ...login,providerId:provider.id}
       delete session.password;delete session.pass;
       const token = await createUserToken(res, session);
-      res.status(200).send({ done: true,token});
+      const result = { done: true,token};
+      res.status(200).send(typeof mutator == 'function'? extendObj({},mutator({...result,session}),result): result);
     } catch (error) {
-      console.error(error," authentication user")
+      console.error(error," authentication login")
       res.status(error?.status||UNAUTHORIZED).send(error)
     }
-})).handler();
+}));
