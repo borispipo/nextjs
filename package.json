@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "scripts": {
@@ -30,7 +30,7 @@
   "dependencies": {
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.5",
-    "@fto-consult/common": "^1.10.2",
+    "@fto-consult/common": "^1.11.15",
     "apidoc": "^0.53.1",
     "cookie": "^0.5.0",
     "cors": "^2.8.5",
