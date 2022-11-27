@@ -42,6 +42,9 @@ export const encryptPassword = function(password, callback) {
         if(!isNonNullString(plainPass)){
             return Promise.reject({status:false,message : 'Vous devez spécifier un mot de pass non null'});
         }
+        if(!isNonNullString(hashword)){
+            return Promise.reject({status:false,message : 'Vous devez spécifier un mot de pass de comparaison non null'});
+        }
         bcrypt.compare(plainPass, hashword, function(err, isPasswordMatch) {   
             if(typeof callback =='function'){
                 callback(err, err ? false : isPasswordMatch);
