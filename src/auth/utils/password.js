@@ -38,13 +38,13 @@ export const encryptPassword = function(password, callback) {
   * @param {function} callback la fonction de rappel 
   */
  export const comparePassword = function(plainPass, hashword, callback) {
+    if(!isNonNullString(plainPass)){
+        return Promise.reject({status:false,message : 'Vous devez spécifier un mot de pass non null'});
+    }
+    if(!isNonNullString(hashword)){
+        return Promise.reject({status:false,message : 'Vous devez spécifier un mot de pass de comparaison non null'});
+    }
     return new Promise((resolve,reject)=>{
-        if(!isNonNullString(plainPass)){
-            return Promise.reject({status:false,message : 'Vous devez spécifier un mot de pass non null'});
-        }
-        if(!isNonNullString(hashword)){
-            return Promise.reject({status:false,message : 'Vous devez spécifier un mot de pass de comparaison non null'});
-        }
         bcrypt.compare(plainPass, hashword, function(err, isPasswordMatch) {   
             if(typeof callback =='function'){
                 callback(err, err ? false : isPasswordMatch);
