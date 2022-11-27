@@ -1,7 +1,7 @@
 // Copyright 2022 @fto-consult/Boris Fouomene. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-
+import {NOT_FOUND,UNAUTHORIZED} from "$api";
 import isNonNullString from "$cutils/isNonNullString";
 
 const bcrypt = require('bcrypt');
@@ -11,7 +11,7 @@ const bcrypt = require('bcrypt');
  * @param {function} callback la fonction de rappel à utiliser lorsque le mot de passe est crypté
 */
 export const encryptPassword = function(password, callback) {
-    if(!isNonNullString(password)) return Promise.reject({status:false,message:'Vous devez spécifier un mot de pass non null'});
+    if(!isNonNullString(password)) return Promise.reject({status:UNAUTHORIZED,message:'Vous devez spécifier un mot de pass non null'});
     return new Promise((resolve,reject)=>{
         bcrypt.genSalt(10, function(err, salt) {
             if (err) {
@@ -39,10 +39,10 @@ export const encryptPassword = function(password, callback) {
   */
  export const comparePassword = function(plainPass, hashword, callback) {
     if(!isNonNullString(plainPass)){
-        return Promise.reject({status:false,message : 'Vous devez spécifier un mot de pass non null'});
+        return Promise.reject({status:UNAUTHORIZED,message : 'Vous devez spécifier un mot de pass non null'});
     }
     if(!isNonNullString(hashword)){
-        return Promise.reject({status:false,message : 'Vous devez spécifier un mot de pass de comparaison non null'});
+        return Promise.reject({status:UNAUTHORIZED,message : 'Vous devez spécifier un mot de pass de comparaison non null'});
     }
     return new Promise((resolve,reject)=>{
         bcrypt.compare(plainPass, hashword, function(err, isPasswordMatch) {   
@@ -52,7 +52,14 @@ export const encryptPassword = function(password, callback) {
             if(err){
                 return reject(err);
             }
-            resolve(isPasswordMatch);
+            if(!isPasswordMatch){
+                const error = {status:UNAUTHORIZED,message:'Mot de pass incorrect'};
+                if(typeof callback =='function'){
+                    callback(error);
+                }
+                return reject(error);
+            }
+            resolve(true);
         });
     })
  };
