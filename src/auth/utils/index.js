@@ -1,4 +1,4 @@
-import {isNonNullString} from "$cauth/utils";
+import isNonNullString from "$cutils/isNonNullString";
 export * from "$cauth/utils";
 
 export * from "./auth-cookies";
