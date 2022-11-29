@@ -36,7 +36,7 @@ export default class BaseModel {
     static buildWhere (whereClause,withStatementParams,fields){
         withStatementParams = withStatementParams || typeof withStatementParams =='boolean'? withStatementParams : {};
         fields = isObj(fields)? fields : this.fields;
-        return buildWhere(whereClause,true,withStatementParams,fields)
+        return buildWhere(whereClause,withStatementParams,fields)
     }
 
     static initialize (options){
