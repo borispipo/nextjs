@@ -99,4 +99,7 @@ export default class BaseModel {
             }).catch(reject);
         });
     }
+    static get queryBuilder(){
+        return this.dataSource.createQueryBuilder();
+    }
 }
