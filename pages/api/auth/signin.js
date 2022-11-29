@@ -60,6 +60,11 @@ export default post((async (req, res,options) => {
       delete session.password;delete session.pass;
       session.perms = isJSON(session.perms)? parseJSON(session.perms) : defaultObj(session.perms);
       session.preferences = isJSON(session.preferences)? parseJSON(session.preferences) : defaultObj(session.preferences);
+      ["firstName","lastName","pseudo","code","label",'theme','avatar','status','phone','mobile','tel','lastLoginDate','role','profile'].map(v=>{
+        if(login.hasOwnProperty(v)){
+            session[v] = login[v];
+        }
+      })
       ////la fonction before generate token est appelée pour personnaliser le contenu devant figurer dans le token à générer
       const bFToken = typeof beforeGenerateToken =='function' && beforeGenerateToken(session);
       const token = await createUserToken(res, session);
