@@ -34,7 +34,7 @@ export default class BaseModel {
     }
     /*** effectue une requête en base de données avec les options passés en paramètre */
     static buildWhere (whereClause,withStatementParams,fields){
-        withStatementParams = typeof withStatementParams =='boolean'? withStatementParams : true;
+        withStatementParams = withStatementParams || typeof withStatementParams =='boolean'? withStatementParams : {};
         fields = isObj(fields)? fields : this.fields;
         return buildWhere(whereClause,true,withStatementParams,fields)
     }
