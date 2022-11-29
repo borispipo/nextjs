@@ -47,7 +47,7 @@ const parseTable = (srcPath,destPath,paths)=>{
                             const ext = path.extname(fromPath)?.toLowerCase();
                             if(file.toLowerCase().includes("fields") && (ext =='.js' || ext =='.ts')){
                                 console.log("parsing file ", fromPath);
-                                const parentDir = path.basename(path.dirname(fromPath))?.toUpperCase();
+                                const tableName = path.basename(path.dirname(fromPath))?.toUpperCase();
                                 try {
                                     var jsContent = fs.readFileSync(fromPath)?.toString();
                                     if(!isNonNullString(jsContent)) return;
@@ -70,10 +70,14 @@ const parseTable = (srcPath,destPath,paths)=>{
                                     }
                                     if(hasFound){
                                         try {
-                                            const dPath = path.join(destPath,parentDir);
+                                            const dPath = path.join(destPath,tableName);
                                             writeFile(path.join(dPath,file),jsContent);
-                                            if(fs.existsSync(path.join(dPath,"table.js"))){
-                                                writeFile(path.join(dPath,file),"export default \"%s%\";",parentDir);
+                                            ///on crèe le fichier table name
+                                            if(!fs.existsSync(path.join(dPath,"table.js"))){
+                                                writeFile(path.join(dPath,"table.js"),"export default \"%s%\";",tableName);
+                                            }
+                                            if(!fs.existsSync(path.join(dPath,"index.js"))){
+                                                writeFile(path.join(dPath,"index.js"),"export default \n{\n\ttableName : '"+tableName+"',\n\tfields : require('./'"+file.replaceAll(ext,"")+") \"%s%\";}",tableName);
                                             }
                                         } catch{}
                                     }
