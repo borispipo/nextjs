@@ -93,8 +93,8 @@ export default class BaseModel {
     }
     /*** crère le query builder pour effectuer les requête typeorm */
     static createQueryBuilder(){
-        return this.getRepository().then((r)=>{
-            return r.createQueryBuilder(this.tableName);
+        return this.getRepository().then(async (r)=>{
+            return await r.createQueryBuilder(this.tableName);
         });
     }
 }
