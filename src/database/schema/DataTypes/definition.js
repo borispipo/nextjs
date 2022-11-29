@@ -134,3 +134,17 @@ export const TIMESPANP = {
     sql:"timestamp",
     js : "time"
 }
+
+export const SWITCH = {
+    type : "int",
+    sql : "int",
+    js : "switch",
+    dataSourceTypes : {mysql,mariadb, postgres, mssql, sqlite, cockroachdb},
+}
+
+export const CHECKBOX = {
+    type : "int",
+    sql : "int",
+    js : "checkbox",
+    dataSourceTypes : {mysql,mariadb, postgres, mssql, sqlite, cockroachdb},
+}

@@ -119,3 +119,14 @@ module.exports.TIMESPANP = {
     sql:"timestamp",
     js : "time"
 }
+module.exports.SWITCH = {
+    type : "int",
+    sql : "int",
+    js : "switch",
+}
+
+module.exports.CHECKBOX = {
+    type : "int",
+    sql : "int",
+    js : "checkbox",
+}
