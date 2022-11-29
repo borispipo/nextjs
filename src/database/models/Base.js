@@ -125,7 +125,7 @@ export default class BaseModel {
     static queryMany (queryOptions,withStatementParams,fields){
         return new Promise((resolve,reject)=>{
             this.buildQuery(queryOptions,withStatementParams,fields).then((builder)=>{
-                builder.queryMany().then(resolve).catch(reject);
+                builder.getMany().then(resolve).catch(reject);
             }).catch(reject);
         })
     }
