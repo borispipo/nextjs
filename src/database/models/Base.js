@@ -1,5 +1,6 @@
 import {isObj,defaultObj,defaultStr,isNonNullString,isNumber,isBool} from "$utils";
 import {getDataSource,isDataSource} from "../dataSources";
+import {buildWhere} from "$cutils/filters";
 
 /**** crèe un schemas de base de données 
  * @see : https://typeorm.io/usage-with-javascript
@@ -31,6 +32,13 @@ export default class BaseModel {
             return d;
         })
     }
+    /*** effectue une requête en base de données avec les options passés en paramètre */
+    static buildWhere (whereClause,withStatementParams,fields){
+        withStatementParams = typeof withStatementParams =='boolean'? withStatementParams : true;
+        fields = isObj(fields)? fields : this.fields;
+        return buildWhere(whereClause,true,withStatementParams,fields)
+    }
+
     static initialize (options){
         return this.init(options);
     }
@@ -83,5 +91,11 @@ export default class BaseModel {
     } 
     static get manager (){
         return this.dataSource.manager;
+    }
+    /*** crère le query builder pour effectuer les requête typeorm */
+    static createQueryBuilder(){
+        return this.getRepository().then((r)=>{
+            return r.createQueryBuilder(this.tableName);
+        });
     }
 }
