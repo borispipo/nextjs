@@ -6,14 +6,14 @@ import {mysql,sqlite, postgres, mssql,mariadb, oracle, cockroachdb, sap} from "$
 export const STRING = {
     type : "varchar",
     sql : "VARCHAR(255)",
-    js : "string",
+    js : "text",
     dataSourceTypes : {mysql,mariadb, postgres, mssql, sqlite, cockroachdb},
 }
 
 export const TEXT = {
     type :"text",
     sql : "TEXT",
-    js : "string",
+    js : "text",
     dataSourceTypes : {mysql,mariadb, postgres, mssql, sqlite, cockroachdb, sap}
 }
 export const TINYTEXT = {
