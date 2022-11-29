@@ -77,8 +77,10 @@ const parseTable = (srcPath,destPath,paths)=>{
                                             
                                             ///on crèe le fichier table name
                                             writeFile(tablePath,"export default \""+tableName+"\";");
-                                            const indexStr = "export default \n{\n\ttableName : require('./table').default,\n\tfields : require('./"+file.replaceAll(ext,"")+"').default,\n}";
-                                            writeFile(indexPath,indexStr);
+                                            if(!fs.existsSync(indexPath)){
+                                                const indexStr = "export default \n{\n\ttableName : require('./table').default,\n\tfields : require('./"+file.replaceAll(ext,"")+"').default,\n}";
+                                                writeFile(indexPath,indexStr);
+                                            }
                                             console.log("******************** ",fromPath, " is generated")
                                         } catch{}
                                     }
