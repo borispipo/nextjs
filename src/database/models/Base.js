@@ -104,6 +104,8 @@ export default class BaseModel {
         return new Promise((resolve,reject)=>{
             this.createQueryBuilder().then((builder)=>{
                 queryOptions = isObj(queryOptions)? queryOptions : {};
+                const sort = isObj(queryOptions.sort) ? queryOptions.sort : queryOptions.orderBy;
+                fields = isObj(fields)? fields : this.fields;
                 const where = this.buildWhere(queryOptions.where,withStatementParams,fields);
                 if(where){
                     builder.where(where);
@@ -114,6 +116,15 @@ export default class BaseModel {
                 const offset = typeof queryOptions.page =='number' && queryOptions.page || typeof queryOptions.offset =='number' && queryOptions.offset || undefined;
                 if(offset && typeof offset =='number'){
                     builder.offset(offset);
+                }
+                if(isObj(sort) && isNonNullString(sort.column)){
+                    const sortDir = isNonNullString(sort.dir) && sort.dir.toLowerCase().contains("desc") ? "DESC" : "ASC";
+                    if(isObj(fields) && isObj(fields[sort.column])){
+                        const sortColumn = fields[sort.column];
+                        if(isNonNullString(sortColumn.name)){
+                            builder.orderBy(sortColumn,sortDir);
+                        }
+                    }
                 }
                 resolve(builder);
             }).catch(reject)
