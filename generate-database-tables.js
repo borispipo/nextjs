@@ -71,14 +71,15 @@ const parseTable = (srcPath,destPath,paths)=>{
                                     if(hasFound){
                                         try {
                                             const dPath = path.join(destPath,tableName);
+                                            const tablePath = path.join(dPath,"table.js");
+                                            const indexPath = path.join(dPath,"index.js");
                                             writeFile(path.join(dPath,file),jsContent);
+                                            
                                             ///on crèe le fichier table name
-                                            if(!fs.existsSync(path.join(dPath,"table.js"))){
-                                                writeFile(path.join(dPath,"table.js"),"export default \"%s%\";",tableName);
-                                            }
-                                            if(!fs.existsSync(path.join(dPath,"index.js"))){
-                                                writeFile(path.join(dPath,"index.js"),"export default \n{\n\ttableName : '"+tableName+"',\n\tfields : require('./'"+file.replaceAll(ext,"")+") \"%s%\";}",tableName);
-                                            }
+                                            writeFile(tablePath,"export default \""+tableName+"\";");
+                                            const indexStr = "export default \n{\n\ttableName : '"+tableName+"',\n\tfields : require('./"+file.replaceAll(ext,"")+"')\n}";
+                                            writeFile(indexPath,indexStr);
+                                            console.log("******************** ",fromPath, " is generated")
                                         } catch{}
                                     }
                                 } catch(e){
