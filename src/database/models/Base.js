@@ -74,7 +74,7 @@ export default class BaseModel {
         return {data:result,error,status,message};
     }
     static getRepository(force){
-        if(this.activeRepository && force !== true) return this.activeRepository;
+        if(this.activeRepository && force !== true) return Promise.resolve(this.activeRepository);
         if(!this.isIntialized || !isDataSource(this.dataSource)){
             return this.init().then((dataSource)=>{
                 this.dataSource = dataSource;
@@ -93,13 +93,47 @@ export default class BaseModel {
     }
     /*** crère le query builder pour effectuer les requête typeorm */
     static createQueryBuilder(){
-        return new Promise((resolve,reject)=>{
-            this.getRepository().then(async (r)=>{
-                resolve(r.createQueryBuilder());
-            }).catch(reject);
-        });
+        return this.getRepository().then(r=>r.createQueryBuilder());
     }
-    static get queryBuilder(){
-        return this.dataSource.createQueryBuilder();
+    /*** retourne un object typeORM selectQueryBuilder query avec les paramètres pris en paramètres
+     * @return {object} queryOptions, les options de la requête
+     * @param {bool|object} withStatementParams
+     * @param {object} fields
+     */
+    static buildQuery(queryOptions,withStatementParams,fields){
+        return new Promise((resolve,reject)=>{
+            this.createQueryBuilder().then((builder)=>{
+                queryOptions = isObj(queryOptions)? queryOptions : {};
+                const where = this.buildWhere(queryOptions.where,withStatementParams,fields);
+                if(where){
+                    builder.where(where);
+                }
+                if(typeof queryOptions.limit =='number'){
+                    builder.limit(queryOptions.limit);
+                }
+                const offset = typeof queryOptions.page =='number' && queryOptions.page || typeof queryOptions.offset =='number' && queryOptions.offset || undefined;
+                if(offset && typeof offset =='number'){
+                    builder.offset(offset);
+                }
+                resolve(builder);
+            }).catch(reject)
+        })
+    }
+    /*** effectue une requête query avec les paramètres issues de la requête query du queryBuidler
+     * retourne plusieurs données résultat
+     */
+    static queryMany (queryOptions,withStatementParams,fields){
+        return new Promise((resolve,reject)=>{
+            this.buildQuery(queryOptions,withStatementParams,fields).then((builder)=>{
+                builder.queryMany().then(resolve).catch(reject);
+            }).catch(reject);
+        })
+    }
+    static queryOne (queryOptions,withStatementParams,fields){
+        return new Promise((resolve,reject)=>{
+            this.buildQuery(queryOptions,withStatementParams,fields).then((builder)=>{
+                builder.getOne().then(resolve).catch(reject);
+            }).catch(reject);
+        })
     }
 }
