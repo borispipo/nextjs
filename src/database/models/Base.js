@@ -122,7 +122,7 @@ export default class BaseModel {
                     if(isObj(fields) && isObj(fields[sort.column])){
                         const sortColumn = fields[sort.column];
                         if(isNonNullString(sortColumn.name)){
-                            builder.orderBy(sortColumn,sortDir);
+                            builder.orderBy(sortColumn.name,sortDir);
                         }
                     }
                 }
