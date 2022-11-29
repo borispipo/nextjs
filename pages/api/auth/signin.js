@@ -60,15 +60,15 @@ export default post((async (req, res,options) => {
       delete session.password;delete session.pass;
       session.perms = isJSON(session.perms)? parseJSON(session.perms) : defaultObj(session.perms);
       session.preferences = isJSON(session.preferences)? parseJSON(session.preferences) : defaultObj(session.preferences);
-      ["firstName","lastName","pseudo","code","label",'theme','avatar','status','phone','mobile','tel','lastLoginDate','role','profile'].map(v=>{
+      ////la fonction before generate token est appelée pour personnaliser le contenu devant figurer dans le token à générer
+      typeof beforeGenerateToken =='function' && beforeGenerateToken(session);
+      const token = await createUserToken(res, session);
+      const result = { done: true,token,perms:session.perms,preferences:session.preferences};
+      ["firstName","lastName","fullName","pseudo","code","label",'theme','avatar','status','phone','mobile','tel','lastLoginDate','role','profile'].map(v=>{
         if(login.hasOwnProperty(v)){
-            session[v] = login[v];
+            result[v] = login[v];
         }
       })
-      ////la fonction before generate token est appelée pour personnaliser le contenu devant figurer dans le token à générer
-      const bFToken = typeof beforeGenerateToken =='function' && beforeGenerateToken(session);
-      const token = await createUserToken(res, session);
-      const result = { done: true,token};
       res.status(200).send(typeof mutator == 'function'? extendObj({},mutator({...result,session}),result): result);
     } catch (error) {
       console.error(error," authentication login")
