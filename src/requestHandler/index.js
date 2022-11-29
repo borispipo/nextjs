@@ -53,9 +53,14 @@ export default function handleRequestWithMethod(handler,options){
             if(typeof nF =='function' && nF({req,res,request:req,status:NOT_FOUND,response:res}) == false) return;
             return res.status(405).send({message:"Page Non trouvée!! impossible d'exécuter la requête pour la méthode [{0}]; url : {1}, la où les méthodes supportées pour la requête sont : {2}".sprintf(req.method,req.url,methods.join(","))});
         }
+        const query = req.query;
         ///la méthode reqParser qui parse la requête url de nextjs par défaut ne prend pas en compte la recursivité, on n'est donc obligé d'utiliser une fonction qui prend en compte les query recursives
-        if(isNonNullString(req.url)){
-            req.query = getQueryParams(req.url);
+        try {
+            if(isNonNullString(req.url)){
+                req.query = getQueryParams(req.url) || query;
+            }
+        } catch(e){
+            req.query = query;
         }
         if(withCors !== false){
             await cors(req,res);
