@@ -5,13 +5,13 @@
 module.exports.STRING = {
     type : "varchar",
     sql : "VARCHAR(255)",
-    js : "string",
+    js : "text",
 }
 
 module.exports.TEXT = {
     type :"text",
     sql : "TEXT",
-    js : "string",
+    js : "text",
 }
 module.exports.TINYTEXT = {
     ...module.exports.TEXT,
