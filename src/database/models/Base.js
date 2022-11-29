@@ -108,7 +108,7 @@ export default class BaseModel {
                 if(where){
                     builder.where(where);
                 }
-                if(typeof queryOptions.limit =='number'){
+                if(typeof queryOptions.limit =='number' && queryOptions.limit){
                     builder.limit(queryOptions.limit);
                 }
                 const offset = typeof queryOptions.page =='number' && queryOptions.page || typeof queryOptions.offset =='number' && queryOptions.offset || undefined;
