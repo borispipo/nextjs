@@ -73,8 +73,8 @@ export default class BaseModel {
         }
         return {data:result,error,status,message};
     }
-    static getRepository(){
-        if(this.activeRepository) return this.activeRepository;
+    static getRepository(force){
+        if(this.activeRepository && force !== true) return this.activeRepository;
         if(!this.isIntialized || !isDataSource(this.dataSource)){
             return this.init().then((dataSource)=>{
                 this.dataSource = dataSource;
@@ -93,8 +93,10 @@ export default class BaseModel {
     }
     /*** crère le query builder pour effectuer les requête typeorm */
     static createQueryBuilder(){
-        return this.getRepository().then(async (r)=>{
-            return await r.createQueryBuilder(this.tableName);
+        return new Promise((resolve,reject)=>{
+            this.getRepository().then(async (r)=>{
+                resolve(r.createQueryBuilder());
+            }).catch(reject);
         });
     }
 }
