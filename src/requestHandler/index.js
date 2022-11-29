@@ -1,7 +1,8 @@
 // Copyright 2022 @fto-consult/Boris Fouomene. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-import {defaultStr,defaultObj} from "$utils";
+import {defaultStr,defaultObj,isNonNullString} from "$cutils";
+import {getQueryParams} from "$cutils/uri";
 import cors from "$cors";
 
 /***** Execute une requête d'api uniquement pour la/les méthodes spécifiée(s)
@@ -51,6 +52,10 @@ export default function handleRequestWithMethod(handler,options){
             console.log(req?.nextUrl?.pathname || req.url," not allowed for method <<",req.method,">>. supported methods are ",methods,req.nextUrl)
             if(typeof nF =='function' && nF({req,res,request:req,status:NOT_FOUND,response:res}) == false) return;
             return res.status(405).send({message:"Page Non trouvée!! impossible d'exécuter la requête pour la méthode [{0}]; url : {1}, la où les méthodes supportées pour la requête sont : {2}".sprintf(req.method,req.url,methods.join(","))});
+        }
+        ///la méthode reqParser qui parse la requête url de nextjs par défaut ne prend pas en compte la recursivité, on n'est donc obligé d'utiliser une fonction qui prend en compte les query recursives
+        if(isNonNullString(req.url)){
+            req.query = getQueryParams(req.url);
         }
         if(withCors !== false){
             await cors(req,res);
