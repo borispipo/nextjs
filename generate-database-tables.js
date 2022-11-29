@@ -70,7 +70,11 @@ const parseTable = (srcPath,destPath,paths)=>{
                                     }
                                     if(hasFound){
                                         try {
-                                            writeFile(path.join(destPath,parentDir,file),jsContent);
+                                            const dPath = path.join(destPath,parentDir);
+                                            writeFile(path.join(dPath,file),jsContent);
+                                            if(fs.existsSync(path.join(dPath,"table.js"))){
+                                                writeFile(path.join(dPath,file),"export default \"%s%\";",parentDir);
+                                            }
                                         } catch{}
                                     }
                                 } catch(e){
