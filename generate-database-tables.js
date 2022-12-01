@@ -29,6 +29,7 @@ module.exports  = (opts,callback)=>{
 const pp = path.join(__dirname,"src","database","schema","DataTypes","jsTypes");
 const models = require(pp);
 const parseTable = (srcPath,destPath,paths)=>{
+    paths = paths && typeof paths =='object' ? paths : {};
     return new Promise((resolve,reject)=>{
         // Loop through all the files in the temp directory
         try {
@@ -46,8 +47,8 @@ const parseTable = (srcPath,destPath,paths)=>{
                         if (stat.isFile()){
                             const ext = path.extname(fromPath)?.toLowerCase();
                             if(file.toLowerCase().includes("fields") && (ext =='.js' || ext =='.ts')){
-                                console.log("parsing file ", fromPath);
-                                const tableName = path.basename(path.dirname(fromPath))?.toUpperCase();
+                                const tbName = path.basename(path.dirname(fromPath));
+                                const tableName = tbName?.toUpperCase();
                                 try {
                                     var jsContent = fs.readFileSync(fromPath)?.toString();
                                     if(!isNonNullString(jsContent)) return;
@@ -73,6 +74,8 @@ const parseTable = (srcPath,destPath,paths)=>{
                                             const dPath = path.join(destPath,tableName);
                                             const tablePath = path.join(dPath,"table.js");
                                             const indexPath = path.join(dPath,"index.js");
+                                            const srcI18nPath = path.join(srcPath,"i18n.js");
+                                            const destI18nPath = path.join(dPath,"i18n.js");
                                             writeFile(path.join(dPath,file),jsContent);
                                             
                                             ///on crèe le fichier table name
@@ -81,6 +84,10 @@ const parseTable = (srcPath,destPath,paths)=>{
                                                 const indexStr = "export default \n{\n\ttableName : require('./table').default,\n\tfields : require('./"+file.replaceAll(ext,"")+"').default,\n}";
                                                 writeFile(indexPath,indexStr);
                                             }
+                                            if(fs.existsSync(srcI18nPath)){
+                                                writeFile(destI18nPath,fs.readFileSync(srcI18nPath)?.toString())
+                                            }
+                                            paths[srcPath]= dPath;
                                             console.log("******************** ",fromPath, " is generated")
                                         } catch{}
                                     }
@@ -98,7 +105,25 @@ const parseTable = (srcPath,destPath,paths)=>{
                         return;
                     }
                 });
-                return Promise.all(promises).then(resolve).catch(reject);
+                return Promise.all(promises).then(resolve).catch(reject).finally(()=>{
+                    let i18nstr= "import i18n from '$i18n';";
+                    let mainRoot = null;
+                    for(let srcPath in paths){
+                        const destPath = paths[srcPath];
+                        if(fs.existsSync(destPath)){
+                            const i18nP = path.join(destPath,"i18n.js");
+                            const tableName = path.basename(destPath);
+                            mainRoot = mainRoot || path.resolve(path.join(destPath,".."));
+                            if(fs.existsSync(i18nP)){
+                                i18nstr+="\n";
+                                i18nstr+="i18n.dictionary(require('./"+tableName+"/i18n').default);"
+                            }
+                        }
+                    }
+                    if(fs.existsSync(mainRoot)){
+                        writeFile(path.join(mainRoot,"i18n.js"),i18nstr);
+                    }
+                });
             });
         } catch(e){
             console.log("parsing model ",e);
