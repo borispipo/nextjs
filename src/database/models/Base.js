@@ -1,6 +1,8 @@
 import {isObj,defaultObj,defaultStr,isNonNullString,isNumber,isBool} from "$utils";
 import {getDataSource,isDataSource} from "../dataSources";
 import {buildWhere} from "$cutils/filters";
+import DateLib from "$lib/date";
+import Validator from "$lib/validate";
 
 /**** crèe un schemas de base de données 
  * @see : https://typeorm.io/usage-with-javascript
@@ -41,14 +43,19 @@ export default class BaseModel {
     static initialize (options){
         return this.init(options);
     }
-    /***validate les données pour la mise à jour */
+    /***validate les données pour la mise à jour
+     * @param {object} options les options à paser à la requête
+     * @return {Promise<object>} lorsque les donnés on été correctement validées
+     */
     static validate (options){
         options = defaultObj(options);
         const data = defaultObj(options.data);
         const result = {};
-        const fields = this.fields;
-        const {filter,breakOnError} = options;
-        let error = false,message  = '',status = undefined;
+        const fields = isObj(options.fields) && Object.size(options.field,true) ? options.fields : this.fields;
+        const {filter} = options;
+        let error = false,message  = '';
+        const errorsMessages = [];
+        const promises = [];
         for(let i in fields){
             const field = fields[i];
             if(!isObj(field)) continue;
@@ -61,17 +68,44 @@ export default class BaseModel {
             if(field.nullable === false && value == null && !isNonNullString(value) && !isNumber(value) && !isBool(value)){
                 error = true;
                 message = "Le champ [{0}] est requis".sprintf(fieldTitle);
-            }
-            if(typeof field.length =='number' && field.length && (value+"").length > field.length){
+            } else if(typeof field.length =='number' && field.length && (value+"").length > field.length){
                 error = true;
                 message = "Le champ [{0}] doit avoir une longueur de {1} caractères maxmimum".sprintf(fieldTitle,field.length);
+            } else if(typeof field.minLength =='number' && field.minLength && (value+"").length < field.minLength){
+                error = true;
+                message = "Le champ [{0}] doit avoir au moins {1} caractères".sprintf(fieldTitle,field.length);
+            } else if(typeof field.minLength =='number' && field.minLength && (value+"").length < field.minLength){
+                error = true;
+                message = "Le champ [{0}] doit avoir au moins {1} caractères".sprintf(fieldTitle,field.length);
             }
-            if(error == true && breakOnError !== false){
-                break;
+            if(error == true){
+                return Promise.reject({message,error:true});
             }
-            result[i] = data[i];
+            if(field.validType || field.validRule){
+                promises.push(new Promise((resolve,reject)=>{
+                    const context = {};
+                    Validator.validate({...field,context,value:data[i]});
+                    context.on("validatorNoValid",(args)=>{
+                        context.offAll && context.offAll();
+                        reject(args);
+                        errorsMessages.push("{0} => {1}".sprintf(fieldTitle,args.message || args.msg))
+                    });
+                    context.on("validatorValid",({value})=>{
+                        result[i] = value;
+                        context.offAll && context.offAll();
+                        resolve({[i]:value});
+                    })
+                }))
+            }
         }
-        return {data:result,error,status,message};
+        return new Promise((resolve,reject)=>{
+            Promise.all(promises).then(()=>{
+                resolve(result);
+                return result;
+            }).catch(()=>{
+                reject({message:"{0}:\n".sprintf(errorsMessages.length > 1 ? ("Les erreurs suivantes ont été générées") : "l'erreur suivante a été générée",errorsMessages.join(", "))})
+            })
+        });
     }
     static getRepository(force){
         if(this.activeRepository && force !== true) return Promise.resolve(this.activeRepository);
