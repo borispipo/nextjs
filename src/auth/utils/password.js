@@ -4,54 +4,48 @@
 import {UNAUTHORIZED} from "$api";
 import isNonNullString from "$cutils/isNonNullString";
 import { randomBytes, scryptSync } from 'crypto';
+import * as argon2 from "argon2";
+
+const hashingConfig = { // based on OWASP cheat sheet recommendations (as of March, 2022)
+    parallelism: 1,
+    memoryCost: 64000, // 64 mb
+    timeCost: 3 // number of itetations
+}
 
 /**** crypter le mot de passe passé en paramètre 
  * @param {string} password le mot de passe à crypter
- * @param {function} callback la fonction de rappel à utiliser lorsque le mot de passe est crypté
+ * @param {string} salt
+ * @param {object} les options de configuration argon2 à utiliser pour haschage
 */
 // Pass the password string and get hashed password back
 // ( and store only the hashed string in your database)
-export const encryptPassword = (password,salt) => {
+export const encryptPassword = (password,salt,hashingConfiguration) => {
     if(!isNonNullString(password)) {
-        throw {status:UNAUTHORIZED,message:'Vous devez spécifier un mot de pass non null'};
+        return Promise.reject({status:UNAUTHORIZED,message:'Vous devez spécifier un mot de pass non null'});
     }
     if(!isNonNullString(salt)){
-        salt = randomBytes(16).toString('hex');
+        salt = crypto.randomBytes(16);
     }
-    return scryptSync(password, salt, 32).toString('hex');
+    return argon2.hash(password, {
+        ...hashingConfig,
+        ...Object.assign({},hashingConfiguration),
+        salt,
+    });
 };
-/**
- * Hash password with random salt
- * @return {string} password hash followed by salt
- *  XXXX till 64 XXXX till 32
- *  
- */
- export const hashPassword = (password) => {
-    // Any random string here (ideally should be at least 16 bytes)
-    const salt = randomBytes(16).toString('hex');
-    return encryptPassword(password, salt) + salt;
-};
-
 /**
  * compare le mot de passe utilisateur passé en paramètre
  *  @param {string} password le mot de passe bruite passé en paramètre
   * @param {string} hash le mot de passe crypté enregistré en base de données
+  * @return {Promise<true>}
  */
- export const comparePassword = (password, hash) => {
+ export const comparePassword = (password, hash,hashingConfiguration) => {
     if(!isNonNullString(password)){
-        throw ({status:UNAUTHORIZED,message : 'Vous devez spécifier un mot de pass non null'});
+        return Promise.reject({status:UNAUTHORIZED,message : 'Vous devez spécifier un mot de pass non null'});
     }
     if(!isNonNullString(hash)){
-        throw ({status:UNAUTHORIZED,message : 'Vous devez spécifier un mot de pass de comparaison non null'});
+        return Promise.reject({status:UNAUTHORIZED,message : 'Vous devez spécifier un mot de pass de comparaison non null'});
     }
-    // extract salt from the hashed string
-    // our hex password length is 32*2 = 64
-    const salt = hash.slice(64);
-    const originalPassHash = hash.slice(0, 64);
-    const currentPassHash = encryptPassword(password, salt);
-    const isEquals = originalPassHash === currentPassHash;
-    if(!isEquals){
-        throw ({status:UNAUTHORIZED,message : 'Mot de pass incorrect'});
-    }
-    return isEquals;
+    return argon2.verify(hash, password, {...hashingConfig,...Object.assign({},hashingConfiguration)})
 };
+
+export const verifyPassword = comparePassword;
