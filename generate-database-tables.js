@@ -4,6 +4,7 @@
 const isNonNullString = x=> x && typeof x =='string';
 const fs = require("fs");
 const path = require("path");
+const StringBuilder = require("string-builder");
 /**** cette fonction prend en paramètre un dossier, options srcPath puis parcoures tous les fichiers du dossiers et sous dossiers
  * à la recherche des models correspondants, les fichier ui héritents de la classe BaseModel
  * elle générera les champs correpondants à la table définit dans le fichier .fields du model en question
@@ -107,21 +108,76 @@ const parseTable = (srcPath,destPath,paths)=>{
                 });
                 return Promise.all(promises).then(resolve).catch(reject).finally(()=>{
                     let i18nstr= "import i18n from '$i18n';";
-                    let mainRoot = null;
+                    let rootPath = null;
+                    tablesBuilder.appendLine("export default {");
+                    const getTalbebuilder = new StringBuilder();
+                    const getAccordionPropsBuilder = new StringBuilder();
+                    let hasTables = false,hasAccordionProps = false;
                     for(let srcPath in paths){
                         const destPath = paths[srcPath];
                         if(fs.existsSync(destPath)){
                             const i18nP = path.join(destPath,"i18n.js");
                             const tableName = path.basename(destPath);
-                            mainRoot = mainRoot || path.resolve(path.join(destPath,".."));
+                            rootPath = rootPath || path.resolve(path.join(destPath,".."));
+                            if (!hasTables)
+                            {
+                                hasTables = true;
+                                getTalbebuilder.appendLine("export default (tableName)=>{");
+                                getTalbebuilder.appendLine("\tif(!isNonNullString(tableName)) return null;");
+                                getTalbebuilder.appendLine("\ttableName = tableName.toUpperCase().trim();");
+                                getTalbebuilder.appendLine("\tswitch(tableName){");
+                            }
+                            getTalbebuilder.appendLine("\t\tcase {0}:{try{ return require('./{1}').default;} catch{return null;}}".sprintf(table.NameInJavascript.EscapeDoubleQuote(), table.NameInJavascript));
+                            
+                            const accordionExist = fs.existsSync(path.join(srcPath, "accordion.js"));
+                            const accordionPropsExist = fs.existsSync(path.join(srcPath, "accordionProps.js"));
                             if(fs.existsSync(i18nP)){
                                 i18nstr+="\n";
                                 i18nstr+="i18n.dictionary(require('./"+tableName+"/i18n').default);"
                             }
+                            if(accordionExist || accordionPropsExist)
+                            {
+                                if (!hasAccordionProps)
+                                {
+                                    hasAccordionProps = true;
+                                    getAccordionPropsBuilder.appendLine("export default (tableName)=>{");
+                                    getAccordionPropsBuilder.appendLine("\tif(!isNonNullString(tableName)) return null;");
+                                    getAccordionPropsBuilder.appendLine("\ttableName = tableName.toUpperCase().trim();");
+                                    getAccordionPropsBuilder.appendLine("\tswitch(tableName){");
+                                }
+                                getAccordionPropsBuilder.appendLine("\t\tcase {0}: return {".sprintf(table.NameInJavascript.EscapeDoubleQuote(), table.NameInJavascript));
+                                if (accordionExist)
+                                {
+                                    getAccordionPropsBuilder.appendLine("\t\t\t{0}:require('./{1}/accordion').default,".sprintf("accordion".EscapeDoubleQuote(),table.NameInJavascript));
+                                }
+                                if (accordionPropsExist)
+                                {
+                                    getAccordionPropsBuilder.appendLine("\t\t\t{0}:require('./{1}/accordionProps').default,".sprintf("accordionProps".EscapeDoubleQuote(), table.NameInJavascript));
+                                }
+                                ///on ferme la clause du case
+                                getAccordionPropsBuilder.appendLine("\t\t};");
+                            }
                         }
                     }
-                    if(fs.existsSync(mainRoot)){
-                        writeFile(path.join(mainRoot,"i18n.js"),i18nstr);
+                    if(fs.existsSync(rootPath)){
+                        if (hasTables)
+                        {
+                            ///on ferme la clause switch
+                            getTalbebuilder.appendLine("\t}");
+                            ///on ferme la clause d'ouverture de la fonction
+                            getTalbebuilder.appendLine("}");
+                            writeFile(path.join(rootPath, "getTable.js"), getTalbebuilder.toString, true);
+                        }
+                        if (hasAccordionProps)
+                        {
+                            ///on ferme la clause switch
+                            getAccordionPropsBuilder.appendLine("\t}");
+                            getAccordionPropsBuilder.appendLine("\treturn undefined;");
+                            ///on ferme la clause d'ouverture de la fonction
+                            getAccordionPropsBuilder.appendLine("}");
+                            writeFile(path.join(rootPath, "getAccordionProps.js"), getAccordionPropsBuilder.toString(), true);
+                        }
+                        writeFile(path.join(rootPath,"i18n.js"),i18nstr);
                     }
                 });
             });
@@ -145,4 +201,20 @@ function writeFile(path, contents, cb) {
     return fs.writeFileSync(path, contents, cb);
   }
   throw {message : 'impossible de créer le repertoire '+p};
+}
+
+String.prototype.sprintf = function ()
+{
+    const args = Array.prototype.slice.call(arguments,0);
+    const str = this.toString();
+    if (!(str)) return "";
+    args.map((s,index)=>{
+        if(typeof s !='string'){
+            if(s === null) s = "";
+            s = s?.toString() || '';
+        }
+        const replace = s ? "" : (!s? "" : s);
+        str = str.Replace("{" + index + "}", replace);
+    });
+    return str;
 }
