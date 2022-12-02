@@ -148,9 +148,15 @@ const parseTable = (srcPath,destPath,paths)=>{
                                 if (accordionExist)
                                 {
                                     getAccordionPropsBuilder.appendLine("\t\t\t{0}:require('./{1}/accordion').default,".sprintf("accordion".escapeDoubleQuotes(),tableName));
+                                    if(!fs.existsSync(path.join(destPath,"accordion.js"))){
+                                        writeFile(path.join(destPath,"accordion.js"),fs.readFileSync(path.join(srcPath, "accordion.js")).toString())
+                                    }
                                 }
                                 if (accordionPropsExist)
                                 {
+                                    if(!fs.existsSync(path.join(destPath,"accordionProps.js"))){
+                                        writeFile(path.join(destPath,"accordionProps.js"),fs.readFileSync(path.join(srcPath, "accordionProps.js")).toString())
+                                    }
                                     getAccordionPropsBuilder.appendLine("\t\t\t{0}:require('./{1}/accordionProps').default,".sprintf("accordionProps".escapeDoubleQuotes(), tableName));
                                 }
                                 ///on ferme la clause du case
