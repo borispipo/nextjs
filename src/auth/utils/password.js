@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 import {UNAUTHORIZED} from "$api";
 import isNonNullString from "$cutils/isNonNullString";
-import { randomBytes, scryptSync } from 'crypto';
+import * as crypto from "crypto";
 import * as argon2 from "argon2";
 
 const hashingConfig = { // based on OWASP cheat sheet recommendations (as of March, 2022)
