@@ -46,7 +46,13 @@ export const encryptPassword = (password,salt,hashingConfiguration) => {
         return Promise.reject({status:UNAUTHORIZED,message : 'Vous devez spécifier un mot de pass de comparaison non null'});
     }
     return new Promise((resolve,reject)=>{
-        argon2.verify(hash, password, {...hashingConfig,...Object.assign({},hashingConfiguration)}).then(resolve).catch((e)=>{
+        argon2.verify(hash, password, {...hashingConfig,...Object.assign({},hashingConfiguration)}).then((r)=>{
+            if(!r){
+                reject({message:'Mot de pass incorrect',status:UNAUTHORIZED})
+            } else {
+                resolve(true);
+            }
+        }).catch((e)=>{
             reject({error:e,message:'Mot de pass incorrect',status:UNAUTHORIZED})
         });
     })
