@@ -1,12 +1,9 @@
 // Copyright 2022 @fto-consult/Boris Fouomene. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-import {NOT_FOUND,UNAUTHORIZED} from "$api";
+import {UNAUTHORIZED} from "$api";
 import isNonNullString from "$cutils/isNonNullString";
 import { randomBytes, scryptSync } from 'crypto';
-
-const bcrypt = require('bcrypt');
-//@see : https://stackoverflow.com/questions/19822643/what-is-an-alternative-for-bcrypt-to-use-with-node
 
 /**** crypter le mot de passe passé en paramètre 
  * @param {string} password le mot de passe à crypter
