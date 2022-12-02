@@ -52,5 +52,9 @@ export const encryptPassword = (password,salt) => {
     const salt = hash.slice(64);
     const originalPassHash = hash.slice(0, 64);
     const currentPassHash = encryptPassword(password, salt);
-    return originalPassHash === currentPassHash;
+    const isEquals = originalPassHash === currentPassHash;
+    if(!isEquals){
+        throw ({status:UNAUTHORIZED,message : 'Mot de pass incorrect'});
+    }
+    return isEquals;
 };
