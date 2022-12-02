@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "1.15.1",
+  "version": "1.16.0",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "scripts": {
@@ -31,11 +31,11 @@
   "dependencies": {
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.5",
-    "@fto-consult/common": "^1.15.1",
+    "@fto-consult/common": "^1.16.0",
     "apidoc": "^0.53.1",
-    "bcrypt": "^5.1.0",
     "cookie": "^0.5.0",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "jose": "^4.10.3",
     "mysql2": "^2.3.3",
     "next": "^12.3.1",
@@ -48,6 +48,7 @@
     "react-dom": "^18.2.0",
     "reflect-metadata": "^0.1.13",
     "sanitize-filename": "^1.6.3",
+    "string-builder": "^0.1.8",
     "typeorm": "^0.3.10"
   },
   "apidoc": {
