@@ -3,34 +3,27 @@
 // license that can be found in the LICENSE file.
 import {UNAUTHORIZED} from "$api";
 import isNonNullString from "$cutils/isNonNullString";
-import * as crypto from "crypto";
-import * as argon2 from "argon2";
+const bcrypt = require('bcrypt');
 
-const hashingConfig = { // based on OWASP cheat sheet recommendations (as of March, 2022)
-    parallelism: 1,
-    memoryCost: 64000, // 64 mb
-    timeCost: 3 // number of itetations
-}
+export const saltRounds = 10;
 
 /**** crypter le mot de passe passé en paramètre 
+ * @see : https://github.com/kelektiv/node.bcrypt.js
  * @param {string} password le mot de passe à crypter
- * @param {string} salt
- * @param {object} les options de configuration argon2 à utiliser pour haschage
+ * @param {string|number} salt
 */
-// Pass the password string and get hashed password back
-// ( and store only the hashed string in your database)
-export const encryptPassword = (password,salt,hashingConfiguration) => {
+export const encryptPassword = (password,salt) => {
     if(!isNonNullString(password)) {
         return Promise.reject({status:UNAUTHORIZED,message:'Vous devez spécifier un mot de pass non null'});
     }
-    if(!isNonNullString(salt)){
-        salt = crypto.randomBytes(16);
+    if(isNonNullString(salt)){
+        return new Promise((resolve,reject)=>{
+            return bcrypt.genSalt(saltRounds).then((salt2)=>{
+                return bcrypt.hash(password, salt2).then(resolve);
+            }).catch(reject);  
+        })
     }
-    return argon2.hash(password, {
-        ...hashingConfig,
-        ...Object.assign({},hashingConfiguration),
-        salt,
-    });
+    return bcrypt.hash(password, salt && typeof salt =='number'? salt : saltRounds);
 };
 /**
  * compare le mot de passe utilisateur passé en paramètre
@@ -38,7 +31,7 @@ export const encryptPassword = (password,salt,hashingConfiguration) => {
   * @param {string} hash le mot de passe crypté enregistré en base de données
   * @return {Promise<true>}
  */
- export const comparePassword = (password, hash,hashingConfiguration) => {
+ export const comparePassword = (password, hash) => {
     if(!isNonNullString(password)){
         return Promise.reject({status:UNAUTHORIZED,message : 'Vous devez spécifier un mot de pass non null'});
     }
@@ -46,14 +39,15 @@ export const encryptPassword = (password,salt,hashingConfiguration) => {
         return Promise.reject({status:UNAUTHORIZED,message : 'Vous devez spécifier un mot de pass de comparaison non null'});
     }
     return new Promise((resolve,reject)=>{
-        argon2.verify(hash, password, {...hashingConfig,...Object.assign({},hashingConfiguration)}).then((r)=>{
-            if(!r){
-                reject({message:'Mot de pass incorrect',status:UNAUTHORIZED})
+        const rError = {message:'Mot de pass incorrect',status:UNAUTHORIZED};
+        bcrypt.compare(password, hash).then((isMatch)=>{
+            if(!isMatch){
+                reject(rError)
             } else {
                 resolve(true);
             }
         }).catch((e)=>{
-            reject({error:e,message:'Mot de pass incorrect',status:UNAUTHORIZED})
+            reject({error:e,...rError})
         });
     })
 };
