@@ -111,25 +111,31 @@ const parseTable = (srcPath,destPath,paths)=>{
                     let rootPath = null;
                     const getTableBuilder = new StringBuilder();
                     const getAccordionPropsBuilder = new StringBuilder();
-                    let hasTables = false,hasAccordionProps = false;
+                    const tablePermsBuilder = new StringBuilder();
+                    let hasTables = false,hasAccordionProps = false,hasPerms = false;
+                    
                     for(let srcPath in paths){
                         const destPath = paths[srcPath];
                         if(fs.existsSync(destPath)){
                             const i18nP = path.join(destPath,"i18n.js");
                             const tableName = path.basename(destPath);
                             rootPath = rootPath || path.resolve(path.join(destPath,".."));
+                            const ctBuilder = new StringBuilder();
+                            ctBuilder.appendLine("import {isNonNullString} from '$utils';\nexport default (tableName)=>{");
+                            ctBuilder.appendLine("\tif(!isNonNullString(tableName)) return null;");
+                            ctBuilder.appendLine("\ttableName = tableName.toUpperCase().trim();");
+                            ctBuilder.appendLine("\tswitch(tableName){");
+                            const defaultBuilderStr = ctBuilder.toString();
                             if (!hasTables)
                             {
                                 hasTables = true;
-                                getTableBuilder.appendLine("import {isNonNullString} from '$utils';\nexport default (tableName)=>{");
-                                getTableBuilder.appendLine("\tif(!isNonNullString(tableName)) return null;");
-                                getTableBuilder.appendLine("\ttableName = tableName.toUpperCase().trim();");
-                                getTableBuilder.appendLine("\tswitch(tableName){");
+                                getTableBuilder.appendLine(defaultBuilderStr);
                             }
                             getTableBuilder.appendLine("\t\tcase {0}:{try{ return require('./{1}').default;} catch{return null;}}".sprintf(tableName.escapeDoubleQuotes(), tableName));
                             
                             const accordionExist = fs.existsSync(path.join(srcPath, "accordion.js"));
                             const accordionPropsExist = fs.existsSync(path.join(srcPath, "accordionProps.js"));
+                            const permsExist = fs.existsSync(path.join(srcPath, "perms.js"));
                             if(fs.existsSync(i18nP)){
                                 i18nstr+="\n";
                                 i18nstr+="i18n.dictionary(require('./"+tableName+"/i18n').default);"
@@ -139,10 +145,7 @@ const parseTable = (srcPath,destPath,paths)=>{
                                 if (!hasAccordionProps)
                                 {
                                     hasAccordionProps = true;
-                                    getAccordionPropsBuilder.appendLine("import {isNonNullString} from '$utils';\nexport default (tableName)=>{");
-                                    getAccordionPropsBuilder.appendLine("\tif(!isNonNullString(tableName)) return null;");
-                                    getAccordionPropsBuilder.appendLine("\ttableName = tableName.toUpperCase().trim();");
-                                    getAccordionPropsBuilder.appendLine("\tswitch(tableName){");
+                                    getAccordionPropsBuilder.appendLine(defaultBuilderStr);
                                 }
                                 getAccordionPropsBuilder.appendLine("\t\tcase {0}: return {".sprintf(tableName.escapeDoubleQuotes(), tableName));
                                 if (accordionExist)
@@ -161,6 +164,15 @@ const parseTable = (srcPath,destPath,paths)=>{
                                 }
                                 ///on ferme la clause du case
                                 getAccordionPropsBuilder.appendLine("\t\t};");
+                            }
+                            if(permsExist){
+                                if (!hasPerms)
+                                {
+                                    hasPerms = true;
+                                    tablePermsBuilder.appendLine("export default {");
+                                }
+                                tablePermsBuilder.appendLine("\t{0}:require('./{1}/perms').default,".sprintf("perms".escapeDoubleQuotes(),tableName));
+                                writeFile(path.join(destPath,"perms.js"),fs.readFileSync(path.join(srcPath, "perms.js")).toString())
                             }
                         }
                     }
@@ -181,6 +193,11 @@ const parseTable = (srcPath,destPath,paths)=>{
                             ///on ferme la clause d'ouverture de la fonction
                             getAccordionPropsBuilder.appendLine("}");
                             writeFile(path.join(rootPath, "getAccordionProps.js"), getAccordionPropsBuilder.toString());
+                        }
+                        if (hasPerms)
+                        {
+                            tablePermsBuilder.appendLine("}");
+                            writeFile(path.join(rootPath, "perms.js"), tablePermsBuilder.toString());
                         }
                         writeFile(path.join(rootPath,"i18n.js"),i18nstr);
                     }
