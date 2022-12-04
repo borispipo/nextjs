@@ -31,7 +31,7 @@ export default function handleRequestWithMethod(handler,options){
         }
     })
     const {withCors,onNoMatch,noFound,onNotFound} = options;
-    return async function customRouteHandler(req,res){
+    return async function customRouteHandler(req,res,a1,a2,a3,a4,a5){
         const reqMethod = defaultStr(req.method).toUpperCase().trim();
         if(reqMethod =="OPTIONS"){
             await cors(req,res);
@@ -65,7 +65,7 @@ export default function handleRequestWithMethod(handler,options){
         if(withCors !== false){
             await cors(req,res);
         }
-        return typeof handler =='function'? handler(req,res) : null;
+        return typeof handler =='function'? handler(req,res,a1,a2,a3,a4,a5) : null;
     }
 }   
 
