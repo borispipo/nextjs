@@ -69,7 +69,11 @@ export default post((async (req, res,options) => {
             result[v] = login[v];
         }
       })
-      res.status(200).send(typeof mutator == 'function'? extendObj({},mutator({...result,session}),result): result);
+      const r = typeof mutator == 'function'? await mutator({...result,session}) : null; 
+      if(r){
+        extendObj(true,result,r);
+      };
+      res.status(200).send(result);
     } catch (error) {
       console.error(error," authentication login")
       res.status(error?.status||UNAUTHORIZED).send(error)
