@@ -64,7 +64,7 @@ export default post((async (req, res,options) => {
       typeof beforeGenerateToken =='function' && beforeGenerateToken(session);
       const token = await createUserToken(res, session);
       const result = { done: true,token,perms:session.perms,preferences:session.preferences};
-      ["firstName","lastName","fullName","pseudo","code","label",'theme','avatar','status','phone','mobile','tel','lastLoginDate','role','profile'].map(v=>{
+      ["firstName","lastName","fullName","pseudo","isMasterAdmin","code","label",'theme','avatar','status','phone','mobile','tel','lastLoginDate','role','profile'].map(v=>{
         if(login.hasOwnProperty(v)){
             result[v] = login[v];
         }
