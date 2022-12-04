@@ -95,6 +95,8 @@ export default class BaseModel {
                         resolve({[i]:value});
                     })
                 }))
+            } else {
+                result[i] = value;
             }
         }
         return new Promise((resolve,reject)=>{
