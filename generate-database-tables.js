@@ -89,7 +89,7 @@ const parseTable = (srcPath,destPath,paths)=>{
                                                 writeFile(destI18nPath,fs.readFileSync(srcI18nPath)?.toString())
                                             }
                                             paths[srcPath]= dPath;
-                                            console.log("******************** ",fromPath, " is generated")
+                                            console.log("******************** ",tableName, " is generated")
                                         } catch{}
                                     }
                                 } catch(e){
