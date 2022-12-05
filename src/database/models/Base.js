@@ -61,17 +61,16 @@ export default class BaseModel {
         for(let i in fields){
             const field = fields[i];
             if(!isObj(field)) continue;
-            if(!(i in data)) continue;
             let value = data[i];
-            if(field.createBy === true || field.updateBy === true){
+            if(!value && (field.createBy === true || field.updateBy === true)){
                 const loginId = defaultStr(session.loginId).trim();
-                if(!value && loginId){
-                    if(typeof field.length != 'number' || (typeof field.length =='number' && loginId.length <= field.length)){
-                        value = loginId;    
-                    }   
+                if(loginId && (typeof field.length != 'number' || (typeof field.length =='number' && loginId.length <= field.length))){
+                    value = loginId;
                 }
             }    
-            console.log("validating ",value,i,data[i],field);
+            if((!(i in data)) && !value) {
+                continue;
+            }
             if(typeof filter =='function' && filter({field,fields:fields,index:i,columnField:i,name:field.name,columnDef:field,value:data[i]}) == false) {
                 continue;
             }

@@ -179,7 +179,7 @@ export function save(Model,options){
     }
     options = defaultObj(options);
     const {method,mutate,getData,beforeValidate,validateOptions,beforeSave} = options;
-    return getMethod(method,put)(async(req,res)=>{
+    return getMethod(method,put)(withSession(async(req,res)=>{
         const data = typeof getData =='function' ? defaultObj(getData({req,request:req,res,response:res})) : defaultObj(req.body.data);
         const args = {req,request:req,res,response:res,data};
         try {
@@ -198,7 +198,7 @@ export function save(Model,options){
         } catch(e){
             return res.status(INTERNAL_SERVER_ERROR).json({error:e,message:e.message})
         }
-    });
+    }));
 }
 
 export const upsert = save;
