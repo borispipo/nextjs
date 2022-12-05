@@ -187,7 +187,7 @@ export function save(Model,options){
                 await beforeValidate(data);
             }
             await Model.init();
-            const d = await Model.validate({...defaultObj(validateOptions),data});
+            const d = await Model.validate({...defaultObj(validateOptions),session:req.session,req,data});
             if(typeof beforeSave =='function'){
                 await beforeSave(d);
             }
