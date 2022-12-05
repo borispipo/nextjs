@@ -220,7 +220,7 @@ export function count(Model,options){
         options = {mutate:options};
     }
     options = defaultObj(options);
-    const {findOptions, getFindOptions,method} = options;
+    let {findOptions, getFindOptions,method} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
         findOptions = typeof getFindOptions =='function' ? defaultObj(getFindOptions({req,request:req,res,response:res})) : defaultObj(findOptions);
         try {
