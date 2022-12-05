@@ -201,4 +201,34 @@ export function save(Model,options){
     }));
 }
 
+
 export const upsert = save;
+
+/*** renvoie un requestHandler permettant de compter le nombre d'éléments d'une correspondant au model passé en paramètre
+ * @param {ModelInstance} Model, le model à utiliser pour l'enregistrement des données
+ * les données à enregistrer doivent être passées dans l'objet data du
+ * @param {object} options les options supplémentaires à utiliser
+ *      {
+ *      method {string} la méthode que doit utiliser le handler de requête
+ *      findOptions {object} les options à utilier pour effectuer la requête
+ *      getFindOptions {function} la fonction permettant de récupéerr les options
+ * }
+ * par défaut, utilise génère un handler écoutant la méthode put de requestHandler pour l'enregistrement des données
+*/
+export function count(Model,options){
+    if(typeof options =='function'){
+        options = {mutate:options};
+    }
+    options = defaultObj(options);
+    const {findOptions, getFindOptions,method} = options;
+    return getMethod(method,get)(withSession(async(req,res)=>{
+        findOptions = typeof getFindOptions =='function' ? defaultObj(getFindOptions({req,request:req,res,response:res})) : defaultObj(findOptions);
+        try {
+            await Model.init();
+            const count = await Model.repository.count(findOptions);
+            return res.json({count});
+        } catch(e){
+            return res.status(INTERNAL_SERVER_ERROR).json({error:e,message:e.message})
+        }
+    }));
+}
