@@ -117,7 +117,7 @@ module.exports.TIMESTAMP = {
     ...module.exports.DATE,
     type : "timestamp",
     sql:"timestamp",
-    js : "time"
+    js : "datetime"
 }
 module.exports.SWITCH = {
     type : "int",
