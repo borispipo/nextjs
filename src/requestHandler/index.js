@@ -111,8 +111,8 @@ Object.map(METHODS,(i,method)=>{
     }
 });
 
-export const getMethod = (method)=>{
-    return isNonNullstring(method) && handleRequestWithMethod[method.trim().toLowerCase()] || null;
+export const getMethod = (method,defaultMethod)=>{
+    return isNonNullstring(method) && handleRequestWithMethod[method.trim().toLowerCase()] || defaultMethod;
 }
 
 /**** effectue une requête queryMany directement en base de données
@@ -130,8 +130,8 @@ function _queryMany (Model,options,cb){
         options = {mutate:options};
     }
     options = defaultObj(options);
+    const {method,mutate,mutateQuery,getQuery} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
-        const {mutate,mutateQuery,getQuery} = options;
         const query = typeof getQuery == 'function' ? defaultObj(getQuery({req,request:req,res,response:res})) : defaultObj(req.query);
         if(typeof mutateQuery =='function'){
             mutateQuery(query);
@@ -178,8 +178,7 @@ export function save(Model,options){
     }
     options = defaultObj(options);
     const {method,mutate,getData,beforeValidate,validateOptions,beforeSave} = options;
-    const cb = isNonNullstring(method) && typeof requestHandler[method.trim().toLowerCase()] =='function'&& requestHandler[method.trim().toLowerCase()] || put;
-    return cb(async(req,res)=>{
+    return getMethod(method,put)(async(req,res)=>{
         const data = typeof getData =='function' ? defaultObj(getData({req,request:req,res,response:res})) : defaultObj(req.body.data);
         try {
             if(typeof mutate =='function'){
