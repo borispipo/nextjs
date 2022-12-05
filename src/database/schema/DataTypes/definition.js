@@ -128,7 +128,7 @@ export const DATETIME = {
     sql : "datetime",
     js : "datetime",
 }
-export const TIMESPANP = {
+export const TIMESPAMP = {
     ...DATE,
     type : "timestamp",
     sql:"timestamp",
