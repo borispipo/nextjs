@@ -132,14 +132,15 @@ function _queryMany (Model,options,cb){
     options = defaultObj(options);
     const {method,mutate,mutateQuery,getQuery} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
-        const query = typeof getQuery == 'function' ? defaultObj(getQuery({req,request:req,res,response:res})) : defaultObj(req.query);
+        const query = typeof getQuery == 'function' ? defaultObj(getQuery(args)) : defaultObj(req.query);
+        const args = {req,request:req,res,response:res,query};
         if(typeof mutateQuery =='function'){
-            mutateQuery(query);
+            await mutateQuery(query,args);
         }
         try {
             const data = await Model[cb||'queryMany'](query);
             if(typeof mutate =='function'){
-                await mutate(data);
+                await mutate(data,args);
             }
             return res.status(SUCCESS).json({data});
         } catch (e){
@@ -180,16 +181,17 @@ export function save(Model,options){
     const {method,mutate,getData,beforeValidate,validateOptions,beforeSave} = options;
     return getMethod(method,put)(async(req,res)=>{
         const data = typeof getData =='function' ? defaultObj(getData({req,request:req,res,response:res})) : defaultObj(req.body.data);
+        const args = {req,request:req,res,response:res,data};
         try {
             if(typeof mutate =='function'){
-                await mutate(data);
+                await mutate(data,args);
             } else if(typeof beforeValidate =='function'){
-                await beforeValidate(data);
+                await beforeValidate(data,args);
             }
             await Model.init();
             const d = await Model.validate({...defaultObj(validateOptions),session:req.session,req,data});
             if(typeof beforeSave =='function'){
-                await beforeSave(d);
+                await beforeSave(d,args);
             }
             const updated = await Model.repository.save(d);
             return res.json({data:updated});
