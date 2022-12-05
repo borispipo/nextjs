@@ -132,7 +132,7 @@ export const TIMESPAMP = {
     ...DATE,
     type : "timestamp",
     sql:"timestamp",
-    js : "time"
+    js : "datetime"
 }
 
 export const SWITCH = {
