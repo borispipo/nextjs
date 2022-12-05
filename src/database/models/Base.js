@@ -61,6 +61,7 @@ export default class BaseModel {
         for(let i in fields){
             const field = fields[i];
             if(!isObj(field)) continue;
+            if(!(i in data)) continue;
             let value = data[i];
             if(field.createBy === true || field.updateBy === true){
                 const loginId = defaultStr(session.loginId).trim();
@@ -69,8 +70,8 @@ export default class BaseModel {
                         value = loginId;    
                     }   
                 }
-            }
-            if(!(i in data) && !value) continue;
+            }    
+            console.log("validating ",value,i,data[i],field);
             if(typeof filter =='function' && filter({field,fields:fields,index:i,columnField:i,name:field.name,columnDef:field,value:data[i]}) == false) {
                 continue;
             }
@@ -91,6 +92,7 @@ export default class BaseModel {
             if(error == true){
                 return Promise.reject({message,error:true});
             }
+            
             
             if(field.validType || field.validRule){
                 promises.push(new Promise((resolve,reject)=>{
