@@ -70,7 +70,7 @@ export default class BaseModel {
                     }   
                 }
             }
-            if(!(i in data)) continue;
+            if(!(i in data) && !value) continue;
             if(typeof filter =='function' && filter({field,fields:fields,index:i,columnField:i,name:field.name,columnDef:field,value:data[i]}) == false) {
                 continue;
             }
