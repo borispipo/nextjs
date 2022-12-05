@@ -4,6 +4,8 @@
 import {defaultStr,defaultObj,isNonNullString} from "$cutils";
 import {getQueryParams} from "$cutils/uri";
 import cors from "$cors";
+import {SUCCESS,INTERNAL_SERVER_ERROR} from "$capi/status";
+import {withSession} from "$nauth";
 
 /***** Execute une requête d'api uniquement pour la/les méthodes spécifiée(s)
  * @param {function} handler la fonction qui sera exécutée lorsque la/les méthode(s) sera/seront validée(s)
@@ -108,3 +110,92 @@ Object.map(METHODS,(i,method)=>{
         return handleRequest(handler,options,method);
     }
 });
+
+export const getMethod = (method)=>{
+    return isNonNullstring(method) && handleRequestWithMethod[method.trim().toLowerCase()] || null;
+}
+
+/**** effectue une requête queryMany directement en base de données
+ * @param {ModelInstance} Model, le model à utiliser pour effectuer la requête
+ * @param {object} options les options supplémentaires pour effectuer la requête
+ *      de la forme : 
+ *       { mutate : {function} la fonction de rappel à appeler pour la mutation des données récupérées en bd
+ *         mutateQuery {function} une fonction permettant de muter l'objet req.query avavant d'exécuer la requête en base de données
+ *         getQuery {function} la fonction à utiliser pour récupérer la requête query à utiliser pour le queryMany|| querySingle
+ *       }
+ * @return la fonction de rappel, handler permettant d'exécuter la requête queryMany en s'appuyant sur le model passé en paramètre
+ */
+function _queryMany (Model,options,cb){
+    if(typeof options =='function'){
+        options = {mutate:options};
+    }
+    options = defaultObj(options);
+    return getMethod(method,get)(withSession(async(req,res)=>{
+        const {mutate,mutateQuery,getQuery} = options;
+        const query = typeof getQuery == 'function' ? defaultObj(getQuery({req,request:req,res,response:res})) : defaultObj(req.query);
+        if(typeof mutateQuery =='function'){
+            mutateQuery(query);
+        }
+        try {
+            const data = await Model[cb||'queryMany'](query);
+            if(typeof mutate =='function'){
+                await mutate(data);
+            }
+            return res.status(SUCCESS).json({data});
+        } catch (e){
+            console.log(e," found exception on api ",req.nextUrl?.basePath);
+            return res.status(INTERNAL_SERVER_ERROR).json({message:e.message,error:e});
+        }
+    }))
+}
+
+/**** retourne un requestHandler permettant d'effectuer un queryMany en base de données */
+export function queryMany(Model,options){
+    return _queryMany(Model,options,'queryMany');
+}
+
+/*** retourne le requestHandler permettant d'effectuer un queryOne en base de données*/
+export function queryOne (Model,options){
+    return _queryMany(Model,options,'queryOne');
+}
+
+/*** renvoie un requestHandler permettant d'enregistrer en base de données les données issues des options de requête req.body
+ * @param {ModelInstance} Model, le model à utiliser pour l'enregistrement des données
+ * les données à enregistrer doivent être passées dans l'objet data du
+ * @param {object} options les options supplémentaires à utiliser
+ *      {
+ *      method {string} la méthode que doit utiliser le handler de requête
+ *      validateOptions {object} les options supplémentaires à passer à la fonction validate du model
+ *      mutate | beforeValidate {function} la fonction supplémentaire à utiliser pour muter les données avant validation
+ *      beforeSave {function} la fonction de mutation a appéler avant l'enregistrement des données
+ *      getData {function}, la fonction permettant de récupérer l'objet à enregistrer en bd
+ * }
+ * par défaut, utilise génère un handler écoutant la méthode put de requestHandler pour l'enregistrement des données
+*/
+export function save(Model,options){
+    if(typeof options =='function'){
+        options = {mutate:options};
+    }
+    options = defaultObj(options);
+    const {method,mutate,getData,beforeValidate,validateOptions,beforeSave} = options;
+    const cb = isNonNullstring(method) && typeof requestHandler[method.trim().toLowerCase()] =='function'&& requestHandler[method.trim().toLowerCase()] || put;
+    return cb(async(req,res)=>{
+        const data = typeof getData =='function' ? defaultObj(getData({req,request:req,res,response:res})) : defaultObj(req.body.data);
+        try {
+            if(typeof mutate =='function'){
+                await mutate(data);
+            } else if(typeof beforeValidate =='function'){
+                await beforeValidate(data);
+            }
+            await Model.init();
+            const d = await Model.validate({...defaultObj(validateOptions),data});
+            if(typeof beforeSave =='function'){
+                await beforeSave(d);
+            }
+            const updated = await Model.repository.save(d);
+            return res.json({data:updated});
+        } catch(e){
+            return res.status(INTERNAL_SERVER_ERROR).json({error:e,message:e.message})
+        }
+    });
+}
