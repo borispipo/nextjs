@@ -112,7 +112,7 @@ Object.map(METHODS,(i,method)=>{
 });
 
 export const getMethod = (method,defaultMethod)=>{
-    return isNonNullstring(method) && handleRequestWithMethod[method.trim().toLowerCase()] || defaultMethod;
+    return isNonNullString(method) && handleRequestWithMethod[method.trim().toLowerCase()] || defaultMethod;
 }
 
 /**** effectue une requête queryMany directement en base de données
