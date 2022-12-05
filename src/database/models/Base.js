@@ -195,4 +195,18 @@ export default class BaseModel {
             }).catch(reject);
         })
     }
+    static getRawOne(queryOptions){
+        return new Promise((resolve,reject)=>{
+            this.buildQuery(queryOptions).then((builder)=>{
+                builder.getRawOne().then(resolve).catch(reject);
+            }).catch(reject);
+        })
+    }
+    static count (FindOptions){
+        return new Promise((resolve,reject)=>{
+            this.getRepository().then((r)=>{
+                return r.count(FindOptions).then(resolve);
+            }).catch(reject);
+        })
+    }
 }
