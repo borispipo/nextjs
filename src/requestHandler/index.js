@@ -198,3 +198,5 @@ export function save(Model,options){
         }
     });
 }
+
+export const upsert = save;

@@ -45,10 +45,13 @@ export default class BaseModel {
     /***validate les données pour la mise à jour
      * @param {object} options les options à paser à la requête
      * @return {Promise<object>} lorsque les donnés on été correctement validées
+     * Prise en compte du champ loginId devent être rendu par le provider au moment de l'authentification de l'utilisateur
+        le champ loginId permet de garder l'informatioin sur l'id de l'utilisateur connecté à un moment donné il peut être utiliser pour populate les valeurs des champs de type createBy et updateBy
      */
     static validate (options){
         options = defaultObj(options);
         const data = defaultObj(options.data);
+        const session = defaultObj(options.session);
         const result = {};
         const fields = isObj(options.fields) && Object.size(options.field,true) ? options.fields : this.fields;
         const {filter} = options;
@@ -59,7 +62,15 @@ export default class BaseModel {
             const field = fields[i];
             if(!isObj(field)) continue;
             if(!(i in data)) continue;
-            const value = data[i];
+            let value = data[i];
+            if(field.createBy === true || field.updateBy === true){
+                const loginId = defaultStr(session.loginId).trim();
+                if(!value && loginId){
+                    if(typeof field.length != 'number' || (typeof field.length =='number' && loginId.length <= field.length)){
+                        value = loginId;    
+                    }   
+                }
+            }
             if(typeof filter =='function' && filter({field,fields:fields,index:i,columnField:i,name:field.name,columnDef:field,value:data[i]}) == false) {
                 continue;
             }
@@ -80,6 +91,7 @@ export default class BaseModel {
             if(error == true){
                 return Promise.reject({message,error:true});
             }
+            
             if(field.validType || field.validRule){
                 promises.push(new Promise((resolve,reject)=>{
                     const context = {};
