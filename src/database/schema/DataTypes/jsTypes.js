@@ -113,7 +113,7 @@ module.exports.DATETIME = {
     sql : "datetime",
     js : "datetime",
 }
-module.exports.TIMESPAMP = {
+module.exports.TIMESTAMP = {
     ...module.exports.DATE,
     type : "timestamp",
     sql:"timestamp",
