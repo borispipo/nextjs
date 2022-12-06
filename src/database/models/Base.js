@@ -64,7 +64,7 @@ export default class BaseModel {
             if(!isObj(field)) continue;
             let value = data[i];
             if(field.updateDate === true){
-                value = new Date().toSQLDatetimeFormat();
+                value = new Date().toSQLDateTime();
             }
             if((field.updateBy === true) || (!value && field.createBy === true)){
                 const loginId = defaultStr(session.loginId).trim();
