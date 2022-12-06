@@ -77,8 +77,11 @@ const parseTable = (srcPath,destPath,paths)=>{
                                             const indexPath = path.join(dPath,"index.js");
                                             const srcI18nPath = path.join(srcPath,"i18n.js");
                                             const destI18nPath = path.join(dPath,"i18n.js");
+                                            const typesPath = path.join(dPath,"types.js");
                                             writeFile(path.join(dPath,file),jsContent);
-                                            
+                                            if(fs.existsSync(path.join(srcPath,"types.js"))){
+                                                writeFile(typesPath,fs.readFileSync(path.join(srcPath,"types.js"))?.toString())
+                                            }
                                             ///on crèe le fichier table name
                                             writeFile(tablePath,"export default \""+tableName+"\";");
                                             if(!fs.existsSync(indexPath)){
