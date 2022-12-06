@@ -62,7 +62,7 @@ export default class BaseModel {
             const field = fields[i];
             if(!isObj(field)) continue;
             let value = data[i];
-            if(!value && (field.createBy === true || field.updateBy === true)){
+            if((field.updateBy === true) || (!value && field.createBy === true)){
                 const loginId = defaultStr(session.loginId).trim();
                 if(loginId && (typeof field.length != 'number' || (typeof field.length =='number' && loginId.length <= field.length))){
                     value = loginId;
