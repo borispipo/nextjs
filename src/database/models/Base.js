@@ -2,6 +2,7 @@ import {isObj,defaultObj,defaultStr,isNonNullString,isNumber,isBool} from "$util
 import {getDataSource,isDataSource} from "../dataSources";
 import {buildWhere} from "$cutils/filters";
 import Validator from "$lib/validator";
+import DateLib from "$date";
 
 /**** crèe un schemas de base de données 
  * @see : https://typeorm.io/usage-with-javascript
@@ -62,6 +63,9 @@ export default class BaseModel {
             const field = fields[i];
             if(!isObj(field)) continue;
             let value = data[i];
+            if(field.updateDate === true){
+                value = new Date().toSQLDatetimeFormat();
+            }
             if((field.updateBy === true) || (!value && field.createBy === true)){
                 const loginId = defaultStr(session.loginId).trim();
                 if(loginId && (typeof field.length != 'number' || (typeof field.length =='number' && loginId.length <= field.length))){
