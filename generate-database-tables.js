@@ -67,7 +67,7 @@ const parseTable = (srcPath,destPath,paths)=>{
                                         const st = "DataTypes."+m.toUpperCase()+".type";
                                         if(jsContent.includes(st)){
                                             hasFound = true;
-                                            jsContent = jsContent.replaceAll(st,"'"+mm.js+"'");
+                                            jsContent = replaceAll(jsContent,st,"'"+mm.js+"'");
                                         }
                                     }
                                     if(hasFound){
@@ -209,7 +209,9 @@ const parseTable = (srcPath,destPath,paths)=>{
         }
     })
 }
-
+const replaceAll = function(str,find, replace) {
+    return str.split(find).join(replace)
+}
 const getDirName = require('path').dirname;
 
 function writeFile(path, contents, cb) {
