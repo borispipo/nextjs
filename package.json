@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "1.18.6",
+  "version": "1.19.1",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "scripts": {
@@ -29,7 +29,6 @@
   },
   "homepage": "https://github.com/borispipo/nextjs#readme",
   "dependencies": {
-    "@babel/plugin-proposal-decorators": "^7.20.5",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.5",
     "@fto-consult/common": "^1.19.8",

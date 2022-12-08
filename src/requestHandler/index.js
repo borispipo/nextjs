@@ -1,7 +1,7 @@
 // Copyright 2022 @fto-consult/Boris Fouomene. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-import {defaultStr,defaultObj,isNonNullString} from "$cutils";
+import {defaultStr,defaultObj,isNonNullString,isObj} from "$cutils";
 import {getQueryParams} from "$cutils/uri";
 import cors from "$cors";
 import {SUCCESS,INTERNAL_SERVER_ERROR} from "$capi/status";
@@ -135,14 +135,15 @@ function _queryMany (Model,options,cb){
         const query = typeof getQuery == 'function' ? defaultObj(getQuery(args)) : defaultObj(req.query);
         const args = {req,request:req,res,response:res,query};
         if(typeof mutateQuery =='function'){
-            await mutateQuery(query,args);
+            await mutateQuery(args);
         }
         try {
             const data = await Model[cb||'queryMany'](query);
+            const result = isObj(data) && ('data' in data && 'total' in data && 'count' in data) ? data : {data};
             if(typeof mutate =='function'){
-                await mutate(data,args);
+                await mutate(result,args);
             }
-            return res.status(SUCCESS).json({data});
+            return res.status(SUCCESS).json(result);
         } catch (e){
             console.log(e," found exception on api ",req.nextUrl?.basePath);
             return res.status(INTERNAL_SERVER_ERROR).json({message:e.message,error:e});
@@ -184,14 +185,14 @@ export function save(Model,options){
         const args = {req,request:req,res,response:res,data};
         try {
             if(typeof mutate =='function'){
-                await mutate(data,args);
+                await mutate(args);
             } else if(typeof beforeValidate =='function'){
-                await beforeValidate(data,args);
+                await beforeValidate(args);
             }
             await Model.init();
             const d = await Model.validate({...defaultObj(validateOptions),session:req.session,req,data});
             if(typeof beforeSave =='function'){
-                await beforeSave(d,args);
+                await beforeSave({...args,data:d});
             }
             const updated = await Model.repository.save(d);
             return res.json({data:updated});

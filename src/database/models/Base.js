@@ -184,15 +184,38 @@ export default class BaseModel {
     }
     /*** effectue une requête query avec les paramètres issues de la requête query du queryBuidler
      * retourne plusieurs données résultat
+     *  withTotal, si l'on retournera le résutat avec le total
      */
     static queryMany (queryOptions,withStatementParams,fields){
         return new Promise((resolve,reject)=>{
-            this.buildQuery(queryOptions,withStatementParams,fields).then((builder)=>{
+            queryOptions = defaultObj(queryOptions);
+            const withTotal = queryOptions.withTotal;
+            if(withTotal){
+                Promise.all([
+                    new Promise((succcess,error)=>{
+                        this.buildQuery(queryOptions,withStatementParams,fields).then((builder)=>{
+                            builder.getMany().then(succcess).catch(error);
+                        }).catch(error);
+                    }),
+                    new Promise((succcess,error)=>{
+                        this.buildQuery({...queryOptions,limit:undefined,page:undefined,offset:undefined},withStatementParams,fields).then((builder)=>{
+                            builder.getCount().then((total)=>{
+                                succcess(total);
+                            }).catch(error);
+                        }).catch(error);
+                    })
+                ]).then(([data,total])=>{
+                    resolve({data,total,count:total});
+                }).catch(reject);
+            }
+            return this.buildQuery(queryOptions,withStatementParams,fields).then((builder)=>{
                 builder.getMany().then(resolve).catch(reject);
             }).catch(reject);
         })
     }
     static queryOne (queryOptions,withStatementParams,fields){
+        queryOptions = defaultObj(queryOptions);
+        queryOptions.withTotal = false;
         return new Promise((resolve,reject)=>{
             this.buildQuery(queryOptions,withStatementParams,fields).then((builder)=>{
                 builder.getOne().then(resolve).catch(reject);
@@ -200,6 +223,8 @@ export default class BaseModel {
         })
     }
     static getRawOne(queryOptions){
+        queryOptions = defaultObj(queryOptions);
+        queryOptions.withTotal = false;
         return new Promise((resolve,reject)=>{
             this.buildQuery(queryOptions).then((builder)=>{
                 builder.getRawOne().then(resolve).catch(reject);
