@@ -191,7 +191,7 @@ export default class BaseModel {
             queryOptions = defaultObj(queryOptions);
             const withTotal = queryOptions.withTotal;
             if(withTotal){
-                Promise.all([
+                return Promise.all([
                     new Promise((succcess,error)=>{
                         this.buildQuery(queryOptions,withStatementParams,fields).then((builder)=>{
                             builder.getMany().then(succcess).catch(error);
