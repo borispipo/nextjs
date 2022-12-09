@@ -266,4 +266,18 @@ export default class BaseModel {
             }).catch(reject);
         })
     }
+    static save (data,op1,op2){
+        return new Promise((resolve,reject)=>{
+            return this.getRepository().then((r)=>{
+                return r.save(data,op1,op2).then(resolve);
+            }).catch(reject);
+        })
+    }
+    static upsert (data,op1,op2){
+        return new Promise((resolve,reject)=>{
+            return this.getRepository().then((r)=>{
+                return r.upsert(data,op1,op2).then(resolve);
+            }).catch(reject);
+        })
+    }
 }
