@@ -1,4 +1,4 @@
-import {isObj,defaultObj,defaultStr,isNonNullString,isNumber,isBool} from "$utils";
+import {isObj,defaultObj,defaultStr,defaultVal,isNonNullString,isNumber,isBool} from "$utils";
 import {getDataSource,isDataSource} from "../dataSources";
 import {buildWhere} from "$cutils/filters";
 import Validator from "$lib/validator";
@@ -162,12 +162,20 @@ export default class BaseModel {
                 if(where){
                     builder.where(where);
                 }
-                if(typeof queryOptions.limit =='number' && queryOptions.limit){
-                    builder.limit(queryOptions.limit);
-                }
-                const offset = typeof queryOptions.page =='number' && queryOptions.page || typeof queryOptions.offset =='number' && queryOptions.offset || undefined;
-                if(offset && typeof offset =='number'){
-                    builder.offset(offset);
+                if(queryOptions.limit){
+                    try {
+                        const limit = typeof queryOptions.limit =='number'? queryOptions.limit : parseInt(queryOptions.limit);
+                        if(limit && limit >= 1){
+                            builder.limit(Math.floor(limit));
+                            const offset = defaultVal(queryOptions.offset,queryOptions.page);
+                            if(offset){
+                                const off = typeof offset =='number'? offset : parseInt(offset);
+                                if(off && off >= 0){
+                                    builder.offset(Math.floor(off));
+                                }
+                            }
+                        }
+                    } catch{}
                 }
                 if(isObj(sort) && isNonNullString(sort.column)){
                     const sortDir = isNonNullString(sort.dir) && sort.dir.toLowerCase().contains("desc") ? "DESC" : "ASC";
