@@ -32,7 +32,7 @@ export default function handleRequestWithMethod(handler,options){
             }
         }
     })
-    const {withCors,onNoMatch,noFound,onNotFound} = options;
+    const {withCors,onNoMatch,noFound,parseQuery,onNotFound} = options;
     return async function customRouteHandler(req,res,a1,a2,a3,a4,a5){
         const reqMethod = defaultStr(req.method).toUpperCase().trim();
         if(reqMethod =="OPTIONS"){
@@ -57,12 +57,14 @@ export default function handleRequestWithMethod(handler,options){
         }
         const query = req.query;
         ///la méthode reqParser qui parse la requête url de nextjs par défaut ne prend pas en compte la recursivité, on n'est donc obligé d'utiliser une fonction qui prend en compte les query recursives
-        try {
-            if(isNonNullString(req.url)){
-                req.query = getQueryParams(req.url) || query;
+        ///on peut par défaut interdire de parser le query, en passant la variable parseQuery à false
+        if(parseQuery !== false && isNonNullString(req.url)){
+            try {
+                const q = getQueryParams(req.url);
+                req.query =  Object.size(q,true)? q : query;
+            } catch(e){
+                req.query = query;
             }
-        } catch(e){
-            req.query = query;
         }
         if(withCors !== false){
             await cors(req,res);
@@ -120,8 +122,7 @@ export const getMethod = (method,defaultMethod)=>{
  * @param {object} options les options supplémentaires pour effectuer la requête
  *      de la forme : 
  *       { mutate : {function} la fonction de rappel à appeler pour la mutation des données récupérées en bd
- *         mutateQuery {function} une fonction permettant de muter l'objet req.query avavant d'exécuer la requête en base de données
- *         getQuery {function} la fonction à utiliser pour récupérer la requête query à utiliser pour le queryMany|| querySingle
+ *        getQuery {function} la fonction à utiliser pour récupérer la requête query à utiliser pour le queryMany|| querySingle
  *       }
  * @return la fonction de rappel, handler permettant d'exécuter la requête queryMany en s'appuyant sur le model passé en paramètre
  */
@@ -130,13 +131,10 @@ function _queryMany (Model,options,cb){
         options = {mutate:options};
     }
     options = defaultObj(options);
-    const {method,mutate,mutateQuery,getQuery} = options;
+    const {method,mutate,getQuery} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
         const query = typeof getQuery == 'function' ? defaultObj(getQuery(args)) : defaultObj(req.query);
         const args = {req,request:req,res,response:res,query};
-        if(typeof mutateQuery =='function'){
-            await mutateQuery(args);
-        }
         try {
             const data = await Model[cb||'queryMany'](query);
             const result = isObj(data) && ('data' in data && 'total' in data && 'count' in data) ? data : {data};
@@ -148,7 +146,7 @@ function _queryMany (Model,options,cb){
             console.log(e," found exception on api ",req.nextUrl?.basePath);
             return res.status(INTERNAL_SERVER_ERROR).json({message:e.message,error:e});
         }
-    }))
+    },options))
 }
 
 /**** retourne un requestHandler permettant d'effectuer un queryMany en base de données */
@@ -199,7 +197,7 @@ export function save(Model,options){
         } catch(e){
             return res.status(INTERNAL_SERVER_ERROR).json({error:e,message:e.message})
         }
-    }));
+    },options));
 }
 
 
@@ -231,5 +229,41 @@ export function count(Model,options){
         } catch(e){
             return res.status(INTERNAL_SERVER_ERROR).json({error:e,message:e.message})
         }
-    }));
+    },options));
+}
+
+/**** effectue une requête find|findOne en base de données */
+function _find (Model,options,cb){
+    if(typeof options =='function'){
+        options = {mutate:options};
+    }
+    options = defaultObj(options);
+    options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : false;
+    const {method,mutate,getFindOptions} = options;
+    return getMethod(method,get)(withSession(async(req,res)=>{
+        const args = {req,request:req,res,response:res};
+        const findOptions = typeof getFindOptions == 'function' ? defaultObj(getFindOptions(args)) : defaultObj(req.query);
+        args.findOptions = findOptions;
+        try {
+            const data = await Model[cb||'find'](findOptions);
+            const result = {data};
+            if(typeof mutate =='function'){
+                await mutate(result,args);
+            }
+            return res.status(SUCCESS).json(result);
+        } catch (e){
+            console.log(e," found exception on api ",req.nextUrl?.basePath);
+            return res.status(INTERNAL_SERVER_ERROR).json({message:e.message,error:e});
+        }
+    },options))
+}
+
+/**** retourne un requestHandler permettant d'effectuer un queryMany en base de données */
+export function find(Model,options){
+    return _find(Model,options,'find');
+}
+
+/*** retourne le requestHandler permettant d'effectuer un queryOne en base de données*/
+export function findOne (Model,options){
+    return _find(Model,options,'findOne');
 }

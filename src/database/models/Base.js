@@ -221,6 +221,26 @@ export default class BaseModel {
             }).catch(reject);
         })
     }
+    /**** cherche les entities qui match les options findOptions
+     * @see : https://typeorm.io/repository-api
+     */
+    static find (findOptions){
+        return new Promise((resolve,reject)=>{
+            this.getRepository().then((r)=>{
+                return r.find(findOptions).then(resolve);
+            }).catch(reject);
+        })
+    }
+    /**** cherche une entitie qui match les options findOptions
+     * @see : https://typeorm.io/repository-api
+     */
+    static findOne (findOptions){
+        return new Promise((resolve,reject)=>{
+            this.getRepository().then((r)=>{
+                return r.findOne(findOptions).then(resolve);
+            }).catch(reject);
+        })
+    }
     static queryOne (queryOptions,withStatementParams,fields){
         queryOptions = defaultObj(queryOptions);
         queryOptions.withTotal = false;
