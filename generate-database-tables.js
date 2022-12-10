@@ -85,7 +85,7 @@ const parseTable = (srcPath,destPath,paths)=>{
                                             ///on crèe le fichier table name
                                             writeFile(tablePath,"export default \""+tableName+"\";");
                                             if(!fs.existsSync(indexPath)){
-                                                const indexStr = "export default \n{\n\ttableName : require('./table').default,\n\tfields : require('./"+file.replaceAll(ext,"")+"').default,\n}";
+                                                const indexStr = "export default \n{\n\ttableName : require('./table').default,\n\tfields : require('./"+replaceAll(file,ext,"")+"').default,\n}";
                                                 writeFile(indexPath,indexStr);
                                             }
                                             if(fs.existsSync(srcI18nPath)){
@@ -93,7 +93,9 @@ const parseTable = (srcPath,destPath,paths)=>{
                                             }
                                             paths[srcPath]= dPath;
                                             console.log("******************** ",tableName, " is generated")
-                                        } catch{}
+                                        } catch(e){
+                                            console.log(e," is eeeeeeee");
+                                        }
                                     }
                                 } catch(e){
                                     console.log(e," parsing model",fromPath);
