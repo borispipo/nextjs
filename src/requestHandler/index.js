@@ -132,8 +132,8 @@ function _queryMany (Model,options,cb){
     return getMethod(method,get)(withSession(async(req,res)=>{
         try {
             const query = typeof getQuery == 'function' ? defaultObj(await getQuery(args)) : defaultObj(req.query);
-            const args = {req,request:req,res,response:res,query};
-            const data = await Model[cb||'queryMany']({...rest,...query});
+            const args = {req,request:req,res,response:res,query,session:req.session,req};
+            const data = await Model[cb||'queryMany']({...rest,...args,...query});
             const result = isObj(data) && ('data' in data && 'total' in data && 'count' in data) ? data : {data};
             if(typeof mutate =='function'){
                 await mutate(result,args);
@@ -174,7 +174,7 @@ export function save(Model,options){
     const {method,mutate,getData,beforeValidate,validateOptions,beforeSave,beforeUpsert,...rest} = options;
     return getMethod(method,put)(withSession(async(req,res)=>{
         const data = typeof getData =='function' ? defaultObj(getData({req,request:req,res,response:res})) : defaultObj(req.body.data);
-        const args = {req,request:req,res,response:res,data};
+        const args = {req,request:req,res,response:res,session:req.session,req,data};
         try {
             if(typeof mutate =='function'){
                 await mutate(args);
@@ -182,7 +182,7 @@ export function save(Model,options){
                 await beforeValidate(args);
             }
             await Model.init();
-            const d = await Model.validate({...rest,...defaultObj(validateOptions),session:req.session,req,data});
+            const d = await Model.validate({...rest,...args,...defaultObj(validateOptions),data});
             const bef = typeof beforeSave =='function'? beforeSave : typeof beforeUpsert =='function'? beforeUpsert : null;
             if(bef){
                 await bef({...args,data:d});
@@ -213,7 +213,7 @@ export function count(Model,options){
     options = prepareOptions(options);
     let {findOptions, getFindOptions,method} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
-        findOptions = typeof getFindOptions =='function' ? defaultObj(getFindOptions({req,request:req,res,response:res})) : defaultObj(findOptions);
+        findOptions = typeof getFindOptions =='function' ? defaultObj(getFindOptions({req,request:req,res,response:res,session:req.session,req})) : defaultObj(findOptions);
         try {
             await Model.init();
             const count = await Model.repository.count(findOptions);
@@ -230,11 +230,11 @@ function _find (Model,options,cb){
     options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : false;
     const {method,mutate,getFindOptions,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
-        const args = {req,request:req,res,response:res};
+        const args = {req,request:req,res,response:res,session:req.session,req};
         const findOptions = typeof getFindOptions == 'function' ? await defaultObj(getFindOptions(args)) : defaultObj(req.query);
         args.findOptions = findOptions;
         try {
-            const data = await Model[cb||'find']({...rest,...findOptions});
+            const data = await Model[cb||'find']({...rest,...args,...findOptions,req});
             const result = {data};
             if(typeof mutate =='function'){
                 await mutate(result,args);

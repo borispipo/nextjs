@@ -188,7 +188,7 @@ export default class BaseModel {
                     }
                 }
                 const mtator = typeof queryBuilderMutator =='function'? queryBuilderMutator : typeof mutateQueryBuilder =='function'? mutateQueryBuilder : undefined;
-                const m = mtator && mtator(builder,{queryOptions});
+                const m = mtator && mtator(builder,queryOptions);
                 if(isPromise(m)){
                     return m.then((e)=>{
                         resolve(builder);
