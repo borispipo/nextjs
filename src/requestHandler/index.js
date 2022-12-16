@@ -1,7 +1,7 @@
 // Copyright 2022 @fto-consult/Boris Fouomene. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-import {defaultStr,defaultObj,isNonNullString,isObj} from "$cutils";
+import {defaultStr,extendObj,defaultObj,isNonNullString,isObj} from "$cutils";
 import {getQueryParams} from "$cutils/uri";
 import cors from "$cors";
 import {SUCCESS,INTERNAL_SERVER_ERROR} from "$capi/status";
@@ -127,10 +127,7 @@ export const getMethod = (method,defaultMethod)=>{
  * @return la fonction de rappel, handler permettant d'exécuter la requête queryMany en s'appuyant sur le model passé en paramètre
  */
 function _queryMany (Model,options,cb){
-    if(typeof options =='function'){
-        options = {mutate:options};
-    }
-    options = defaultObj(options);
+    options = prepareOptions(options);
     const {method,mutate,getQuery,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
         try {
@@ -173,10 +170,7 @@ export function queryOne (Model,options){
  * par défaut, utilise génère un handler écoutant la méthode put de requestHandler pour l'enregistrement des données
 */
 export function save(Model,options){
-    if(typeof options =='function'){
-        options = {mutate:options};
-    }
-    options = defaultObj(options);
+    options = prepareOptions(options);
     const {method,mutate,getData,beforeValidate,validateOptions,beforeSave,beforeUpsert,...rest} = options;
     return getMethod(method,put)(withSession(async(req,res)=>{
         const data = typeof getData =='function' ? defaultObj(getData({req,request:req,res,response:res})) : defaultObj(req.body.data);
@@ -216,10 +210,7 @@ export const upsert = save;
  * par défaut, utilise génère un handler écoutant la méthode put de requestHandler pour l'enregistrement des données
 */
 export function count(Model,options){
-    if(typeof options =='function'){
-        options = {mutate:options};
-    }
-    options = defaultObj(options);
+    options = prepareOptions(options);
     let {findOptions, getFindOptions,method} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
         findOptions = typeof getFindOptions =='function' ? defaultObj(getFindOptions({req,request:req,res,response:res})) : defaultObj(findOptions);
@@ -235,10 +226,7 @@ export function count(Model,options){
 
 /**** effectue une requête find|findOne en base de données */
 function _find (Model,options,cb){
-    if(typeof options =='function'){
-        options = {mutate:options};
-    }
-    options = defaultObj(options);
+    options = prepareOptions(options);
     options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : false;
     const {method,mutate,getFindOptions,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
@@ -267,4 +255,11 @@ export function find(Model,options){
 /*** retourne le requestHandler permettant d'effectuer un queryOne en base de données*/
 export function findOne (Model,options){
     return _find(Model,options,'findOne');
+}
+
+const prepareOptions = (Model,options)=>{
+    if(typeof options =='function'){
+        return extendObj(true,{},options,{mutate:options});
+    }
+    return defaultObj(options);
 }
