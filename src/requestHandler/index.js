@@ -131,13 +131,12 @@ function _queryMany (Model,options,cb){
         options = {mutate:options};
     }
     options = defaultObj(options);
-    const {method,mutate,getQuery} = options;
+    const {method,mutate,getQuery,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
         try {
             const query = typeof getQuery == 'function' ? defaultObj(await getQuery(args)) : defaultObj(req.query);
             const args = {req,request:req,res,response:res,query};
-        
-            const data = await Model[cb||'queryMany'](query);
+            const data = await Model[cb||'queryMany']({...rest,...query});
             const result = isObj(data) && ('data' in data && 'total' in data && 'count' in data) ? data : {data};
             if(typeof mutate =='function'){
                 await mutate(result,args);
@@ -168,7 +167,7 @@ export function queryOne (Model,options){
  *      method {string} la méthode que doit utiliser le handler de requête
  *      validateOptions {object} les options supplémentaires à passer à la fonction validate du model
  *      mutate | beforeValidate {function} la fonction supplémentaire à utiliser pour muter les données avant validation
- *      beforeSave {function} la fonction de mutation a appéler avant l'enregistrement des données
+ *      beforeSave|beforeUpsert {function} la fonction de mutation a appéler avant l'enregistrement des données
  *      getData {function}, la fonction permettant de récupérer l'objet à enregistrer en bd
  * }
  * par défaut, utilise génère un handler écoutant la méthode put de requestHandler pour l'enregistrement des données
@@ -178,7 +177,7 @@ export function save(Model,options){
         options = {mutate:options};
     }
     options = defaultObj(options);
-    const {method,mutate,getData,beforeValidate,validateOptions,beforeSave} = options;
+    const {method,mutate,getData,beforeValidate,validateOptions,beforeSave,beforeUpsert,...rest} = options;
     return getMethod(method,put)(withSession(async(req,res)=>{
         const data = typeof getData =='function' ? defaultObj(getData({req,request:req,res,response:res})) : defaultObj(req.body.data);
         const args = {req,request:req,res,response:res,data};
@@ -189,9 +188,10 @@ export function save(Model,options){
                 await beforeValidate(args);
             }
             await Model.init();
-            const d = await Model.validate({...defaultObj(validateOptions),session:req.session,req,data});
-            if(typeof beforeSave =='function'){
-                await beforeSave({...args,data:d});
+            const d = await Model.validate({...rest,...defaultObj(validateOptions),session:req.session,req,data});
+            const bef = typeof beforeSave =='function'? beforeSave : typeof beforeUpsert =='function'? beforeUpsert : null;
+            if(bef){
+                await bef({...args,data:d});
             }
             const updated = await Model.repository.save(d);
             return res.json({data:updated});
@@ -240,13 +240,13 @@ function _find (Model,options,cb){
     }
     options = defaultObj(options);
     options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : false;
-    const {method,mutate,getFindOptions} = options;
+    const {method,mutate,getFindOptions,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
         const args = {req,request:req,res,response:res};
-        const findOptions = typeof getFindOptions == 'function' ? defaultObj(getFindOptions(args)) : defaultObj(req.query);
+        const findOptions = typeof getFindOptions == 'function' ? await defaultObj(getFindOptions(args)) : defaultObj(req.query);
         args.findOptions = findOptions;
         try {
-            const data = await Model[cb||'find'](findOptions);
+            const data = await Model[cb||'find']({...rest,...findOptions});
             const result = {data};
             if(typeof mutate =='function'){
                 await mutate(result,args);

@@ -1,4 +1,4 @@
-import {isObj,defaultObj,defaultStr,defaultVal,isNonNullString,isNumber,isBool} from "$utils";
+import {isObj,defaultObj,defaultStr,defaultVal,isPromise,isNonNullString,isNumber,isBool} from "$utils";
 import {getDataSource,isDataSource} from "../dataSources";
 import {buildWhere} from "$cutils/filters";
 import Validator from "$lib/validator";
@@ -188,8 +188,14 @@ export default class BaseModel {
                     }
                 }
                 const mtator = typeof queryBuilderMutator =='function'? queryBuilderMutator : typeof mutateQueryBuilder =='function'? mutateQueryBuilder : undefined;
-                mtator && mtator(builder,{queryOptions});
-                resolve(builder);
+                const m = mtator && mtator(builder,{queryOptions});
+                if(isPromise(m)){
+                    return m.then((e)=>{
+                        resolve(builder);
+                    }).catch(reject)
+                } else {
+                    resolve(builder);
+                }
             }).catch(reject)
         })
     }
