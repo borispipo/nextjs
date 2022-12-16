@@ -133,9 +133,10 @@ function _queryMany (Model,options,cb){
     options = defaultObj(options);
     const {method,mutate,getQuery} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
-        const query = typeof getQuery == 'function' ? defaultObj(getQuery(args)) : defaultObj(req.query);
-        const args = {req,request:req,res,response:res,query};
         try {
+            const query = typeof getQuery == 'function' ? defaultObj(await getQuery(args)) : defaultObj(req.query);
+            const args = {req,request:req,res,response:res,query};
+        
             const data = await Model[cb||'queryMany'](query);
             const result = isObj(data) && ('data' in data && 'total' in data && 'count' in data) ? data : {data};
             if(typeof mutate =='function'){

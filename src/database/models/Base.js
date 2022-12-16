@@ -149,13 +149,14 @@ export default class BaseModel {
     }
     /*** retourne un object typeORM selectQueryBuilder query avec les paramètres pris en paramètres
      * @return {object} queryOptions, les options de la requête
+     *      @param {queryBuilderMutator|mutateQueryBuilder: {function}, la fonction permettant de faire une mutation du query builder obtenue via la fonction buidQquery}
      * @param {bool|object} withStatementParams
      * @param {object} fields
      */
-    static buildQuery(queryOptions,withStatementParams,fields){
+    static buildQuery(options,withStatementParams,fields){
         return new Promise((resolve,reject)=>{
             this.createQueryBuilder().then((builder)=>{
-                queryOptions = isObj(queryOptions)? queryOptions : {};
+                const {queryBuilderMutator,mutateQueryBuilder,...queryOptions} = defaultObj(options);
                 const sort = isObj(queryOptions.sort) ? queryOptions.sort : queryOptions.orderBy;
                 fields = isObj(fields)? fields : this.fields;
                 const where = this.buildWhere(queryOptions.where,withStatementParams,fields);
@@ -186,6 +187,8 @@ export default class BaseModel {
                         }
                     }
                 }
+                const mtator = typeof queryBuilderMutator =='function'? queryBuilderMutator : typeof mutateQueryBuilder =='function'? mutateQueryBuilder : undefined;
+                mtator && mtator(builder,{queryOptions});
                 resolve(builder);
             }).catch(reject)
         })
