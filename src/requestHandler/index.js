@@ -23,6 +23,7 @@ export default function handleRequestWithMethod(handler,options){
         options = {method:options};
     }
     options = defaultObj(options);
+    const {isAllowed} = options;
     const  method = Array.isArray(options.method) ? options.method : typeof options.method =='string' && options.method.toUpperCase().split(",") || [];
     const methods = [];
     method.map((m,i)=>{
@@ -56,12 +57,13 @@ export default function handleRequestWithMethod(handler,options){
             if(typeof nF =='function' && nF({req,res,request:req,status:NOT_FOUND,response:res}) == false) return;
             return res.status(405).send({message:"Page Non trouvée!! impossible d'exécuter la requête pour la méthode [{0}]; url : {1}, la où les méthodes supportées pour la requête sont : {2}".sprintf(req.method,req.url,methods.join(","))});
         }
-        if(isNonNullString(options.perm)){
+        const isA = typeof isAllowed =='function' ;
+        if(isNonNullString(options.perm) || isA){
             const session = await getSession(req);
             if(!isObj(session)){
                 return res.status(UNAUTHORIZED).send({message:'Vous devez vous connecter pour accéder à la ressource demandée'});
             }
-            if(!Auth.isAllowedFromString(options.perm,session)){
+            if((isA && !(await isAllowed(session))) || (isNonNullString(options.perm) && !Auth.isAllowedFromString(options.perm,session))){
                 return res.status(UNAUTHORIZED).send({message:"Vous n'êtes pas autorisés d'acccéder à la ressource demandée"});
             }
         }
