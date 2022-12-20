@@ -23,7 +23,7 @@ export default function handleRequestWithMethod(handler,options){
         options = {method:options};
     }
     options = defaultObj(options);
-    const {isAllowed} = options;
+    const {isAllowed,perm} = options;
     const  method = Array.isArray(options.method) ? options.method : typeof options.method =='string' && options.method.toUpperCase().split(",") || [];
     const methods = [];
     method.map((m,i)=>{
@@ -58,12 +58,12 @@ export default function handleRequestWithMethod(handler,options){
             return res.status(405).send({message:"Page Non trouvée!! impossible d'exécuter la requête pour la méthode [{0}]; url : {1}, la où les méthodes supportées pour la requête sont : {2}".sprintf(req.method,req.url,methods.join(","))});
         }
         const isA = typeof isAllowed =='function' ;
-        if(isNonNullString(options.perm) || isA){
+        if(isNonNullString(perm) || isA){
             const session = await getSession(req);
             if(!isObj(session)){
                 return res.status(UNAUTHORIZED).send({message:'Vous devez vous connecter pour accéder à la ressource demandée'});
             }
-            if((isA && !(await isAllowed(session))) || (isNonNullString(options.perm) && !Auth.isAllowedFromString(options.perm,session))){
+            if((isA && !(await isAllowed(session))) || (isNonNullString(perm) && !Auth.isAllowedFromString(perm,session))){
                 return res.status(UNAUTHORIZED).send({message:"Vous n'êtes pas autorisés d'acccéder à la ressource demandée"});
             }
         }
@@ -157,7 +157,7 @@ function _queryMany (Model,options,cb){
             console.log(e," found exception on api ",req.nextUrl?.basePath);
             return res.status(INTERNAL_SERVER_ERROR).json({message:e.message,error:e});
         }
-    },options))
+    }),options)
 }
 
 /**** retourne un requestHandler permettant d'effectuer un queryMany en base de données */
@@ -207,7 +207,7 @@ export function save(Model,options){
         } catch(e){
             return res.status(INTERNAL_SERVER_ERROR).json({error:e,message:e.message})
         }
-    },options));
+    }),options);
 }
 
 
@@ -236,7 +236,7 @@ export function count(Model,options){
         } catch(e){
             return res.status(INTERNAL_SERVER_ERROR).json({error:e,message:e.message})
         }
-    },options));
+    }),options);
 }
 
 /**** effectue une requête find|findOne en base de données */
@@ -259,7 +259,7 @@ function _find (Model,options,cb){
             console.log(e," found exception on api ",req.nextUrl?.basePath);
             return res.status(INTERNAL_SERVER_ERROR).json({message:e.message,error:e});
         }
-    },options))
+    }),options)
 }
 
 /**** retourne un requestHandler permettant d'effectuer un queryMany en base de données */
@@ -296,7 +296,7 @@ function _remove (Model,options,cb){
             console.log(e," found exception on remove api ",req.nextUrl?.basePath);
             return res.status(INTERNAL_SERVER_ERROR).json({message:e.message,error:e});
         }
-    },options))
+    }),options)
 }
 export function removeOne(Model,options){
     return _remove(Model,options,'removeOne');
