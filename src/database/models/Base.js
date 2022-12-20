@@ -8,6 +8,7 @@ import {FORBIDEN} from "$capi/status";
 /**** crèe un schemas de base de données 
  * @see : https://typeorm.io/usage-with-javascript
  * @see : https://github.com/typeorm/typeorm/blob/master/src/entity-schema/EntitySchemaOptions.ts for schemas properties
+ * @see : https://orkhan.gitbook.io/typeorm/docs/find-options from find options
  * @param {object} les options à utiliser pour la création du schema : objet de la forme : 
  *      name {string}  : Will use table name as default behaviour.
  *      les différentes colonnes sont des propriétés de la forme : EntitySchemaColumnOptions : {}, voir le fichier ./Column

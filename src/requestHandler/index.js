@@ -4,8 +4,9 @@
 import {defaultStr,extendObj,defaultObj,isNonNullString,isObj} from "$cutils";
 import {getQueryParams} from "$cutils/uri";
 import cors from "$cors";
-import {SUCCESS,INTERNAL_SERVER_ERROR} from "$capi/status";
-import {withSession} from "$nauth";
+import {SUCCESS,INTERNAL_SERVER_ERROR,UNAUTHORIZED} from "$capi/status";
+import {withSession,getSession} from "$nauth";
+import Auth from "$cauth";
 
 /***** Execute une requête d'api uniquement pour la/les méthodes spécifiée(s)
  * @param {function} handler la fonction qui sera exécutée lorsque la/les méthode(s) sera/seront validée(s)
@@ -54,6 +55,15 @@ export default function handleRequestWithMethod(handler,options){
             console.log(req?.nextUrl?.pathname || req.url," not allowed for method <<",req.method,">>. supported methods are ",methods,req.nextUrl)
             if(typeof nF =='function' && nF({req,res,request:req,status:NOT_FOUND,response:res}) == false) return;
             return res.status(405).send({message:"Page Non trouvée!! impossible d'exécuter la requête pour la méthode [{0}]; url : {1}, la où les méthodes supportées pour la requête sont : {2}".sprintf(req.method,req.url,methods.join(","))});
+        }
+        if(isNonNullString(options.perm)){
+            const session = await getSession(req);
+            if(!isObj(session)){
+                return res.status(UNAUTHORIZED).send({message:'Vous devez vous connecter pour accéder à la ressource demandée'});
+            }
+            if(!Auth.isAllowedFromString(options.perm,session)){
+                return res.status(UNAUTHORIZED).send({message:"Vous n'êtes pas autorisés d'acccéder à la ressource demandée"});
+            }
         }
         const query = req.query;
         ///la méthode reqParser qui parse la requête url de nextjs par défaut ne prend pas en compte la recursivité, on n'est donc obligé d'utiliser une fonction qui prend en compte les query recursives
