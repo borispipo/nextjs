@@ -166,12 +166,13 @@ export function queryOne (Model,options){
  *      mutate | beforeValidate {function} la fonction supplémentaire à utiliser pour muter les données avant validation
  *      beforeSave|beforeUpsert {function} la fonction de mutation a appéler avant l'enregistrement des données
  *      getData {function}, la fonction permettant de récupérer l'objet à enregistrer en bd
+ *      doSave {function}, la fonction appelée par défaut pour l'enregistrement de la données, au cas où l'on veut faire l'insertion en base soit même
  * }
  * par défaut, utilise génère un handler écoutant la méthode put de requestHandler pour l'enregistrement des données
 */
 export function save(Model,options){
     options = prepareOptions(options);
-    const {method,mutate,getData,beforeValidate,validateOptions,beforeSave,beforeUpsert,...rest} = options;
+    const {method,mutate,getData,doSave,beforeValidate,validateOptions,beforeSave,beforeUpsert,...rest} = options;
     return getMethod(method,put)(withSession(async(req,res)=>{
         const data = typeof getData =='function' ? defaultObj(getData({req,request:req,res,response:res})) : defaultObj(req.body.data);
         const args = {req,request:req,res,response:res,session:req.session,req,data};
@@ -187,7 +188,7 @@ export function save(Model,options){
             if(bef){
                 await bef({...args,data:d});
             }
-            const updated = await Model.repository.save(d);
+            const updated = typeof doSave =='function'? await doSave(d) : await Model.repository.save(d);
             return res.json({data:updated});
         } catch(e){
             return res.status(INTERNAL_SERVER_ERROR).json({error:e,message:e.message})
