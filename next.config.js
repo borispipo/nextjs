@@ -63,10 +63,10 @@ module.exports = (opts)=>{
   /**** pour étendre la fonction utils de auth */
   alias["$auth-utils"] = alias["$auth-utils"] || path.resolve(next,"auth","utils","$auth-utils");
   alias["$nsignIn2SignOut"] = path.resolve(next,"auth","signIn2SignOut");
-  if(!alias["$signIn2SignOut"]){
+  if(!alias["$signIn2SignOut"] || alias["$signIn2SignOut"] == alias["$csignIn2SignOut"]){
       alias["$signIn2SignOut"] = alias["$nsignIn2SignOut"];
   }
-
+  
   const nextConfig = {
     reactStrictMode: true,
     swcMinify: false,
