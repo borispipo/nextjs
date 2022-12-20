@@ -80,7 +80,7 @@ export default function handleRequestWithMethod(handler,options){
             let message = "Vous n'êtes pas autorisés d'acccéder à la ressource demandée";
             let hasError = false;
             if(isA){
-                const r = await isAllowed({req,request:req,res,response:res,session,user:session});
+                const r = await isAllowed({req,request:req,res,response:res,session,user:session,Auth});
                 if(isNonNullString(r)){
                     message = r;
                 }
