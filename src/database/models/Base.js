@@ -3,6 +3,7 @@ import {getDataSource,isDataSource} from "../dataSources";
 import {buildWhere} from "$cutils/filters";
 import Validator from "$lib/validator";
 import DateLib from "$date";
+import {FORBIDEN} from "$capi/status";
 
 /**** crèe un schemas de base de données 
  * @see : https://typeorm.io/usage-with-javascript
@@ -311,19 +312,39 @@ export default class BaseModel {
     }
     static removeMany(findOptions){
         return this.findMany(findOptions).then((allData)=>{
-            return this.remove(allData);
+            return this._checkBeforeRemoveAndRemove(allData,defaultObj(findOptions).beforeRemove);
         })
     }
     static removeOne(findOptions){
         return this.findOne(findOptions).then((data)=>{
-            return this.remove(data);
+            return this._checkBeforeRemoveAndRemove(data,defaultObj(findOptions).beforeRemove);
         })
     }
     static queryRemove(queryOptions){
         queryOptions = defaultObj(queryOptions);
         queryOptions.withTotal = false;
         return this.queryMany(queryOptions).then((allData)=>{
-            return this.remove(allData);
+            return this._checkBeforeRemoveAndRemove(allData,queryOptions.beforeRemove)
         });
     }
+    /**** la fonction check and before remove exécute la fonctioon beforeRemove, lorsqu'elle existe sur les données allData.
+     *  si cette fonction retourne un string, alors il s'agit du message généré lors de l'éxécution de la requête
+     *  si cette fonction retourne un array, alors le tableau en question est utilisé pour la suppression des données
+     *  si cette fonction retourne un objet et si l'objet porte le contenu message où msg et la valeur errort à true, alors il s'agit d'une exception générée
+     *  si cette fonction n'est pas définie, alors toutes les données allData sont supprimés via la fonction remove du model
+     */
+        static _checkBeforeRemoveAndRemove(allData,beforeRemove){
+            const b = typeof beforeRemove =='function'?beforeRemove(allData) : null;
+            return new Promise((resolve,reject)=>{
+                if(isNonNullString(b)){
+                    return reject({message:b,status:FORBIDEN})
+                }
+                if(isObj(b) && b.error === true && (isNonNullString(b.message) || isNonNullString(b.message))){
+                    return reject(b);
+                }
+                return isPromise(b)? b.then((data)=>{
+                    return this.remove(Array.isArray(data)?data:allData).then(resolve).catch(reject);
+                }) : this.remove(allData).then(resolve).catch(reject);
+            })
+        }
 }

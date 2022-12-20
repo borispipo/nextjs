@@ -258,7 +258,40 @@ export function findOne (Model,options){
     return _find(Model,options,'findOne');
 }
 
-
+/**** effectue une requête remove, de suppression directement en base de données
+ * @param {ModelInstance} Model, le model à utiliser pour effectuer la requête
+ * @param {object} options les options supplémentaires pour effectuer la requête
+ *      de la forme : 
+ *       { beforeRemove : {function} la fonction de rappel à appeler avant suprression des données
+ *         queryData {function} la fonction permettant de récupérer les donées en base de données avant suppression
+ *         getFindOptions {function} la fonction à utiliser pour récupérer la requête query à utiliser pour le queryMany|| querySingle
+ *       }
+ * @return la fonction de rappel, handler permettant d'exécuter la requête queryMany en s'appuyant sur le model passé en paramètre
+ */
+function _remove (Model,options,cb){
+    options = prepareOptions(options);
+    const {method,getFindOptions,...rest} = options;
+    return getMethod(method,get)(withSession(async(req,res)=>{
+        try {
+            const query = typeof getFindOptions == 'function' ? defaultObj(await getFindOptions(args)) : defaultObj(req.query);
+            const args = {req,action:cb,request:req,res,response:res,query,session:req.session,req};
+            const data = await Model[cb||'queryRemove']({...rest,...args,...query});
+            return res.status(SUCCESS).json({data});
+        } catch (e){
+            console.log(e," found exception on remove api ",req.nextUrl?.basePath);
+            return res.status(INTERNAL_SERVER_ERROR).json({message:e.message,error:e});
+        }
+    },options))
+}
+export function removeOne(Model,options){
+    return _remove(Model,options,'removeOne');
+}
+export function removeMany(Model,options){
+    return _remove(Model,options,'removeMany');
+}
+export function queryRemove(Model,options){
+    return _remove(Model,options,'queryRemove');
+}
 export const prepareOptions = (options)=>{
     if(typeof options =='function'){
         return extendObj(true,{},options,{mutate:options});
