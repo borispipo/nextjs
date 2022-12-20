@@ -258,6 +258,7 @@ export function findOne (Model,options){
     return _find(Model,options,'findOne');
 }
 
+
 export const prepareOptions = (options)=>{
     if(typeof options =='function'){
         return extendObj(true,{},options,{mutate:options});

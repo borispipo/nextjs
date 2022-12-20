@@ -240,6 +240,9 @@ export default class BaseModel {
             }).catch(reject);
         })
     }
+    static findMany (findOptions){
+        return this.find(findOptions);
+    }
     /**** cherche une entitie qui match les options findOptions
      * @see : https://typeorm.io/repository-api
      */
@@ -288,5 +291,39 @@ export default class BaseModel {
                 return r.upsert(data,op1,op2).then(resolve);
             }).catch(reject);
         })
+    }
+    /****supprime à partir des données issue de la requête fournie par un queryBuilder */
+    static queryDelete(queryOptions){
+        queryOptions = defaultObj(queryOptions);
+        queryOptions.withTotal = false;
+        return new Promise((resolve,reject)=>{
+            this.buildQuery(queryOptions).then((builder)=>{
+                return builder.delete().from(this).then(resolve).catch(reject);
+            }).catch(reject);
+        })
+    }
+    static remove (a,b,c){
+        return new Promise((resolve,reject)=>{
+            this.getRepository().then((r)=>{
+                return r.remove(a,b,c).then(resolve);
+            }).catch(reject);
+        });
+    }
+    static removeMany(findOptions){
+        return this.findMany(findOptions).then((allData)=>{
+            return this.remove(allData);
+        })
+    }
+    static removeOne(findOptions){
+        return this.findOne(findOptions).then((data)=>{
+            return this.remove(data);
+        })
+    }
+    static queryRemove(queryOptions){
+        queryOptions = defaultObj(queryOptions);
+        queryOptions.withTotal = false;
+        return this.queryMany(queryOptions).then((allData)=>{
+            return this.remove(allData);
+        });
     }
 }
