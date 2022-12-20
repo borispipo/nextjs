@@ -273,6 +273,7 @@ export function findOne (Model,options){
 function _remove (Model,options,cb){
     options = prepareOptions(options);
     const {method,getFindOptions,...rest} = options;
+    options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : cb =='queryRemove'?true:false;
     return getMethod(method,deleteRequest)(withSession(async(req,res)=>{
         try {
             const query = typeof getFindOptions == 'function' ? defaultObj(await getFindOptions(args)) : defaultObj(req.query);
