@@ -312,19 +312,19 @@ export default class BaseModel {
     }
     static removeMany(findOptions){
         return this.findMany(findOptions).then((allData)=>{
-            return this._checkBeforeRemoveAndRemove(allData,defaultObj(findOptions).beforeRemove);
+            return this._checkBeforeRemoveAndRemove({...defaultObj(findOptions),allData,data:allData});
         })
     }
     static removeOne(findOptions){
         return this.findOne(findOptions).then((data)=>{
-            return this._checkBeforeRemoveAndRemove(data,defaultObj(findOptions).beforeRemove);
+            return this._checkBeforeRemoveAndRemove({...defaultObj(findOptions),data,allData:data});
         })
     }
     static queryRemove(queryOptions){
         queryOptions = defaultObj(queryOptions);
         queryOptions.withTotal = false;
         return this.queryMany(queryOptions).then((allData)=>{
-            return this._checkBeforeRemoveAndRemove(allData,queryOptions.beforeRemove)
+            return this._checkBeforeRemoveAndRemove({...queryOptions,allData,data:allData})
         });
     }
     /**** la fonction check and before remove exécute la fonctioon beforeRemove, lorsqu'elle existe sur les données allData.
@@ -333,8 +333,10 @@ export default class BaseModel {
      *  si cette fonction retourne un objet et si l'objet porte le contenu message où msg et la valeur errort à true, alors il s'agit d'une exception générée
      *  si cette fonction n'est pas définie, alors toutes les données allData sont supprimés via la fonction remove du model
      */
-        static _checkBeforeRemoveAndRemove(allData,beforeRemove){
-            const b = typeof beforeRemove =='function'?beforeRemove(allData) : null;
+        static _checkBeforeRemoveAndRemove(args){
+            args = defaultObj(args);
+            const {allData,beforeRemove} = args;
+            const b = typeof beforeRemove =='function'?beforeRemove(args) : null;
             return new Promise((resolve,reject)=>{
                 if(isNonNullString(b)){
                     return reject({message:b,status:FORBIDEN})
