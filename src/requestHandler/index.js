@@ -276,8 +276,8 @@ function _remove (Model,options,cb){
     options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : cb =='queryRemove'?true:false;
     return getMethod(method,deleteRequest)(withSession(async(req,res)=>{
         try {
+            const args = {req,request:req,res,response:res,query,session:req.session,req};
             const query = typeof getFindOptions == 'function' ? defaultObj(await getFindOptions(args)) : defaultObj(req.query);
-            const args = {req,action:cb,request:req,res,response:res,query,session:req.session,req};
             const data = await Model[cb||'queryRemove']({...rest,...args,...query});
             return res.status(SUCCESS).json({data});
         } catch (e){
