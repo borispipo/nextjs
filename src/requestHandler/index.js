@@ -4,7 +4,7 @@
 import {defaultStr,extendObj,defaultObj,isNonNullString,isObj} from "$cutils";
 import {getQueryParams} from "$cutils/uri";
 import cors from "$cors";
-import {SUCCESS,INTERNAL_SERVER_ERROR,UNAUTHORIZED} from "$capi/status";
+import {SUCCESS,FORBIDEN,INTERNAL_SERVER_ERROR,UNAUTHORIZED} from "$capi/status";
 import {withSession,getSession} from "$nauth";
 import Auth from "$cauth";
 
@@ -57,16 +57,6 @@ export default function handleRequestWithMethod(handler,options){
             if(typeof nF =='function' && nF({req,res,request:req,status:NOT_FOUND,response:res}) == false) return;
             return res.status(405).send({message:"Page Non trouvée!! impossible d'exécuter la requête pour la méthode [{0}]; url : {1}, la où les méthodes supportées pour la requête sont : {2}".sprintf(req.method,req.url,methods.join(","))});
         }
-        const isA = typeof isAllowed =='function' ;
-        if(isNonNullString(perm) || isA){
-            const session = await getSession(req);
-            if(!isObj(session)){
-                return res.status(UNAUTHORIZED).send({message:'Vous devez vous connecter pour accéder à la ressource demandée'});
-            }
-            if((isA && !(await isAllowed(session))) || (isNonNullString(perm) && !Auth.isAllowedFromString(perm,session))){
-                return res.status(UNAUTHORIZED).send({message:"Vous n'êtes pas autorisés d'acccéder à la ressource demandée"});
-            }
-        }
         const query = req.query;
         ///la méthode reqParser qui parse la requête url de nextjs par défaut ne prend pas en compte la recursivité, on n'est donc obligé d'utiliser une fonction qui prend en compte les query recursives
         ///on peut par défaut interdire de parser le query, en passant la variable parseQuery à false
@@ -80,6 +70,28 @@ export default function handleRequestWithMethod(handler,options){
         }
         if(withCors !== false){
             await cors(req,res);
+        }
+        const isA = typeof isAllowed =='function' ;
+        if(isNonNullString(perm) || isA){
+            const session = await getSession(req);
+            if(!isObj(session)){
+                return res.status(UNAUTHORIZED).send({message:'Vous devez vous connecter pour accéder à la ressource demandée'});
+            }
+            let message = "Vous n'êtes pas autorisés d'acccéder à la ressource demandée";
+            let hasError = false;
+            if(isA){
+                const r = await isAllowed({req,request:req,res,response:res,session,user:session});
+                if(isNonNullString(r)){
+                    message = r;
+                }
+                hasError = isNonNullString(r) || !r ? true : false;
+            }
+            if(!hasError && isNonNullString(perm) && !Auth.isAllowedFromString(perm,session)){
+                hasError = true;
+            }
+            if(hasError){
+                return res.status(FORBIDEN).send({message});
+            }
         }
         return typeof handler =='function'? handler(req,res,a1,a2,a3,a4,a5) : null;
     }
