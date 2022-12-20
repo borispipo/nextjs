@@ -94,8 +94,8 @@ export const patch = (handler,options)=>{
     return handleRequest(handler,options,"patch");
 }
 
-export const deletete = (handler,options)=>{
-    return handleRequest(handler,options,"deletete");
+const deleteRequest = (handler,options)=>{
+    return handleRequest(handler,options,"delete");
 }
 
 export const METHODS = {
@@ -106,6 +106,8 @@ export const METHODS = {
     PATCH:true,
     DELETE : true,
 }
+
+export {deleteRequest as delete};
 
 Object.map(METHODS,(i,method)=>{
     handleRequestWithMethod[method.toLowerCase()] = (handler,options)=>{
@@ -271,7 +273,7 @@ export function findOne (Model,options){
 function _remove (Model,options,cb){
     options = prepareOptions(options);
     const {method,getFindOptions,...rest} = options;
-    return getMethod(method,get)(withSession(async(req,res)=>{
+    return getMethod(method,deleteRequest)(withSession(async(req,res)=>{
         try {
             const query = typeof getFindOptions == 'function' ? defaultObj(await getFindOptions(args)) : defaultObj(req.query);
             const args = {req,action:cb,request:req,res,response:res,query,session:req.session,req};
