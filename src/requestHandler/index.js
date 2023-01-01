@@ -167,7 +167,7 @@ function _queryMany (Model,options,cb){
             return res.status(SUCCESS).json(result);
         } catch (e){
             console.log(e," found exception on api ",req.nextUrl?.basePath);
-            return res.status(INTERNAL_SERVER_ERROR).json({message:e.message,error:e});
+            return res.status(INTERNAL_SERVER_ERROR).json(handleError(e));
         }
     }),options)
 }
@@ -217,7 +217,8 @@ export function save(Model,options){
             const updated = typeof doSave =='function'? await doSave(d) : await Model.repository.save(d);
             return res.json({data:updated});
         } catch(e){
-            return res.status(INTERNAL_SERVER_ERROR).json({error:e,message:e.message})
+            console.log(e," saving data",data);
+            return res.status(INTERNAL_SERVER_ERROR).json(handleError(e))
         }
     }),options);
 }
@@ -246,7 +247,8 @@ export function count(Model,options){
             const count = await Model.repository.count(findOptions);
             return res.json({count});
         } catch(e){
-            return res.status(INTERNAL_SERVER_ERROR).json({error:e,message:e.message})
+            console.log(e," count data ",findOptions);
+            return res.status(INTERNAL_SERVER_ERROR).json(handleError(e))
         }
     }),options);
 }
@@ -269,7 +271,7 @@ function _find (Model,options,cb){
             return res.status(SUCCESS).json(result);
         } catch (e){
             console.log(e," found exception on api ",req.nextUrl?.basePath);
-            return res.status(INTERNAL_SERVER_ERROR).json({message:e.message,error:e});
+            return res.status(INTERNAL_SERVER_ERROR).json(handleError(e));
         }
     }),options)
 }
@@ -282,6 +284,10 @@ export function find(Model,options){
 /*** retourne le requestHandler permettant d'effectuer un queryOne en base de données*/
 export function findOne (Model,options){
     return _find(Model,options,'findOne');
+}
+
+const handleError = (e)=>{
+    return {message:e.message,stackStrace:e.stackStrace};
 }
 
 /**** effectue une requête remove, de suppression directement en base de données
@@ -306,7 +312,7 @@ function _remove (Model,options,cb){
             return res.status(SUCCESS).json({data});
         } catch (e){
             console.log(e," found exception on remove api ",req.nextUrl?.basePath);
-            return res.status(INTERNAL_SERVER_ERROR).json({message:e.message,error:e});
+            return res.status(INTERNAL_SERVER_ERROR).json(handleError(e));
         }
     }),options)
 }
