@@ -52,7 +52,7 @@ const parseTable = (srcPath,destPath,paths,filter)=>{
                                 const tbName = path.basename(path.dirname(fromPath));
                                 const tableName = tbName?.toUpperCase();
                                 ///ajout des filtre
-                                if(!tableName || filter(tbName) === false) return;
+                                if(!tableName || !filter(tbName)) return;
                                 try {
                                     var jsContent = fs.readFileSync(fromPath)?.toString();
                                     if(!isNonNullString(jsContent)) return;
