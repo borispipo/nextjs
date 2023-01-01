@@ -12,7 +12,7 @@ const StringBuilder = require("string-builder");
 module.exports  = (opts,callback)=>{
     opts = typeof opts =='object' && opts ? opts : {};
     callback = typeof callback =='function'? callback : x=>x;
-    const {src,dest,srcPath,destPath} = opts;
+    const {src,dest,srcPath,destPath,filter} = opts;
     const s = isNonNullString(src) && fs.existsSync(src)? src : isNonNullString(srcPath) && fs.existsSync(srcPath)? srcPath : null;
     const d = isNonNullString(dest) && fs.existsSync(dest)? dest : isNonNullString(destPath) && fs.existsSync(destPath)? destPath : null;
     if(!s || !fs.lstatSync(s).isDirectory() ) {
@@ -21,7 +21,7 @@ module.exports  = (opts,callback)=>{
     if(!d || !fs.lstatSync(d).isDirectory() ){
         return callback({message:'Vous devez specifier un repertire destination valide'});
     }
-    parseTable(s,d,{}).then((p)=>{
+    parseTable(s,d,{},filter).then((p)=>{
         callback(false,p);
     }).catch((e)=>{
         console.log(e, " was parsingg")
@@ -29,7 +29,8 @@ module.exports  = (opts,callback)=>{
 }
 const pp = path.join(__dirname,"src","database","schema","DataTypes","jsTypes");
 const models = require(pp);
-const parseTable = (srcPath,destPath,paths)=>{
+const parseTable = (srcPath,destPath,paths,filter)=>{
+    filter = typeof filter =='function'? filter : x=>true;
     paths = paths && typeof paths =='object' ? paths : {};
     return new Promise((resolve,reject)=>{
         // Loop through all the files in the temp directory
@@ -50,6 +51,8 @@ const parseTable = (srcPath,destPath,paths)=>{
                             if(file.toLowerCase().includes("fields") && (ext =='.js' || ext =='.ts')){
                                 const tbName = path.basename(path.dirname(fromPath));
                                 const tableName = tbName?.toUpperCase();
+                                ///ajout des filtre
+                                if(!tableName || filter(tbName) === false) return;
                                 try {
                                     var jsContent = fs.readFileSync(fromPath)?.toString();
                                     if(!isNonNullString(jsContent)) return;
