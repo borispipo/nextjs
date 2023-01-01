@@ -107,7 +107,7 @@ const parseTable = (srcPath,destPath,paths,filter)=>{
                             }
                         } else if (stat.isDirectory()){
                             //console.log("parsing '%s' directory", fromPath);
-                            promises.push(parseTable(fromPath,destPath,paths));
+                            promises.push(parseTable(fromPath,destPath,paths,filter));
                         }
                     } catch(error){
                         console.error("Error stating file.", error);
