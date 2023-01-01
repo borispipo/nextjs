@@ -3,8 +3,9 @@ import {getDataSource,isDataSource} from "../dataSources";
 import {buildWhere} from "$cutils/filters";
 import Validator from "$lib/validator";
 import DateLib from "$date";
-import {FORBIDEN} from "$capi/status";
+import {FORBIDEN,NOT_FOUND} from "$capi/status";
 
+const notFound = {message:'Valeur non trouvée en base',status:NOT_FOUND}
 /**** crèe un schemas de base de données 
  * @see : https://typeorm.io/usage-with-javascript
  * @see : https://github.com/typeorm/typeorm/blob/master/src/entity-schema/EntitySchemaOptions.ts for schemas properties
@@ -251,7 +252,12 @@ export default class BaseModel {
     static findOne (findOptions){
         return new Promise((resolve,reject)=>{
             this.getRepository().then((r)=>{
-                return r.findOne(findOptions).then(resolve);
+                return r.findOne(findOptions).then((data)=>{
+                    if(data == null){
+                        return reject(notFound);
+                    }
+                    resolve(data);
+                });
             }).catch(reject);
         })
     }
@@ -260,7 +266,12 @@ export default class BaseModel {
         queryOptions.withTotal = false;
         return new Promise((resolve,reject)=>{
             this.buildQuery(queryOptions,withStatementParams,fields).then((builder)=>{
-                builder.getOne().then(resolve).catch(reject);
+                builder.getOne().then((data)=>{
+                    if(data === null){
+                        return reject(notFound);
+                    }
+                    resolve(data);
+                }).catch(reject);
             }).catch(reject);
         })
     }
@@ -269,7 +280,12 @@ export default class BaseModel {
         queryOptions.withTotal = false;
         return new Promise((resolve,reject)=>{
             this.buildQuery(queryOptions).then((builder)=>{
-                builder.getRawOne().then(resolve).catch(reject);
+                builder.getRawOne().then((data)=>{
+                    if(data === null){
+                        return reject(notFound);
+                    }
+                    resolve(data);
+                }).catch(reject);
             }).catch(reject);
         })
     }
