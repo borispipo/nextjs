@@ -37,8 +37,8 @@ export default function handleRequestWithMethod(handler,options){
     const {withCors,onNoMatch,noFound,parseQuery,onNotFound} = options;
     return async function customRouteHandler(req,res,a1,a2,a3,a4,a5){
         const reqMethod = defaultStr(req.method).toUpperCase().trim();
+        await cors(req,res);
         if(reqMethod =="OPTIONS"){
-            await cors(req,res);
             return handler(req,res);
         }
         let canCheck = methods.length;
