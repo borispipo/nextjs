@@ -121,10 +121,11 @@ export default class BaseModel {
         }
         return new Promise((resolve,reject)=>{
             Promise.all(promises).then(()=>{
-                resolve(result);
-                return result;
+                const r = {data:result};
+                resolve(r);
+                return r;
             }).catch(()=>{
-                reject({message:"{0}:\n".sprintf(errorsMessages.length > 1 ? ("Les erreurs suivantes ont été générées") : "l'erreur suivante a été générée",errorsMessages.join(", "))})
+                reject({errors : errorsMessages,message:"{0}:\n".sprintf(errorsMessages.length > 1 ? ("Les erreurs suivantes ont été générées") : "l'erreur suivante a été générée",errorsMessages.join(", "))})
             })
         });
     }

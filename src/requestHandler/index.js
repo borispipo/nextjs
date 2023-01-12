@@ -155,9 +155,9 @@ export const getMethod = (method,defaultMethod)=>{
 function _queryMany (Model,options,cb){
     options = prepareOptions(options);
     const {method,mutate,getQuery,...rest} = options;
-    return getMethod(method,get)(withSession(async(req,res)=>{
+    return getMethod(method,post)(withSession(async(req,res)=>{
         try {
-            const query = typeof getQuery == 'function' ? defaultObj(await getQuery(args)) : defaultObj(req.query);
+            const query = extendObj(true,{},req.query,req.body,typeof getQuery == 'function' && await getQuery(args));
             const args = {req,request:req,res,response:res,query,session:req.session,req};
             const data = await Model[cb||'queryMany']({...rest,...args,...query});
             const result = isObj(data) && ('data' in data && 'total' in data && 'count' in data) ? data : {data};
