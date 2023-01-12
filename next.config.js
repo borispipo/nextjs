@@ -12,7 +12,7 @@ module.exports = (opts)=>{
   opts = typeof opts =='object' && opts ? opts : {};
   const transpileModules = Array.isArray(opts.transpileModules)? opts.transpileModules : [];
   const base = opts.base || path.resolve(__dirname);
-  const withTM = require('next-transpile-modules')([
+  const withTM = require('./transpileModules')([
     "@fto-consult/common",
     package.name,
     ...transpileModules,
