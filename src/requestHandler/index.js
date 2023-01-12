@@ -209,7 +209,7 @@ export function save(Model,options){
                 await beforeValidate(args);
             }
             await Model.init();
-            const d = await Model.validate({...rest,...args,...defaultObj(validateOptions),data});
+            const {data:d} = await Model.validate({...rest,...args,...defaultObj(validateOptions),data});
             const bef = typeof beforeSave =='function'? beforeSave : typeof beforeUpsert =='function'? beforeUpsert : null;
             if(bef){
                 await bef({...args,data:d});
