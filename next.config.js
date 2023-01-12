@@ -141,10 +141,6 @@ module.exports = (opts)=>{
       return config;
     },
   }
-  nextConfig.api = typeof nextConfig.api =="object" && nextConfig.api && !Array.isArray(nextConfig.api)? nextConfig.api : {};
-  if(nextConfig.api.responseLimit === undefined){
-     nextConfig.api.responseLimit = '8mb';
-  }
   return withImages(withTM(withFonts(nextConfig)));
 }
 
