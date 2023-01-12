@@ -141,9 +141,9 @@ module.exports = (opts)=>{
       return config;
     },
   }
-  config.api = typeof confirm.api =="object" && config.api && !Array.isArray(config.api)? config.api : {};
+  config.api = typeof config.api =="object" && config.api && !Array.isArray(config.api)? config.api : {};
   if(config.api.responseLimit === undefined){
-     confirm.api.responseLimit = '8mb';
+     config.api.responseLimit = '8mb';
   }
   return withImages(withTM(withFonts(nextConfig)));
 }
