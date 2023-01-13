@@ -154,7 +154,7 @@ export default class BaseModel {
     static getPrimaryKeyPrefix(){
         const tbld = defaultStr(this.tableName).toUpperCase().trim();
         if(tbld.length<=10) return tbld;
-        return tbld.substring(0,)
+        return tbld.substring(0,10)
     }
     /**** génère la clé primaire 
      * {
