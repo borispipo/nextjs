@@ -98,11 +98,16 @@ export default class BaseModel {
                     value = loginId;
                 }
             }    
-            if((!(i in data)) && !value) {
-                continue;
-            }
             if(typeof filter =='function' && filter({field,fields:fields,index:i,columnField:i,name:field.name,columnDef:field,value:data[i]}) == false) {
                 continue;
+            }
+            const getErrorMessage = (e)=>{
+                if(isObj(e)){
+                    const message = defaultStr(e.message,e.msg);
+                    if(message){
+                        errorsMessages.push("{0} => {1}".sprintf(defaultStr(field.title,field.label),message))
+                    }
+                }
             }
             if(hasOnePrimaryKey){
                 if(i === primaryKey && !isNonNullString(value)){
@@ -113,20 +118,36 @@ export default class BaseModel {
                         return this.generatePrimaryKey({
                             primaryKey,
                             primaryKeyPrefix : defaultStr(piece,options.primaryKeyPrefix,field.primaryKeyPrefix),
-                            userPiece : userPiece ? "-{0}-".sprintf(userPiece) : "",
-                        })
+                            userPiece : userPiece ? "/{0}-".sprintf(userPiece) : "",
+                        }).then((val)=>{
+                            result[primaryKey] = val;
+                            resolve({[primaryKey]:val});
+                            console.log(val," is generated value")
+                        }).catch((e)=>{
+                            getErrorMessage(e);
+                            reject(e);
+                        });
                     }));
                 }
             }
-            promises.push(this.validateField({field,value,result,fieldIndex:i,errorsMessages}));
+            if((!(i in data)) && !value) {
+                continue;
+            }
+            promises.push(this.validateField({field,value,result,fieldIndex:i}).catch((e)=>{
+                getErrorMessage(e);
+                throw e;
+            }));
         }
         return new Promise((resolve,reject)=>{
             Promise.all(promises).then(()=>{
                 const r = {data:result};
+                console.log("has resolving heeeeee result ",r);
                 resolve(r);
                 return r;
-            }).catch(()=>{
-                reject({errors : errorsMessages,message:"{0}:\n".sprintf(errorsMessages.length > 1 ? ("Les erreurs suivantes ont été générées") : "l'erreur suivante a été générée",errorsMessages.join(", "))})
+            }).catch((e)=>{
+                console.log(e," error generated on validating model ",this.tableName);
+                const message = "{0}:\n{1}".sprintf(errorsMessages.length > 1 ? ("Les erreurs suivantes ont été générées") : "l'erreur suivante a été générée",errorsMessages.join(", "));
+                reject({errors : errorsMessages,errorsMessages,message})
             })
         });
     }
@@ -142,11 +163,11 @@ export default class BaseModel {
     */
     static generatePrimaryKey(options){
         let {primaryKey,userPiece,primaryKeyPrefix} = options;
-        if(!String.isNonNullString(primaryKeyPrefix)){
+        if(!isNonNullString(primaryKeyPrefix)){
             primaryKeyPrefix = this.getPrimaryKeyPrefix();
         }
-        if(!String.isNonNullString(primaryKeyPrefix)|| !String.isNonNullString(primaryKey) || !isObj(this.fields[primaryKey]) || this.fields[primaryKey].primary !== true || this.fields[primaryKey].type !=DataTypes.STRING.type){
-            return Promise.reject({error:true,message:'Impossible de générer une valeur pour la clé primaire liée à la table de données {0}. Veuillez spécifier à la fois le préfix à utiliser pour la génération des ids, champ primaryKeyPrefix. vous devez également Vous rassurer que le nom de la clé primaire figure dans les champs supportés par le model associé à la table de données. clé primaire spécifiée : {1}, prefix : {2}'.sprintf(this.tableName,primaryKey,primaryKeyPrefix)})
+        if(!isNonNullString(primaryKeyPrefix)|| !isNonNullString(primaryKey) || !isObj(this.fields[primaryKey]) || this.fields[primaryKey].primary !== true || this.fields[primaryKey].type !=DataTypes.STRING.type){
+            return Promise.reject({error:true,message:'Impossible de générer une valeur pour la clé primaire liée à la table de données {0}. Veuillez spécifier à la fois le préfix à utiliser pour la génération des ids, champ primaryKeyPrefix. vous devez également Vous rassurer que le nom de la clé primaire figure dans les champs supportés par le model associé à la table de données. clé primaire spécifiée : [{1}], prefix : [{2}]'.sprintf(this.tableName,primaryKey,primaryKeyPrefix)})
         }
         return new Promise((resolve,reject)=>{
             let generatedValue = undefined,counterIndex = 0;
@@ -155,19 +176,18 @@ export default class BaseModel {
                     return resolve(generatedValue);
                 }
                 counterIndex++;
-                generatedValue = primaryKeyPrefix+defaultStr(userPiece)+counterIndex;
+                const cPrefix = (counterIndex<10)? ("0"+counterIndex) : counterIndex;
+                generatedValue = primaryKeyPrefix+defaultStr(userPiece)+cPrefix;
                 const cb = (d)=>{
                     if(!isObj(d)){
                         return resolve(generatedValue);
                     }
-                    if(isObj(d) && d[primaryKey]){
-                        return next();
-                    }
+                    return next();
                 }
                 this.findOne({
-                    [primaryKey] : generatedValue
+                    where : {[primaryKey] : generatedValue}
                 }).then(cb).catch(e=>{
-                    if(isObj(e)&& e.status === notFound){
+                    if(isObj(e) && e.status === NOT_FOUND){
                         return resolve(generatedValue);
                     }
                     reject(e);
@@ -179,8 +199,7 @@ export default class BaseModel {
             })
         })
     }
-    static validateField ({field,fieldIndex,value,result,errorsMessages}){
-        errorsMessages = Array.isArray(errorsMessages)? errorsMessages : [];
+    static validateField ({field,fieldIndex,value,result}){
         result = typeof result =="object" && result ? result : {};
         let error = false,message  = '';
         const fieldTitle = defaultStr(field.title,field.label);
@@ -207,7 +226,6 @@ export default class BaseModel {
                 context.on("validatorNoValid",(args)=>{
                     context.offAll && context.offAll();
                     reject(args);
-                    errorsMessages.push("{0} => {1}".sprintf(fieldTitle,args.message || args.msg))
                 });
                 context.on("validatorValid",({value})=>{
                     result[fieldIndex] = value;
