@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 import {defaultStr,extendObj,defaultObj,isNonNullString,isObj} from "$cutils";
 import {getQueryParams} from "$cutils/uri";
+import {uniqid} from "$cutils"
 import cors from "$cors";
 import {SUCCESS,FORBIDEN,INTERNAL_SERVER_ERROR,UNAUTHORIZED} from "$capi/status";
 import {withSession,getSession} from "$nauth";
@@ -201,7 +202,9 @@ export function save(Model,options){
     const {method,mutate,getData,doSave,beforeValidate,validateOptions,beforeSave,beforeUpsert,...rest} = options;
     return getMethod(method,put)(withSession(async(req,res)=>{
         const data = typeof getData =='function' ? defaultObj(getData({req,request:req,res,response:res})) : defaultObj(req.body.data);
-        const args = {req,request:req,res,response:res,session:req.session,req,data};
+        const args = {req,request:req,res,response:res,user:req.session,userId:req.session.loginId,session:req.session,req,data};
+        let generatePrimaryKey = options.generatePrimaryKey;
+        generatePrimaryKey = generatePrimaryKey != undefined? !!generatePrimaryKey : true;
         try {
             if(typeof mutate =='function'){
                 await mutate(args);
@@ -209,7 +212,7 @@ export function save(Model,options){
                 await beforeValidate(args);
             }
             await Model.init();
-            const {data:d} = await Model.validate({...rest,...args,...defaultObj(validateOptions),data});
+            const {data:d} = await Model.validate({...rest,...args,...defaultObj(validateOptions),data,generatePrimaryKey,saveAction : true});
             const bef = typeof beforeSave =='function'? beforeSave : typeof beforeUpsert =='function'? beforeUpsert : null;
             if(bef){
                 await bef({...args,data:d});

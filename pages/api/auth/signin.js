@@ -12,7 +12,7 @@ import "$date";
   @api {post} /auth/signin Authentifier un utilisateur
   @apiName {SignIn}
   @apiGroup auth
-  @apiBody {string} providerId l'id du provider à utiliser pour l'authentification de l'utilisateur
+  @apiBody {string} providerId l'id du gestionnaire d'authentification à utiliser pour l'authentification de l'utilisateur
   @apiBody {Object} ...others les données supplémentaires à passer à la fonction authorize du provider pour authentifier l'utilisateur 
 * @apiSuccess (200) {boolean} done=true pour spécifier que l'opération s'est déroulée avec succès
 * @apiSuccess (200) {String} token  le jetton Bearer généré pour servir lors des prochaines connexions de l'utilisateur
@@ -62,13 +62,17 @@ export default post((async (req, res,options) => {
       session.preferences = isJSON(session.preferences)? parseJSON(session.preferences) : defaultObj(session.preferences);
       ////la fonction before generate token est appelée pour personnaliser le contenu devant figurer dans le token à générer
       typeof beforeGenerateToken =='function' && beforeGenerateToken(session);
+      /*** l'objet session doit avoir commme id, une unique chaine de caractère où un nombre entier définie dans la props loginId */
+      if(!isNonNullString(session.loginId) && typeof session.loginId !='number'){
+        return res.status(NOT_ACCEPTABLE).json({message:'Données de sessions invalidates. Le fournisseur d\'authentification ne définie aucune valeur (props loginId) identifiant de manière unique, la session à persister. La fonction autorize du provider doit retourner un objet ayant à la prop loginId, une chaine de caractère non nulle ou un nombre entier identifiant de manière unique, l\'utilisateur où la connection, où la resource demandant à être authentifiée'});
+      }
       const token = await createUserToken(res, session);
       const result = { done: true,token,perms:session.perms,preferences:session.preferences};
-      ["firstName","lastName","fullName","pseudo","isMasterAdmin","code","label",'theme','avatar','status','phone','mobile','tel','lastLoginDate','role','profile'].map(v=>{
+      ["firstName","piece","lastName","fullName","pseudo","isMasterAdmin","code","label",'theme','avatar','status','phone','mobile','tel','lastLoginDate','role','profile'].map(v=>{
         if(login.hasOwnProperty(v)){
             result[v] = login[v];
         }
-      })
+      });
       const r = typeof mutator == 'function'? await mutator({...result,session}) : null; 
       if(r){
         extendObj(true,result,r);

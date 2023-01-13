@@ -3,6 +3,7 @@ import {getDataSource,isDataSource} from "../dataSources";
 import {buildWhere} from "$cutils/filters";
 import Validator from "$lib/validator";
 import DateLib from "$date";
+import DataTypes from "$schema/DataTypes";
 import {FORBIDEN,NOT_FOUND} from "$capi/status";
 
 const notFound = {message:'Valeur non trouvée en base',status:NOT_FOUND}
@@ -51,17 +52,40 @@ export default class BaseModel {
      * @return {Promise<object>} lorsque les donnés on été correctement validées
      * Prise en compte du champ loginId devent être rendu par le provider au moment de l'authentification de l'utilisateur
         le champ loginId permet de garder l'informatioin sur l'id de l'utilisateur connecté à un moment donné il peut être utiliser pour populate les valeurs des champs de type createBy et updateBy
-     */
+        {
+            generatePrimaryKey : {boolean}, si true, la clé primaire sera générée pour les table n'ayant qu'un seul champ de type string comme clé primaire
+        } 
+    */
     static validate (options){
         options = defaultObj(options);
+        const {generatePrimaryKey} = options;
+        const pieces = defaultObj(options.pieces);
+        const piece = pieces[this.tableName] || pieces[this.tableName.toUpperCase()];
         const data = defaultObj(options.data);
         const session = defaultObj(options.session);
+        const loginId = defaultStr(session.loginId).trim();
+        const userPiece = defaultStr(session.piece);
         const result = {};
-        const fields = isObj(options.fields) && Object.size(options.field,true) ? options.fields : this.fields;
+        let fields = isObj(options.fields) && Object.size(options.field,true) ? options.fields : this.fields;
         const {filter} = options;
-        let error = false,message  = '';
         const errorsMessages = [];
         const promises = [];
+        let primaryKey = undefined;
+        let primaryKeysCount = 0;
+        const fFields = {};
+        if(generatePrimaryKey){
+            for(let i in fields){
+                const field = fields[i];
+                if(!isObj(field)) continue;
+                fFields[i] = field;
+                if(field.primary == true && field.type ==DataTypes.STRING.type){
+                    primaryKeysCount++;
+                    primaryKey = i;
+                }
+            }
+            fields = fFields;
+        }
+        const hasOnePrimaryKey = primaryKeysCount ===1;
         for(let i in fields){
             const field = fields[i];
             if(!isObj(field)) continue;
@@ -70,7 +94,6 @@ export default class BaseModel {
                 value = new Date().toSQLDateTime();
             }
             if((field.updateBy === true) || (!value && field.createBy === true)){
-                const loginId = defaultStr(session.loginId).trim();
                 if(loginId && (typeof field.length != 'number' || (typeof field.length =='number' && loginId.length <= field.length))){
                     value = loginId;
                 }
@@ -81,43 +104,21 @@ export default class BaseModel {
             if(typeof filter =='function' && filter({field,fields:fields,index:i,columnField:i,name:field.name,columnDef:field,value:data[i]}) == false) {
                 continue;
             }
-            const fieldTitle = defaultStr(field.title,field.label);
-            if(field.nullable === false && value == null && !isNonNullString(value) && !isNumber(value) && !isBool(value)){
-                error = true;
-                message = "Le champ [{0}] est requis".sprintf(fieldTitle);
-            } else if(typeof field.length =='number' && field.length && (value+"").length > field.length){
-                error = true;
-                message = "Le champ [{0}] doit avoir une longueur de {1} caractères maxmimum".sprintf(fieldTitle,field.length);
-            } else if(typeof field.minLength =='number' && field.minLength && (value+"").length < field.minLength){
-                error = true;
-                message = "Le champ [{0}] doit avoir au moins {1} caractères".sprintf(fieldTitle,field.length);
-            } else if(typeof field.minLength =='number' && field.minLength && (value+"").length < field.minLength){
-                error = true;
-                message = "Le champ [{0}] doit avoir au moins {1} caractères".sprintf(fieldTitle,field.length);
+            if(hasOnePrimaryKey){
+                if(i === primaryKey && !isNonNullString(value)){
+                    //const length = typeof field.length =='number'? field.length : typeof field.maxLength =='number'? field.maxLength : 0;
+                    //on a trouvé plusieurs champs ayan la clé primaire
+                    //on génère la valeur du champ primaryKey de type chaine de caractère
+                    promises.push(new Promise((resolve,reject)=>{
+                        return this.generatePrimaryKey({
+                            primaryKey,
+                            primaryKeyPrefix : defaultStr(piece,options.primaryKeyPrefix,field.primaryKeyPrefix),
+                            userPiece : userPiece ? "-{0}-".sprintf(userPiece) : "",
+                        })
+                    }));
+                }
             }
-            if(error == true){
-                return Promise.reject({message,error:true});
-            }
-            
-            
-            if(field.validType || field.validRule){
-                promises.push(new Promise((resolve,reject)=>{
-                    const context = {};
-                    Validator.validate({...field,context,value:data[i]});
-                    context.on("validatorNoValid",(args)=>{
-                        context.offAll && context.offAll();
-                        reject(args);
-                        errorsMessages.push("{0} => {1}".sprintf(fieldTitle,args.message || args.msg))
-                    });
-                    context.on("validatorValid",({value})=>{
-                        result[i] = value;
-                        context.offAll && context.offAll();
-                        resolve({[i]:value});
-                    })
-                }))
-            } else {
-                result[i] = value;
-            }
+            promises.push(this.validateField({field,value,result,fieldIndex:i,errorsMessages}));
         }
         return new Promise((resolve,reject)=>{
             Promise.all(promises).then(()=>{
@@ -128,6 +129,96 @@ export default class BaseModel {
                 reject({errors : errorsMessages,message:"{0}:\n".sprintf(errorsMessages.length > 1 ? ("Les erreurs suivantes ont été générées") : "l'erreur suivante a été générée",errorsMessages.join(", "))})
             })
         });
+    }
+    static getPrimaryKeyPrefix(){
+        return undefined;
+    }
+    /**** génère la clé primaire 
+     * {
+     *      primaryKey : {string} le nom du champ qui fait office de clé primaire
+     *      primaryKeyPrefix {string} le prefix à ajouter au champ à générer
+     *      userPiece {string} le prefix à ajouter au champ à générer
+     * }
+    */
+    static generatePrimaryKey(options){
+        let {primaryKey,userPiece,primaryKeyPrefix} = options;
+        if(!String.isNonNullString(primaryKeyPrefix)){
+            primaryKeyPrefix = this.getPrimaryKeyPrefix();
+        }
+        if(!String.isNonNullString(primaryKeyPrefix)|| !String.isNonNullString(primaryKey) || !isObj(this.fields[primaryKey]) || this.fields[primaryKey].primary !== true || this.fields[primaryKey].type !=DataTypes.STRING.type){
+            return Promise.reject({error:true,message:'Impossible de générer une valeur pour la clé primaire liée à la table de données {0}. Veuillez spécifier à la fois le préfix à utiliser pour la génération des ids, champ primaryKeyPrefix. vous devez également Vous rassurer que le nom de la clé primaire figure dans les champs supportés par le model associé à la table de données. clé primaire spécifiée : {1}, prefix : {2}'.sprintf(this.tableName,primaryKey,primaryKeyPrefix)})
+        }
+        return new Promise((resolve,reject)=>{
+            let generatedValue = undefined,counterIndex = 0;
+            const next = ()=>{
+                if(isNonNullString(generatedValue)){
+                    return resolve(generatedValue);
+                }
+                counterIndex++;
+                generatedValue = primaryKeyPrefix+defaultStr(userPiece)+counterIndex;
+                const cb = (d)=>{
+                    if(!isObj(d)){
+                        return resolve(generatedValue);
+                    }
+                    if(isObj(d) && d[primaryKey]){
+                        return next();
+                    }
+                }
+                this.findOne({
+                    [primaryKey] : generatedValue
+                }).then(cb).catch(e=>{
+                    if(isObj(e)&& e.status === notFound){
+                        return resolve(generatedValue);
+                    }
+                    reject(e);
+                });
+            }
+            this.count().then((count)=>{
+                counterIndex= count;
+                next();
+            })
+        })
+    }
+    static validateField ({field,fieldIndex,value,result,errorsMessages}){
+        errorsMessages = Array.isArray(errorsMessages)? errorsMessages : [];
+        result = typeof result =="object" && result ? result : {};
+        let error = false,message  = '';
+        const fieldTitle = defaultStr(field.title,field.label);
+        if(field.nullable === false && value == null && !isNonNullString(value) && !isNumber(value) && !isBool(value)){
+            error = true;
+            message = "Le champ [{0}] est requis".sprintf(fieldTitle);
+        } else if(typeof field.length =='number' && field.length && (value+"").length > field.length){
+            error = true;
+            message = "Le champ [{0}] doit avoir une longueur de {1} caractères maxmimum".sprintf(fieldTitle,field.length);
+        } else if(typeof field.minLength =='number' && field.minLength && (value+"").length < field.minLength){
+            error = true;
+            message = "Le champ [{0}] doit avoir au moins {1} caractères".sprintf(fieldTitle,field.length);
+        } else if(typeof field.minLength =='number' && field.minLength && (value+"").length < field.minLength){
+            error = true;
+            message = "Le champ [{0}] doit avoir au moins {1} caractères".sprintf(fieldTitle,field.length);
+        }
+        if(error == true){
+            return Promise.reject({message,error:true});
+        }
+        if(field.validType || field.validRule){
+            return new Promise((resolve,reject)=>{
+                const context = {};
+                Validator.validate({...field,context,value});
+                context.on("validatorNoValid",(args)=>{
+                    context.offAll && context.offAll();
+                    reject(args);
+                    errorsMessages.push("{0} => {1}".sprintf(fieldTitle,args.message || args.msg))
+                });
+                context.on("validatorValid",({value})=>{
+                    result[fieldIndex] = value;
+                    context.offAll && context.offAll();
+                    resolve({[fieldIndex]:value});
+                })
+            });
+        } else {
+            result[fieldIndex] = value;
+            return Promise.resolve({[fieldIndex]:value});
+        }
     }
     static getRepository(force){
         if(this.activeRepository && force !== true) return Promise.resolve(this.activeRepository);
