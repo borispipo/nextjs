@@ -152,7 +152,9 @@ export default class BaseModel {
         });
     }
     static getPrimaryKeyPrefix(){
-        return undefined;
+        const tbld = defaultStr(this.tableName).toUpperCase().trim();
+        if(tbld.length<=10) return tbld;
+        return tbld.substring(0,)
     }
     /**** génère la clé primaire 
      * {
