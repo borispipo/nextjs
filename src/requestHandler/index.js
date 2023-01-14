@@ -3,12 +3,17 @@
 // license that can be found in the LICENSE file.
 import {defaultStr,extendObj,defaultObj,isNonNullString,isObj} from "$cutils";
 import {getQueryParams} from "$cutils/uri";
-import {uniqid} from "$cutils"
 import cors from "$cors";
 import {SUCCESS,FORBIDEN,INTERNAL_SERVER_ERROR,UNAUTHORIZED} from "$capi/status";
 import {withSession,getSession} from "$nauth";
 import Auth from "$cauth";
 
+const getErrorStatus = (e)=>{
+    if(isObj(e) && typeof e.status =='number'){
+        return e.status;
+    }
+    return INTERNAL_SERVER_ERROR;
+}
 /***** Execute une requête d'api uniquement pour la/les méthodes spécifiée(s)
  * @param {function} handler la fonction qui sera exécutée lorsque la/les méthode(s) sera/seront validée(s)
  * @param {string | {method:{string}, methods : [{string}], withCors : {boolean}}} les options supplémentaires
@@ -168,7 +173,7 @@ function _queryMany (Model,options,cb){
             return res.status(SUCCESS).json(result);
         } catch (e){
             console.log(e," found exception on api ",req.nextUrl?.basePath);
-            return res.status(INTERNAL_SERVER_ERROR).json(handleError(e));
+            return res.status(getErrorStatus(e)).json(handleError(e));
         }
     }),options)
 }
@@ -221,7 +226,7 @@ export function save(Model,options){
             return res.json({data:updated});
         } catch(e){
             console.log(e," saving data",data);
-            return res.status(INTERNAL_SERVER_ERROR).json(handleError(e))
+            return res.status(getErrorStatus(e)).json(handleError(e))
         }
     }),options);
 }
@@ -251,7 +256,7 @@ export function count(Model,options){
             return res.json({count});
         } catch(e){
             console.log(e," count data ",findOptions);
-            return res.status(INTERNAL_SERVER_ERROR).json(handleError(e))
+            return res.status(getErrorStatus(e)).json(handleError(e))
         }
     }),options);
 }
@@ -274,7 +279,7 @@ function _find (Model,options,cb){
             return res.status(SUCCESS).json(result);
         } catch (e){
             console.log(e," found exception on api ",req.nextUrl?.basePath);
-            return res.status(INTERNAL_SERVER_ERROR).json(handleError(e));
+            return res.status(getErrorStatus(e)).json(handleError(e));
         }
     }),options)
 }
@@ -315,7 +320,7 @@ function _remove (Model,options,cb){
             return res.status(SUCCESS).json({data});
         } catch (e){
             console.log(e," found exception on remove api ",req.nextUrl?.basePath);
-            return res.status(INTERNAL_SERVER_ERROR).json(handleError(e));
+            return res.status(getErrorStatus(e)).json(handleError(e));
         }
     }),options)
 }
