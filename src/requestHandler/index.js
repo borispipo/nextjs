@@ -222,7 +222,7 @@ export function save(Model,options){
             if(bef){
                 await bef({...args,data:d});
             }
-            const updated = typeof doSave =='function'? await doSave(d) : await Model.repository.save(d);
+            const updated = typeof doSave =='function'? await doSave(d) : await Model.save(d);
             return res.json({data:updated});
         } catch(e){
             console.log(e," saving data",data);
