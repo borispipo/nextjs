@@ -415,6 +415,13 @@ export default class BaseModel {
             }).catch(reject);
         })
     }
+    static update (data,op1,op2){
+        return new Promise((resolve,reject)=>{
+            return this.getRepository().then((r)=>{
+                return r.update(data,op1,op2).then(resolve);
+            }).catch(reject);
+        })
+    }
     static upsert (data,op1,op2){
         return new Promise((resolve,reject)=>{
             return this.getRepository().then((r)=>{
