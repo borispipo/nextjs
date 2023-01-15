@@ -122,7 +122,6 @@ export default class BaseModel {
                         }).then((val)=>{
                             result[primaryKey] = val;
                             resolve({[primaryKey]:val});
-                            console.log(val," is generated value")
                         }).catch((e)=>{
                             getErrorMessage(e);
                             reject(e);
@@ -141,7 +140,6 @@ export default class BaseModel {
         return new Promise((resolve,reject)=>{
             Promise.all(promises).then(()=>{
                 const r = {data:result};
-                console.log("has resolving heeeeee result ",r);
                 resolve(r);
                 return r;
             }).catch((e)=>{
