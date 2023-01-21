@@ -8,12 +8,22 @@ import {SUCCESS,FORBIDEN,INTERNAL_SERVER_ERROR,UNAUTHORIZED} from "$capi/status"
 import {withSession,getSession} from "$nauth";
 import Auth from "$cauth";
 
-const getErrorStatus = (e)=>{
+export const getErrorStatus = (e)=>{
     if(isObj(e) && typeof e.status =='number'){
         return e.status;
     }
     return INTERNAL_SERVER_ERROR;
 }
+/*** handle l'erreur liée à l'exécution d'une requête */
+export const handleError = (e,res)=>{
+    const status = getErrorStatus(e);
+    const r = {message:e && e.message,stackStrace:e && e.stackStrace,status};
+    if(res && typeof res.json =="function"){
+        return res.status(status).json(r);
+    }
+    return r;
+}
+export const handleRequestError = handleError;
 /***** Execute une requête d'api uniquement pour la/les méthodes spécifiée(s)
  * @param {function} handler la fonction qui sera exécutée lorsque la/les méthode(s) sera/seront validée(s)
  * @param {string | {method:{string}, methods : [{string}], withCors : {boolean}}} les options supplémentaires
@@ -173,7 +183,7 @@ function _queryMany (Model,options,cb){
             return res.status(SUCCESS).json(result);
         } catch (e){
             console.log(e," found exception on api ",req.nextUrl?.basePath);
-            return res.status(getErrorStatus(e)).json(handleError(e));
+            return handleError(e,res);
         }
     }),options)
 }
@@ -226,7 +236,7 @@ export function save(Model,options){
             return res.json({data:updated});
         } catch(e){
             console.log(e," saving data",data);
-            return res.status(getErrorStatus(e)).json(handleError(e))
+            return handleError(e,res);
         }
     }),options);
 }
@@ -256,7 +266,7 @@ export function count(Model,options){
             return res.json({count});
         } catch(e){
             console.log(e," count data ",findOptions);
-            return res.status(getErrorStatus(e)).json(handleError(e))
+            return handleError(e,res);
         }
     }),options);
 }
@@ -279,7 +289,7 @@ function _find (Model,options,cb){
             return res.status(SUCCESS).json(result);
         } catch (e){
             console.log(e," found exception on api ",req.nextUrl?.basePath);
-            return res.status(getErrorStatus(e)).json(handleError(e));
+            return handleError(e,res);;
         }
     }),options)
 }
@@ -294,10 +304,7 @@ export function findOne (Model,options){
     return _find(Model,options,'findOne');
 }
 
-export const handleError = (e)=>{
-    return {message:e && e.message,stackStrace:e && e.stackStrace};
-}
-export const handleRequestError = handleError;
+
 /**** effectue une requête remove, de suppression directement en base de données
  * @param {ModelInstance} Model, le model à utiliser pour effectuer la requête
  * @param {object} options les options supplémentaires pour effectuer la requête
@@ -320,7 +327,7 @@ function _remove (Model,options,cb){
             return res.status(SUCCESS).json({data});
         } catch (e){
             console.log(e," found exception on remove api ",req.nextUrl?.basePath);
-            return res.status(getErrorStatus(e)).json(handleError(e));
+            return handleError(e,res);
         }
     }),options)
 }
