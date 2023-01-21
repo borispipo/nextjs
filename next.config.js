@@ -114,7 +114,7 @@ module.exports = (opts)=>{
     webpack: (config,options) => {
       const { isServer, buildId, dev, defaultLoaders, nextRuntime, webpack } = options;
       if(isServer){
-        alias.$unfetch = path.resolve(src,"api","unfetch");
+        alias["$original-fetch"] = path.resolve(src,"api","unfetch");
       }
       config.resolve.alias = {
         ...(config.resolve.alias || {}),
