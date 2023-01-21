@@ -32,6 +32,7 @@ export const tryCatch = (handler)=>{
                 await handler.apply({},args);
             } 
         } catch (e){
+            console.log(e," executing try catch request");
             handleError(e,args[1]);
         }
     }
