@@ -215,7 +215,7 @@ const withTmInitializer = (modules = [], options = {}) => {
             delete nextSassLoader.issuer.not;
             delete nextSassLoader.issuer.and;
           } else {
-            console.warn('next-transpile-modules - could not find default SASS rule, SASS imports may not work');
+            //console.warn('next-transpile-modules - could not find default SASS rule, SASS imports may not work');
           }
         }
 
