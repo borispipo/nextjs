@@ -23,6 +23,19 @@ export const handleError = (e,res)=>{
     }
     return r;
 }
+
+export const tryCatch = (handler)=>{
+    return async function(){
+        const args = Array.prototype.slice.call(arguments,0);
+        try {
+            if(typeof handler =='function'){
+                await handler.apply({},args);
+            } 
+        } catch (e){
+            handleError(e,args[1]);
+        }
+    }
+}
 export const handleRequestError = handleError;
 /***** Execute une requête d'api uniquement pour la/les méthodes spécifiée(s)
  * @param {function} handler la fonction qui sera exécutée lorsque la/les méthode(s) sera/seront validée(s)
@@ -51,7 +64,9 @@ export default function handleRequestWithMethod(handler,options){
         }
     })
     const {withCors,onNoMatch,noFound,parseQuery,onNotFound} = options;
-    return async function customRouteHandler(req,res,a1,a2,a3,a4,a5){
+    return async function customRouteHandler(){
+        const args = Array.prototype.slice.call(arguments,0);
+        const req = args[0], res = args[1];
         const reqMethod = defaultStr(req.method).toUpperCase().trim();
         await cors(req,res);
         if(reqMethod =="OPTIONS"){
@@ -109,7 +124,7 @@ export default function handleRequestWithMethod(handler,options){
                 return res.status(FORBIDEN).send({message});
             }
         }
-        return typeof handler =='function'? handler(req,res,a1,a2,a3,a4,a5) : null;
+        return typeof handler =='function'? handler.apply({},args) : null;
     }
 }   
 
