@@ -294,10 +294,10 @@ export function findOne (Model,options){
     return _find(Model,options,'findOne');
 }
 
-const handleError = (e)=>{
-    return {message:e.message,stackStrace:e.stackStrace};
+export const handleError = (e)=>{
+    return {message:e && e.message,stackStrace:e && e.stackStrace};
 }
-
+export const handleRequestError = handleError;
 /**** effectue une requête remove, de suppression directement en base de données
  * @param {ModelInstance} Model, le model à utiliser pour effectuer la requête
  * @param {object} options les options supplémentaires pour effectuer la requête
