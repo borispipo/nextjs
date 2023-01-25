@@ -80,6 +80,9 @@ export default post((async (req, res,options) => {
       res.status(200).send(result);
     } catch (error) {
       console.error(error," authentication login")
+      if(isNonNullString(error)){
+        error = {message:error};
+      }
       res.status(error?.status||UNAUTHORIZED).send(error)
     }
 }));
