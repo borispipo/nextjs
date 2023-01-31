@@ -29,7 +29,25 @@ export const getDataSource = (options)=>{
     opts.entities = Array.isArray(opts.entities) && opts.entities.length ? opts.entities : entities;
     opts.logging = typeof opts.logging =='boolean'? opts.logging : process.env.NODE_ENV =='development'? true : false;
     opts = getOptions(opts);
-    return registrerDatatSource(opts);
+    const dsString = optionsToString(opts);
+    if(!dsString){
+        delete opts.password;
+        delete opts.pass;
+        throw ({message:'Options de la source de base de données invalide!! merci de spécifier les options valide pour la source de données',opts})
+    }
+    const isDev = process.env.NODE_ENV === 'development';
+    if ((dsString in global) && (isDev || isDataSource(global[dsString]))) {
+        return global[dsString];
+    }
+    const dataSource = new DataSource(opts);
+    dataSource.type = opts.type;
+    if(isDefault){
+        defaultDataSource = dataSource;
+    }
+    return dataSource.initialize().then((d)=>{
+        global [dsString] = d;
+        return d;
+    });
 }
 
 
@@ -47,36 +65,3 @@ export default DataSources;
 export const dataSourceTypes = {
     mysql,
 }
-
-/*
-    Fix too many connections problem
- * Register service.
- * @description Stores instances in `global` to prevent memory leaks in development.
- * @options {object} opts dataSource options.
- * @return {Promise.resolve<Datasource>} dataSourceInstance.
- */
-const registrerDatatSource = (opts) => {
-    return new Promise((resolve,reject)=>{
-        const dsString = optionsToString(opts);
-        if(!dsString){
-            delete opts.password;
-            delete opts.pass;
-            return reject({message:'Options de la source de données invalide!! merci de spécifier les options valide pour la source de données',opts})
-        }
-        const isDev = process.env.NODE_ENV === 'development';
-        if (isDev && (dsString in global)) {
-            return resolve(global[dsString]);
-        }
-        const dataSource = new DataSource(opts);
-            if(isDefault){
-                defaultDataSource = dataSource;
-            }
-            dataSource.type = opts.type;
-            return dataSource.initialize().then((d)=>{
-                if(isDev){
-                    global [dsString] = d;
-                }
-                return d;
-            });
-     })
-  };
