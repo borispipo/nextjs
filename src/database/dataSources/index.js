@@ -64,10 +64,8 @@ const registrerDatatSource = (opts) => {
             return reject({message:'Options de la source de données invalide!! merci de spécifier les options valide pour la source de données',opts})
         }
         const isDev = process.env.NODE_ENV === 'development';
-        if (isDev) {
-            if ((dsString in global)) {
-               return resolve(global[dsString]);
-            }
+        if (isDev && (dsString in global)) {
+            return resolve(global[dsString]);
         }
         const dataSource = new DataSource(opts);
             if(isDefault){
