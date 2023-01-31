@@ -57,8 +57,13 @@ export const isValidDataSource = (dataSource)=>{
 export const isDataSource = isValidDataSource;
 
 export const optionsToString = (opts)=>{
-    if(typeof opts !=='object' || !opts || !('TYPE' in opts) || !("HOST" in opts)) return null;
-    return "dsStringOfkey-" ["TYPE","HOST","PORT","DATABASE","USERNAME"].map((o)=>{
-        return opts[o] && opts[o].toString().trim();
+    if(typeof opts !=='object' || !opts) return null;
+    const founded = {};
+    const r = "dbDataSourceID-"+["TYPE","HOST","PORT","DATABASE","USERNAME"].map((o)=>{
+        o= o.toLowerCase();
+        const v = opts[o] && opts[o].toString().trim();
+        founded[o] = v;
+        return v;
     }).join("--").replace(/\s/g, "X");//replace all whitesspaces
+    return founded.host && founded.username && r || null;
 }

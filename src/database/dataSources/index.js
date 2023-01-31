@@ -37,7 +37,7 @@ export const getDataSource = (options)=>{
     }
     const isDev = process.env.NODE_ENV === 'development';
     if ((dsString in global) && (isDev || isDataSource(global[dsString]))) {
-        return global[dsString];
+        return Promise.resolve(global[dsString]);
     }
     const dataSource = new DataSource(opts);
     dataSource.type = opts.type;
