@@ -55,3 +55,10 @@ export const isValidDataSource = (dataSource)=>{
     return dataSource && typeof dataSource !=='boolean' && typeof dataSource.getRepository =='function'? true : false;
 }
 export const isDataSource = isValidDataSource;
+
+export const optionsToString = (opts)=>{
+    if(typeof opts !=='object' || !opts || !('TYPE' in opts) || !("HOST" in opts)) return null;
+    return "dsStringOfkey-" ["TYPE","HOST","PORT","DATABASE","USERNAME"].map((o)=>{
+        return opts[o] && opts[o].toString().trim();
+    }).join("--").replace(/\s/g, "X");//replace all whitesspaces
+}
