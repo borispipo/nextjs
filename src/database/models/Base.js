@@ -406,24 +406,24 @@ export default class BaseModel {
             }).catch(reject);
         })
     }
-    static save (data,op1,op2){
+    static save (...args){
         return new Promise((resolve,reject)=>{
             return this.getRepository().then((r)=>{
-                return r.save(data,op1,op2).then(resolve);
+                return r.save(...args).then(resolve);
             }).catch(reject);
         })
     }
-    static update (data,op1,op2){
+    static update (...args){
         return new Promise((resolve,reject)=>{
             return this.getRepository().then((r)=>{
-                return r.update(data,op1,op2).then(resolve);
+                return r.update(...args).then(resolve);
             }).catch(reject);
         })
     }
-    static upsert (data,op1,op2){
+    static upsert (...args){
         return new Promise((resolve,reject)=>{
             return this.getRepository().then((r)=>{
-                return r.upsert(data,op1,op2).then(resolve);
+                return r.upsert(...args).then(resolve);
             }).catch(reject);
         })
     }
@@ -437,10 +437,10 @@ export default class BaseModel {
             }).catch(reject);
         })
     }
-    static remove (a,b,c){
+    static remove (...args){
         return new Promise((resolve,reject)=>{
             this.getRepository().then((r)=>{
-                return r.remove(a,b,c).then(resolve);
+                return r.remove(...args).then(resolve);
             }).catch(reject);
         });
     }
