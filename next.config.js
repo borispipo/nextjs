@@ -30,7 +30,6 @@ module.exports = (opts)=>{
   alias["$ndatabase"] = path.resolve(next,"database");
   alias["$npages"] = path.resolve(dir,"pages");
   alias["$pages"] = path.resolve(src,"pages");
-  alias["$next-connect"] = path.resolve(next,"next-connect");
   
   const database = path.resolve(next,'database');
 
