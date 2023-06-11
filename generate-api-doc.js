@@ -11,17 +11,15 @@ const sanitize = require("sanitize-filename")
 module.exports = function generateApiDocs(options){
     options = options && typeof options =='object'? options : {};
     const dir = path.resolve(__dirname);
-    const base = typeof options.base =='string' && options.base && fs.existsSync(options.base)? options.base : null;
+    const cwd = process.cwd();
+    const base = cwd;
     let src = Array.isArray(options.src)? options.src : options.src && typeof options.src =='string' && fs.existsSync(options.src)? options.src : base ? path.resolve(base,"pages","api") : path.resolve(__dirname, 'pages/api');
-    const dest = options.dest && typeof options.dest =='string'? options.dest : path.resolve(base || __dirname,"api-docs");
-    let packageJSON = options.package && typeof options.package =='string' && fs.existsSync(options.package)?options.package : null;
-    if(!packageJSON && base && fs.existsSync(path.resolve(base,"package.json"))){
-        packageJSON = path.resolve(base,"package.json");
-    }
-    if(!packageJSON && fs.existsSync(path.resolve(dir,"package.json"))){
+    const dest = options.dest && typeof options.dest =='string'? options.dest : path.resolve(base,"api-docs");
+    let packageJSON = path.resolve(base,"package.json");
+    if(fs.existsSync(packageJSON) && fs.existsSync(path.resolve(dir,"package.json"))){
         packageJSON = path.resolve(dir,"package.json");
     }
-    let configPath = "",hasConfig = false;
+    let configPath = "";
     if(packageJSON){
         try {
             const json = JSON.parse(fs.readFileSync(packageJSON));
