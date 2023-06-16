@@ -1,7 +1,7 @@
 
 import isNonNullString from "$cutils/isNonNullString";
 import defaultStr from "$cutils/defaultStr";
-import "$cutils/extend.prototypes";
+import "$cutils";
 
 export * from "./types";
 
