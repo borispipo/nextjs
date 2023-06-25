@@ -74,7 +74,7 @@ export default post((async (req, res,options) => {
         }
       });
       const r = typeof mutator == 'function'? await mutator({...result,session}) : null; 
-      if(r){
+      if(isObj(r)){
         extendObj(true,result,r);
       };
       res.status(200).send(result);

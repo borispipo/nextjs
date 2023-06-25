@@ -22,10 +22,12 @@ export default class BaseModel {
     static name;
     static relations; //Entity relation's options.
     static dataSource;
-    static name;
     static isIntialized;
     static activeRepository;
     static Entity; //l'entity associé au model
+    static get name() { return this.Entity?.name }
+    static get tableName() { return this.Entity?.tableName;}
+    static get fields() { return this.Entity?.fields; }
     static init(options){
         options = typeof options =='object' && options && !Array.isArray(options)? options : {};
         const fields = defaultObj(this.fields,options.fields,options.columns);
