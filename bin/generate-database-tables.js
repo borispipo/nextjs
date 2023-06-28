@@ -5,6 +5,21 @@ const isNonNullString = x=> x && typeof x =='string';
 const fs = require("fs");
 const path = require("path");
 const StringBuilder = require("string-builder");
+
+const getArgPath = (paths)=>{
+    if(Array.isArray(paths)){
+        for(let i in paths){
+            const p = getArgPath(paths[i]);
+            if(p) return p;
+        }
+    }
+    if(typeof paths ==='string'){
+        const p2 = paths.trim();
+        const p = path.resolve(p2);
+        if(fs.existsSync(p)) return p;
+    }
+    return null;
+}
 /**** cette fonction prend en paramètre un dossier, options srcPath puis parcoures tous les fichiers du dossiers et sous dossiers
  * à la recherche des models correspondants, les fichier ui héritents de la classe BaseModel
  * elle générera les champs correpondants à la table définit dans le fichier .fields du model en question
@@ -12,9 +27,9 @@ const StringBuilder = require("string-builder");
 module.exports  = (opts,callback)=>{
     opts = typeof opts =='object' && opts ? opts : {};
     callback = typeof callback =='function'? callback : x=>x;
-    const {src,dest,srcPath,destPath,filter} = opts;
-    const s = isNonNullString(src) && fs.existsSync(src)? src : isNonNullString(srcPath) && fs.existsSync(path.resolve(srcPath))? path.resolve(srcPath) : null;
-    const d = isNonNullString(dest) && fs.existsSync(dest)? dest : isNonNullString(destPath) && fs.existsSync(path.resolve(destPath))? path.resolve(destPath) : null;
+    const {src,dest,srcPath,destPath,filter,out} = opts;
+    const s = getArgPath([src,srcPath]);
+    const d = getArgPath([dest,destPath,out]);
     if(!s || !fs.lstatSync(s).isDirectory() ) {
         return callback({message:'Vous devez spécifier un repertoire source valide'});
     }
