@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "2.14.11",
+  "version": "2.14.12",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "bin": {
@@ -53,7 +53,7 @@
     "reflect-metadata": "^0.1.13",
     "sanitize-filename": "^1.6.3",
     "string-builder": "^0.1.8",
-    "typeorm": "^0.3.11"
+    "typeorm": "^0.3.17"
   },
   "apidoc": {
     "url": "/api"
