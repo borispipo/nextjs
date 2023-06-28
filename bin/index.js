@@ -23,6 +23,8 @@ const script = typeof parsedArgs.script =='string' ? parsedArgs.script.toLowerCa
 
 if(script?.toLowerCase() =='start'){
   require("./start");
+} else if(script ==="generate-tables"){
+  require("./generate-database-tables")(parsedArgs);
 } else {
   process.exit();
 }
