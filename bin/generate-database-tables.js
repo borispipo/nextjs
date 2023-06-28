@@ -13,8 +13,8 @@ module.exports  = (opts,callback)=>{
     opts = typeof opts =='object' && opts ? opts : {};
     callback = typeof callback =='function'? callback : x=>x;
     const {src,dest,srcPath,destPath,filter} = opts;
-    const s = isNonNullString(src) && fs.existsSync(src)? src : isNonNullString(srcPath) && fs.existsSync(srcPath)? srcPath : null;
-    const d = isNonNullString(dest) && fs.existsSync(dest)? dest : isNonNullString(destPath) && fs.existsSync(destPath)? destPath : null;
+    const s = isNonNullString(src) && fs.existsSync(src)? src : isNonNullString(srcPath) && fs.existsSync(path.resolve(srcPath))? path.resolve(srcPath) : null;
+    const d = isNonNullString(dest) && fs.existsSync(dest)? dest : isNonNullString(destPath) && fs.existsSync(path.resolve(destPath))? path.resolve(destPath) : null;
     if(!s || !fs.lstatSync(s).isDirectory() ) {
         return callback({message:'Vous devez spécifier un repertoire source valide'});
     }
@@ -27,7 +27,7 @@ module.exports  = (opts,callback)=>{
         console.log(e, " was parsingg")
     });
 }
-const pp = path.join(__dirname,"src","database","schema","DataTypes","jsTypes");
+const pp = path.join(__dirname,"..","src","database","schema","DataTypes","jsTypes");
 const models = require(pp);
 const parseTable = (srcPath,destPath,paths,filter)=>{
     filter = typeof filter =='function'? filter : x=>true;
