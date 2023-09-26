@@ -250,11 +250,12 @@ const withTmInitializer = (modules = [], options = {}) => {
         // Make hot reloading work!
         // FIXME: not working on Wepback 5
         // https://github.com/vercel/next.js/issues/13039
-        config.watchOptions.ignored = [
-          ...config.watchOptions.ignored.filter((pattern) => pattern !== '**/node_modules/**'),
-          `**node_modules/{${modules.map((mod) => `!(${mod})`).join(',')}}/**/*`,
-        ];
-
+        if(config.watchOptions && Array.isArray(config.watchOptions.ignored)){
+          config.watchOptions.ignored = [
+            ...config.watchOptions.ignored.filter((pattern) => pattern !== '**/node_modules/**'),
+            `**node_modules/{${modules.map((mod) => `!(${mod})`).join(',')}}/**/*`,
+          ];
+        }
         // Overload the Webpack config if it was already overloaded
         if (typeof nextConfig.webpack === 'function') {
           return nextConfig.webpack(config, options);
