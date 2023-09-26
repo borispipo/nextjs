@@ -1,4 +1,4 @@
-//#!/usr/bin/env node
+#!/usr/bin/env node
 /**@see : https://blog.shahednasser.com/how-to-create-a-npx-tool/ */
 'use strict';
 process.on('unhandledRejection', err => {
