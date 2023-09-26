@@ -10,8 +10,9 @@ const package = require(path.resolve(dir,"package.json"));
 const requestHeaders = require("./request.headers");
 module.exports = (opts)=>{
   opts = typeof opts =='object' && opts ? opts : {};
+  const projectRoot = path.resolve(process.cwd());
   const transpileModules = Array.isArray(opts.transpileModules)? opts.transpileModules : [];
-  const base = opts.base || path.resolve(__dirname);
+  const base = opts.base || projectRoot;
   const withTM = require('./transpileModules')([
     "@fto-consult/common",
     package.name,
@@ -65,7 +66,11 @@ module.exports = (opts)=>{
   if(!alias["$signIn2SignOut"] || alias["$signIn2SignOut"] == alias["$csignIn2SignOut"]){
       alias["$signIn2SignOut"] = alias["$nsignIn2SignOut"];
   }
-  
+  for(let i in alias){
+    if(!alias[i]){
+      delete alias[i];//delete all empty alias
+    }
+  }
   const nextConfig = {
     reactStrictMode: true,
     swcMinify: false,
