@@ -21,7 +21,7 @@ export default post((async (req, res)=>{
     try {
         const session = await getProviderSession(req,req.body.token);
         if(!isObj(session)){
-           return res.status(UNAUTHORIZED).json({message:'Le jeton de sécurité distant a expiré!! essayez de vous connecter sur le site distant avec votre compte client puis réessayez!!'});
+           return res.status(UNAUTHORIZED).json({message:'Le jeton de sécurité distant a expiré!! Merci de vous reconnecter (Déconnexion/Connexion) via votre application cliente puis essayez puis réessayez!!'});
         } 
         return res.status(SUCCESS).json(session)
     } catch (error) {
