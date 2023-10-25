@@ -1,10 +1,4 @@
-export const mysql = "mysql";
-export const mssql = "mssql";
-export const oracle = "oracle";
-export const sqlite = "sqlite";
-export const postgres = "postgres";
-export const cockroachdb = "cockroachdb";
-export const sap = "sap";
-export const spanner = "spanner";
-export const mongodb = "mongodb";
-export const mariadb = "mariadb";
+import * as types from "./exports";
+export * from "./exports";
+
+export default types;

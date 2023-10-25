@@ -3,11 +3,11 @@ import isNonNullString from "$cutils/isNonNullString";
 import defaultStr from "$cutils/defaultStr";
 import "$cutils";
 
-export * from "./types";
+export * from "./types/exports";
 
-export * as dataSourceTypes from "./types";
+export * as dataSourceTypes from "./types/exports";
 
-export const defaultDataSource = defaultStr(process.env.DEFAULT_DB_DATA_SOURCE_TYPE,"mysql").trim().toLowerCase();
+export const defaultDataSource = defaultStr(process.env.DB_DEFAULT_DATA_SOURCE_TYPE,"mysql").trim().toLowerCase();
 
 export const isDefault = (type)=> isNonNullString(type) && type.trim().toLowerCase() == defaultDataSource ? true : false;
 /***
@@ -36,6 +36,9 @@ export const getConfig = (options)=>{
             opts[key] = process.env[prefix];
         } else if(isDef && process.env[keyV]){
             opts[key] = process.env[keyV];
+        }
+        if(vv=="TYPE" && opts[key] && typeof opts[key] =='string'){
+            opts[key] = opts[key].toLowerCase().trim();
         }
     });
     options = typeof options =='object' && options && !Array.isArray(options)? options : {};

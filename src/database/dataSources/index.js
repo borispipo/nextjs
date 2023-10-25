@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import defaultStr from "$cutils/defaultStr";
-import {mysql} from "./types";
+import {mysql} from "./types/exports";
 import { isDataSource,optionsToString,defaultDataSource as defaultDataSourceType,isDefault,getOptions} from "./utils";
 import entities from "../models/entities";
 
