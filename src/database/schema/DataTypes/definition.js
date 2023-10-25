@@ -3,6 +3,8 @@
  * @see : https://github.com/typeorm/typeorm/blob/master/src/driver/types/ColumnTypes.ts
 */
 import {mysql,sqlite, postgres, mssql,mariadb, oracle, cockroachdb, sap} from "$dataSources/types";
+import defaultDataSource from "../../dataSources/default";
+
 export const STRING = {
     type : "varchar",
     sql : "VARCHAR(255)",
@@ -72,7 +74,9 @@ export const INTEGER = {
 
 export const BIGINT = {
     ...INTEGER,
-    type : "bigint",
+    get type(){
+        return  "bigint";
+    },
     sql : "bigint",
     type : "bigint",
 }

@@ -2,12 +2,11 @@
 import isNonNullString from "$cutils/isNonNullString";
 import defaultStr from "$cutils/defaultStr";
 import "$cutils";
+import defaultDataSource from "./default";
 
 export * from "./types/exports";
 
 export * as dataSourceTypes from "./types/exports";
-
-export const defaultDataSource = defaultStr(process.env.DB_DEFAULT_DATA_SOURCE_TYPE,"mysql").trim().toLowerCase();
 
 export const isDefault = (type)=> isNonNullString(type) && type.trim().toLowerCase() == defaultDataSource ? true : false;
 /***
