@@ -3,6 +3,7 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 const path = require("path");
+const fs = require("fs");
 const withFonts = require('next-fonts');
 const withImages = require('next-images');
 const dir = path.resolve(__dirname);
@@ -11,6 +12,8 @@ const requestHeaders = require("./request.headers");
 module.exports = (opts)=>{
   opts = typeof opts =='object' && opts ? opts : {};
   const projectRoot = path.resolve(process.cwd());
+  const databaseConfPath = path.resolve(projectRoot,"database.config.js");
+  const localDatabaseConfPath = path.resolve(__dirname,"database.config");
   const transpileModules = Array.isArray(opts.transpileModules)? opts.transpileModules : [];
   const base = opts.base || projectRoot;
   const withTM = require('./transpileModules')([
@@ -66,6 +69,7 @@ module.exports = (opts)=>{
   if(!alias["$signIn2SignOut"] || alias["$signIn2SignOut"] == alias["$csignIn2SignOut"]){
       alias["$signIn2SignOut"] = alias["$nsignIn2SignOut"];
   }
+  alias["$database-config"] = alias["$database.config"] = alias["$database.config.js"] = fs.existsSync(databaseConfPath)? databaseConfPath : localDatabaseConfPath;
   for(let i in alias){
     if(!alias[i]){
       delete alias[i];//delete all empty alias

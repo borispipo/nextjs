@@ -3,6 +3,7 @@ import isNonNullString from "$cutils/isNonNullString";
 import defaultStr from "$cutils/defaultStr";
 import "$cutils";
 import defaultDataSource from "./default";
+const fs = require("fs"), path = require("path");
 
 export * from "./types/exports";
 
@@ -47,6 +48,31 @@ export const getConfig = (options)=>{
         type : dataSourceType,
         ...opts,
     };
+    const t = defaultStr(options.type).trim();
+    try {
+        const conf = require(`$database.config`);
+        if(conf && typeof conf =='object'){
+            const c = conf[t] || conf[t.toUpperCase()] || conf[t.toLowerCase()];
+            if(c){
+                if(typeof c ==='function'){
+                    const tt = c(options,{defaultDataSource,env:process.env});
+                    if(typeof tt =='object' && tt && !Array.isArray(tt)){
+                        options = {
+                            ...options,
+                            ...tt
+                        }
+                    }
+                } else if (typeof c ==='object' && !Array.isArray(c)){
+                    options = {
+                        ...c,
+                        ...options
+                    }
+                }
+            }
+        }
+    } catch (e){
+        console.log(e," is errrorrr loading database error");
+    }
     options.port = typeof options.port =='string'? parseInt(options.port) || options.port : options.port;
     return options;
 };
