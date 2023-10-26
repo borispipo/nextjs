@@ -65,10 +65,6 @@ module.exports = (opts)=>{
   alias["$auth-cookies"] = alias["$auth-cookies"] || path.resolve(next,"auth","utils","$auth-cookies");
   /**** pour étendre la fonction utils de auth */
   alias["$auth-utils"] = alias["$auth-utils"] || path.resolve(next,"auth","utils","$auth-utils");
-  alias["$nsignIn2SignOut"] = path.resolve(next,"auth","signIn2SignOut");
-  if(!alias["$signIn2SignOut"] || alias["$signIn2SignOut"] == alias["$csignIn2SignOut"]){
-      alias["$signIn2SignOut"] = alias["$nsignIn2SignOut"];
-  }
   alias["$database-config"] = alias["$database.config"] = alias["$database.config.js"] = fs.existsSync(databaseConfPath)? databaseConfPath : localDatabaseConfPath;
   for(let i in alias){
     if(!alias[i]){
