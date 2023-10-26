@@ -1,7 +1,7 @@
 const appConfig = require("$capp/config");
 import {AuthProvider} from "$cauth";
 import {isObj} from "$utils";
-import { getProvider } from "./providers";
+import { getProvider } from "../src/auth/providers";
 
 export const isMasterAdmin = (user)=>{
     if(!isObj(user)) return false;
