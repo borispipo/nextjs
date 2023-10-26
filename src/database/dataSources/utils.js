@@ -95,3 +95,5 @@ export const optionsToString = (opts)=>{
     }).join("--").replace(/\s/g, "X");//replace all whitesspaces
     return founded.host && founded.username && r || null;
 }
+
+export {defaultDataSource};
