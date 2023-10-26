@@ -144,7 +144,7 @@ const parseTable = (srcPath,destPath,paths,filter)=>{
                             const tableName = path.basename(destPath);
                             rootPath = rootPath || path.resolve(path.join(destPath,".."));
                             const ctBuilder = new StringBuilder();
-                            ctBuilder.appendLine("import {isNonNullString} from '$utils';\nexport default (tableName)=>{");
+                            ctBuilder.appendLine("import {isNonNullString} from '$cutils';\nexport default (tableName)=>{");
                             ctBuilder.appendLine("\tif(!isNonNullString(tableName)) return null;");
                             ctBuilder.appendLine("\ttableName = tableName.toUpperCase().trim();");
                             ctBuilder.appendLine("\tswitch(tableName){");
