@@ -40,10 +40,30 @@ export default class BaseModel {
             return d;
         })
     }
+    static getFields(fields){
+        const mFields = this.fields;
+        const r = {};
+        let hasF = false;
+        Object.map(fields,(f,index)=>{
+            if(isNonNullString(f)){
+                f = f.trim();
+                if(f in mFields){
+                    r[f] = mFields[f];
+                    hasF = true;
+                }
+            } else if(isObj(f)){
+                const code = defaultStr(f.field,index).trim();
+                if(code in mFields){
+                    r[code] = f;
+                    hasF = true;
+                }
+            }
+        });
+        return hasF ? r : mFields;
+    }
     /*** effectue une requête en base de données avec les options passés en paramètre */
     static buildWhere (whereClause,withStatementParams,fields){
-        fields = isObj(fields)? fields : this.fields;
-        return buildWhere(whereClause,withStatementParams,fields)
+        return buildWhere(whereClause,withStatementParams,this.getFields(fields))
     }
 
     static initialize (options){
@@ -68,7 +88,7 @@ export default class BaseModel {
         const loginId = defaultStr(session.loginId).trim();
         const userPiece = defaultStr(session.piece);
         const result = {};
-        let fields = isObj(options.fields) && Object.size(options.field,true) ? options.fields : this.fields;
+        let fields = this.getFields(options.fields);
         const {filter} = options;
         const errorsMessages = [];
         const promises = [];
@@ -273,7 +293,7 @@ export default class BaseModel {
             this.createQueryBuilder().then((builder)=>{
                 const {queryBuilderMutator,mutateQueryBuilder,...queryOptions} = defaultObj(options);
                 const sort = isObj(queryOptions.sort) ? queryOptions.sort : queryOptions.orderBy;
-                fields = isObj(fields)? fields : this.fields;
+                fields = this.getFields(fields);
                 const where = this.buildWhere(queryOptions.where,withStatementParams,fields);
                 if(where){
                     builder.where(where);
@@ -314,6 +334,10 @@ export default class BaseModel {
             }).catch(reject)
         })
     }
+    ///permet de muter le query builder lors de la requête
+    static mutateQueryBuilder(builder){
+        return builder;
+    }
     /*** effectue une requête query avec les paramètres issues de la requête query du queryBuidler
      * retourne plusieurs données résultat
      *  withTotal, si l'on retournera le résutat avec le total
@@ -340,6 +364,7 @@ export default class BaseModel {
                 }).catch(reject);
             }
             return this.buildQuery(queryOptions,withStatementParams,fields).then((builder)=>{
+                this.mutateQueryBuilder(builder,{...queryOptions,queryMany:true,fields})
                 builder.getMany().then(resolve).catch(reject);
             }).catch(reject);
         })
