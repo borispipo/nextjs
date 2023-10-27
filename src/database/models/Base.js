@@ -318,10 +318,8 @@ export default class BaseModel {
      * retourne plusieurs données résultat
      *  withTotal, si l'on retournera le résutat avec le total
      */
-    static queryMany (options){
-        const {withStatementParams,fields,...queryOptions} = options;
+    static queryMany ({withStatementParams,fields,...queryOptions}){
         return new Promise((resolve,reject)=>{
-            queryOptions = defaultObj(queryOptions);
             const withTotal = queryOptions.withTotal;
             if(withTotal){
                 return Promise.all([
