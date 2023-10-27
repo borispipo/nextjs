@@ -141,7 +141,19 @@ export default function handleRequestWithMethod(handler,options){
 
 const handleRequest = (handler,options,method)=>{
     options = defaultObj(options);
-    options.method = method;
+    const m = Array.isArray(options.method)  && options.method || isNonNullString(options.method) && options.method.trim().split(",") || null;
+    let hasFound = false;
+    if(Array.isArray(m)){
+        for(let i in m){
+            if(isNonNullString(m[i]) && (m[i].trim().toUpperCase() in METHODS)){
+                hasFound = true;
+                break;
+            }
+        }
+    }
+    if(hasFound){
+        options.method = m;
+    } else options.method = method;
     return handleRequestWithMethod(handler,options);
 }
 export const get = (handler,options)=>{
