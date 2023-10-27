@@ -115,7 +115,7 @@ export default function handleRequestWithMethod(handler,options){
         if (!hasFound && canCheck) {
             const nF = typeof onNoMatch =='function'? onNoMatch : typeof onNotFound =='function'? onNotFound : noFound;
             console.log(req?.nextUrl?.pathname || req.url," not allowed for method <<",req.method,">>. supported methods are ",methods,req.nextUrl)
-            if(typeof nF =='function' && nF({req,res,request:req,status:NOT_FOUND,response:res}) == false) return;
+            if(typeof nF =='function' && nF({req,res,status:NOT_FOUND,response:res}) == false) return;
             return res.status(405).send({message:"Page Non trouvée!! impossible d'exécuter la requête pour la méthode [{0}]; url : {1}, la où les méthodes supportées pour la requête sont : {2}".sprintf(req.method,req.url,methods.join(","))});
         }
         parseRequestQuery(req,parseQuery);
@@ -132,7 +132,7 @@ export default function handleRequestWithMethod(handler,options){
             let message = "Vous n'êtes pas autorisés d'acccéder à la ressource demandée";
             let hasError = false;
             if(isA){
-                const r = await isAllowed({req,request:req,res,response:res,session,user:session,Auth});
+                const r = await isAllowed({req,res,session,user:session,Auth});
                 if(isNonNullString(r)){
                     message = r;
                 }
@@ -211,7 +211,7 @@ const prepareQuery = async ({findOptions, getFindOptions,req,res,...options})=>{
     parseRequestBody(req);
     parseRequestQuery(req);
     const query = extendObj(true,{},req.query,req.body,findOptions);
-    const args = {...options,req,request:req,res,response:res,...query,findOptions:query,session:req.session,req};
+    const args = {...options,req,res,...query,findOptions:query,session:req.session,req};
     if(typeof getFindOptions == 'function'){
         const q = await getFindOptions(args);
         if(isObj(q)){
@@ -235,7 +235,8 @@ function _queryMany (Model,options,cb){
     const {method,mutate,...rest} = options;
     return getMethod(method,post)(withSession(async(req,res)=>{
         try {
-            const query = await prepareQuery({req,res,...rest});
+            const args = {...rest,req,res,session:req.session}
+            const query = await prepareQuery(args);
             const data = await Model[cb||'queryMany'](query,args);
             const result = isObj(data) && ('data' in data && 'total' in data && 'count' in data) ? data : {data};
             if(typeof mutate =='function'){
@@ -279,12 +280,12 @@ export async function save(Model,options){
     return getMethod(method,put)(withSession(async(req,res)=>{
         const data = defaultObj(req.body.data);
         if(typeof getData =='function'){
-            const d = await getData({req,request:req,res,response:res,data:reqData});
+            const d = await getData({req,res,data:reqData});
             if(typeof d =='function'){
                 extendObj(data,d);
             }
         }
-        const args = {...rest,req,request:req,res,response:res,user:req.session,userId:req.session.loginId,session:req.session,req,data};
+        const args = {...rest,req,res,user:req.session,userId:req.session.loginId,session:req.session,req,data};
         let generatePrimaryKey = options.generatePrimaryKey;
         generatePrimaryKey = generatePrimaryKey != undefined? !!generatePrimaryKey : true;
         try {
@@ -330,9 +331,10 @@ export function count(Model,options){
     let {method} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
         try {
-            const query = await prepareQuery({...options,req,res})
+            const args = {...options,req,res,session:req.session};
+            const query = await prepareQuery(args)
             await Model.init();
-            const count = await Model.repository.count(query,{req,res,...options});
+            const count = await Model.repository.count(query,args);
             return res.json({count});
         } catch(e){
             console.log(e," count data ",query);
@@ -348,7 +350,7 @@ function _find (Model,options,cb){
     const {method,mutate,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
         const query = prepareOptions({...options,req,res});
-        const args = {...query,findOptions:query,req,request:req,res,response:res,session:req.session,req};
+        const args = {...query,findOptions:query,req,res,session:req.session,req};
         try {
             const data = await Model[cb||'find'](query,{...rest,...args});
             const result = {data};
@@ -390,8 +392,8 @@ function _remove (Model,options,cb){
     options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : cb =='queryRemove'?true:false;
     return getMethod(method,deleteRequest)(withSession(async(req,res)=>{
         try {
-            const query = prepareQuery({...options,req,res});
-            const args = {req,request:req,res,response:res,session:req.session,req};
+            const query = prepareQuery({...options,req,res,session:req.session});
+            const args = {...rest,req,res,session:req.session};
             const data = await Model[cb||'queryRemove'](query,{...rest,...args});
             return res.status(SUCCESS).json({data});
         } catch (e){
