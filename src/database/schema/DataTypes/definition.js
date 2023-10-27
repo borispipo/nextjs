@@ -1,5 +1,4 @@
 /***
- * @see : https://sequelize.org/docs/v7/other-topics/other-data-types/ 
  * @see : https://github.com/typeorm/typeorm/blob/master/src/driver/types/ColumnTypes.ts
 */
 import {mysql,sqlite, postgres, mssql,mariadb, oracle, cockroachdb, sap} from "$dataSources/types";
@@ -151,4 +150,18 @@ export const CHECKBOX = {
     sql : "int",
     js : "checkbox",
     dataSourceTypes : {mysql,mariadb, postgres, mssql, sqlite, cockroachdb},
+}
+
+export const JSON = {
+    type : "json",
+    dataSourceTypes : {mysql, postgres, cockroachdb},
+    sql : "json",
+    js : "object",
+}
+
+export const JSONB = {
+    type : "jsonb",
+    dataSourceTypes : {postgres, cockroachdb},
+    sql : "jsonb",
+    js : "object",
 }
