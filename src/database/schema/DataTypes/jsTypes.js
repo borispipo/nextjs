@@ -130,3 +130,15 @@ module.exports.CHECKBOX = {
     sql : "int",
     js : "checkbox",
 }
+
+module.exports.JSON = {
+    type : "json",
+    sql : "json",
+    js : "object",
+}
+
+module.exports.JSONB = {
+    type : "jsonb",
+    sql : "jsonb",
+    js : "object",
+}
