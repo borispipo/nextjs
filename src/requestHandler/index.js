@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 import {defaultStr,extendObj,defaultObj,isNonNullString,isObj} from "$cutils";
+import {isJSON,parseJSON} from "$cutils/json";
 import {getQueryParams} from "$cutils/uri";
 import cors from "$cors";
 import {SUCCESS,FORBIDEN,INTERNAL_SERVER_ERROR,UNAUTHORIZED} from "$capi/status";
@@ -64,7 +65,7 @@ export default function handleRequestWithMethod(handler,options){
             }
         }
     })
-    const {withCors,onNoMatch,noFound,parseQuery,onNotFound} = options;
+    const {withCors,onNoMatch,noFound,parseQuery,parseBody,onNotFound} = options;
     return async function customRouteHandler(){
         const args = Array.prototype.slice.call(arguments,0);
         const req = args[0], res = args[1];
@@ -99,6 +100,15 @@ export default function handleRequestWithMethod(handler,options){
             } catch(e){
                 req.query = query;
             }
+        }
+        if(parseBody !== false){
+           try {
+                if( isJSON(req.body)){
+                    const b =   parseJSON(req.body);
+                    req.body = b;
+                }
+           } catch(e){
+           }
         }
         if(withCors !== false){
             await cors(req,res);

@@ -125,8 +125,8 @@ module.exports = (opts)=>{
       const ext =  !isServer ? ".client":".server";
       const defaultExts = [".js",".ts",".tsx",".jsx"];
       const sideExtensions =  defaultExts.map(t=>{
-        return ext+t;
-    });
+          return ext+t;
+      });
       /**** les ficheirs à exécuter côté client porteront toujours l'extension .client.js, ceux côtés serveur porterons l'extension .server.js */
       config.resolve.extensions = [
         ...sideExtensions,
@@ -145,6 +145,8 @@ module.exports = (opts)=>{
       return config;
     },
   }
+  nextConfig.experimental = Object.assign({},nextConfig.experimental);
+  nextConfig.experimental.webpackBuildWorker = true;
   return withImages(withTM(withFonts(nextConfig)));
 }
 
