@@ -211,9 +211,9 @@ function _queryMany (Model,options,cb){
     const {method,mutate,getQuery,...rest} = options;
     return getMethod(method,post)(withSession(async(req,res)=>{
         try {
-            const query = extendObj(true,{},req.query,req.body,typeof getQuery == 'function' && await getQuery(args));
-            const args = {req,request:req,res,response:res,query,session:req.session,req};
-            const data = await Model[cb||'queryMany']({...rest,...defaultObj(query.fetchOptions),...args,...query});
+            const query = extendObj(true,{},req.query,req.body,query.fetchOptions,typeof getQuery == 'function' && await getQuery(args));
+            const args = {req,request:req,res,response:res,...query,fetchOptions:query,session:req.session,req};
+            const data = await Model[cb||'queryMany']({...rest,...query,...args});
             const result = isObj(data) && ('data' in data && 'total' in data && 'count' in data) ? data : {data};
             if(typeof mutate =='function'){
                 await mutate(result,args);
@@ -297,7 +297,9 @@ export function count(Model,options){
     options = prepareOptions(options);
     let {findOptions, getFindOptions,method} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
-        findOptions = typeof getFindOptions =='function' ? defaultObj(getFindOptions({req,request:req,res,response:res,session:req.session,req})) : defaultObj(findOptions);
+        const query = extendObj({},req.query,req.body);
+        findOptions = extendObj({},query,findOptions);
+        findOptions = typeof getFindOptions =='function' ? defaultObj(getFindOptions({req,request:req,res,data,findOptions,response:res,session:req.session,req})) : findOptions;
         try {
             await Model.init();
             const count = await Model.repository.count(findOptions);
@@ -315,8 +317,9 @@ function _find (Model,options,cb){
     options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : false;
     const {method,mutate,getFindOptions,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
-        const args = {req,request:req,res,response:res,session:req.session,req};
-        const findOptions = typeof getFindOptions == 'function' ? await defaultObj(getFindOptions(args)) : defaultObj(req.query);
+        const query = extendObj({},req.query,req.body);
+        const args = {...query,findOptions:query,req,request:req,res,response:res,session:req.session,req};
+        const findOptions = typeof getFindOptions == 'function' ? await defaultObj(getFindOptions(args)) : defaultObj(query);
         args.findOptions = findOptions;
         try {
             const data = await Model[cb||'find']({...rest,...args,...findOptions,req});
@@ -359,8 +362,9 @@ function _remove (Model,options,cb){
     options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : cb =='queryRemove'?true:false;
     return getMethod(method,deleteRequest)(withSession(async(req,res)=>{
         try {
-            const args = {req,request:req,res,response:res,session:req.session,req};
-            const findOptions = typeof getFindOptions == 'function' ? defaultObj(await getFindOptions(args)) : defaultObj(req.query);
+            const query = extendObj({},req.query,req.body);
+            const args = {...query,findOptions:query,req,request:req,res,response:res,data:query,session:req.session,req};
+            const findOptions = typeof getFindOptions == 'function' ? defaultObj(await getFindOptions(args)) : defaultObj(query);
             const data = await Model[cb||'queryRemove']({...rest,...args,...findOptions});
             return res.status(SUCCESS).json({data});
         } catch (e){
