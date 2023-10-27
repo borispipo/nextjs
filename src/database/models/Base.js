@@ -318,7 +318,8 @@ export default class BaseModel {
      * retourne plusieurs données résultat
      *  withTotal, si l'on retournera le résutat avec le total
      */
-    static queryMany (queryOptions,withStatementParams,fields){
+    static queryMany (options){
+        const {withStatementParams,fields,...queryOptions} = options;
         return new Promise((resolve,reject)=>{
             queryOptions = defaultObj(queryOptions);
             const withTotal = queryOptions.withTotal;
@@ -456,10 +457,10 @@ export default class BaseModel {
             return this._checkBeforeRemoveAndRemove({...defaultObj(findOptions),data,allData:data});
         })
     }
-    static queryRemove(queryOptions){
+    static queryRemove(queryOptions,...rest){
         queryOptions = defaultObj(queryOptions);
         queryOptions.withTotal = false;
-        return this.queryMany(queryOptions).then((allData)=>{
+        return this.queryMany(queryOptions,...rest).then((allData)=>{
             return this._checkBeforeRemoveAndRemove({...queryOptions,allData,data:allData})
         });
     }

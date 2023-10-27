@@ -39,6 +39,34 @@ export const tryCatch = (handler)=>{
     }
 }
 export const handleRequestError = handleError;
+
+export const parseRequestQuery = (req,parseQuery)=>{
+    const query = req?.query;
+    ///la méthode reqParser qui parse la requête url de nextjs par défaut ne prend pas en compte la recursivité, on n'est donc obligé d'utiliser une fonction qui prend en compte les query recursives
+    ///on peut par défaut interdire de parser le query, en passant la variable parseQuery à false
+    if(parseQuery !== false && isNonNullString(req?.url)){
+        try {
+            const q = getQueryParams(req.url);
+            req.query =  Object.size(q,true)? q : query;
+        } catch(e){
+            req.query = query;
+        }
+    }
+    return req;
+}
+export const parseRequestBody = (req,parseBody)=>{
+    if(parseBody !== false && isNonNullString(req?.body)){
+        try {
+             if( isJSON(req?.body)){
+                 const b =   parseJSON(req.body);
+                 req.body = b;
+             }
+        } catch(e){
+        
+        }
+    }
+    return req;
+}
 /***** Execute une requête d'api uniquement pour la/les méthodes spécifiée(s)
  * @param {function} handler la fonction qui sera exécutée lorsque la/les méthode(s) sera/seront validée(s)
  * @param {string | {method:{string}, methods : [{string}], withCors : {boolean}}} les options supplémentaires
@@ -90,26 +118,8 @@ export default function handleRequestWithMethod(handler,options){
             if(typeof nF =='function' && nF({req,res,request:req,status:NOT_FOUND,response:res}) == false) return;
             return res.status(405).send({message:"Page Non trouvée!! impossible d'exécuter la requête pour la méthode [{0}]; url : {1}, la où les méthodes supportées pour la requête sont : {2}".sprintf(req.method,req.url,methods.join(","))});
         }
-        const query = req.query;
-        ///la méthode reqParser qui parse la requête url de nextjs par défaut ne prend pas en compte la recursivité, on n'est donc obligé d'utiliser une fonction qui prend en compte les query recursives
-        ///on peut par défaut interdire de parser le query, en passant la variable parseQuery à false
-        if(parseQuery !== false && isNonNullString(req.url)){
-            try {
-                const q = getQueryParams(req.url);
-                req.query =  Object.size(q,true)? q : query;
-            } catch(e){
-                req.query = query;
-            }
-        }
-        if(parseBody !== false){
-           try {
-                if( isJSON(req.body)){
-                    const b =   parseJSON(req.body);
-                    req.body = b;
-                }
-           } catch(e){
-           }
-        }
+        parseRequestQuery(req,parseQuery);
+        parseRequestBody(req,parseBody);
         if(withCors !== false){
             await cors(req,res);
         }
@@ -197,23 +207,36 @@ export const getMethod = (method,defaultMethod)=>{
     return isNonNullString(method) && handleRequestWithMethod[method.trim().toLowerCase()] || defaultMethod;
 }
 
+const prepareQuery = async ({findOptions, getFindOptions,req,res,...options})=>{
+    parseRequestBody(req);
+    parseRequestQuery(req);
+    const query = extendObj(true,{},req.query,req.body,findOptions);
+    const args = {...options,req,request:req,res,response:res,...query,findOptions:query,session:req.session,req};
+    if(typeof getFindOptions == 'function'){
+        const q = await getFindOptions(args);
+        if(isObj(q)){
+            extendObj(query,q);
+        }
+    }
+    return query;
+}
+
 /**** effectue une requête queryMany directement en base de données
  * @param {ModelInstance} Model, le model à utiliser pour effectuer la requête
  * @param {object} options les options supplémentaires pour effectuer la requête
  *      de la forme : 
  *       { mutate : {function} la fonction de rappel à appeler pour la mutation des données récupérées en bd
- *        getQuery {function} la fonction à utiliser pour récupérer la requête query à utiliser pour le queryMany|| querySingle
+ *        getFindOptions {function} la fonction à utiliser pour récupérer la requête query à utiliser pour le queryMany|| querySingle
  *       }
  * @return la fonction de rappel, handler permettant d'exécuter la requête queryMany en s'appuyant sur le model passé en paramètre
  */
 function _queryMany (Model,options,cb){
     options = prepareOptions(options);
-    const {method,mutate,getQuery,...rest} = options;
+    const {method,mutate,...rest} = options;
     return getMethod(method,post)(withSession(async(req,res)=>{
         try {
-            const query = extendObj(true,{},req.query,req.body,typeof getQuery == 'function' && await getQuery(args));
-            const args = {req,request:req,res,response:res,...query,fetchOptions:query,session:req.session,req};
-            const data = await Model[cb||'queryMany']({...rest,...query,...args});
+            const query = await prepareQuery({req,res,...rest});
+            const data = await Model[cb||'queryMany'](query,args);
             const result = isObj(data) && ('data' in data && 'total' in data && 'count' in data) ? data : {data};
             if(typeof mutate =='function'){
                 await mutate(result,args);
@@ -250,12 +273,18 @@ export function queryOne (Model,options){
  * }
  * par défaut, utilise génère un handler écoutant la méthode put de requestHandler pour l'enregistrement des données
 */
-export function save(Model,options){
+export async function save(Model,options){
     options = prepareOptions(options);
     const {method,mutate,getData,doSave,beforeValidate,validateOptions,beforeSave,beforeUpsert,...rest} = options;
     return getMethod(method,put)(withSession(async(req,res)=>{
-        const data = typeof getData =='function' ? defaultObj(getData({req,request:req,res,response:res})) : defaultObj(req.body.data);
-        const args = {req,request:req,res,response:res,user:req.session,userId:req.session.loginId,session:req.session,req,data};
+        const data = defaultObj(req.body.data);
+        if(typeof getData =='function'){
+            const d = await getData({req,request:req,res,response:res,data:reqData});
+            if(typeof d =='function'){
+                extendObj(data,d);
+            }
+        }
+        const args = {...rest,req,request:req,res,response:res,user:req.session,userId:req.session.loginId,session:req.session,req,data};
         let generatePrimaryKey = options.generatePrimaryKey;
         generatePrimaryKey = generatePrimaryKey != undefined? !!generatePrimaryKey : true;
         try {
@@ -264,8 +293,11 @@ export function save(Model,options){
             } else if(typeof beforeValidate =='function'){
                 await beforeValidate(args);
             }
+            if(!Object.size(data,true)){
+                throw "Aucune donnée à enregister, merci de spécifier la données dans la props data du body de la requête d'enregistrement des données";
+            }
             await Model.init();
-            const {data:d} = await Model.validate({...rest,...args,...defaultObj(validateOptions),data,generatePrimaryKey,saveAction : true});
+            const {data:d} = await Model.validate({...args,...defaultObj(validateOptions),data,generatePrimaryKey,saveAction : true});
             const bef = typeof beforeSave =='function'? beforeSave : typeof beforeUpsert =='function'? beforeUpsert : null;
             if(bef){
                 await bef({...args,data:d});
@@ -295,17 +327,15 @@ export const upsert = save;
 */
 export function count(Model,options){
     options = prepareOptions(options);
-    let {findOptions, getFindOptions,method} = options;
+    let {method} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
-        const query = extendObj({},req.query,req.body);
-        findOptions = extendObj({},query,findOptions);
-        findOptions = typeof getFindOptions =='function' ? defaultObj(getFindOptions({req,request:req,res,data,findOptions,response:res,session:req.session,req})) : findOptions;
         try {
+            const query = await prepareQuery({...options,req,res})
             await Model.init();
-            const count = await Model.repository.count(findOptions);
+            const count = await Model.repository.count(query,{req,res,...options});
             return res.json({count});
         } catch(e){
-            console.log(e," count data ",findOptions);
+            console.log(e," count data ",query);
             return handleError(e,res);
         }
     }),options);
@@ -315,14 +345,12 @@ export function count(Model,options){
 function _find (Model,options,cb){
     options = prepareOptions(options);
     options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : false;
-    const {method,mutate,getFindOptions,...rest} = options;
+    const {method,mutate,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
-        const query = extendObj({},req.query,req.body);
+        const query = prepareOptions({...options,req,res});
         const args = {...query,findOptions:query,req,request:req,res,response:res,session:req.session,req};
-        const findOptions = typeof getFindOptions == 'function' ? await defaultObj(getFindOptions(args)) : defaultObj(query);
-        args.findOptions = findOptions;
         try {
-            const data = await Model[cb||'find']({...rest,...args,...findOptions,req});
+            const data = await Model[cb||'find'](query,{...rest,...args});
             const result = {data};
             if(typeof mutate =='function'){
                 await mutate(result,args);
@@ -358,14 +386,13 @@ export function findOne (Model,options){
  */
 function _remove (Model,options,cb){
     options = prepareOptions(options);
-    const {method,getFindOptions,...rest} = options;
+    const {method,...rest} = options;
     options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : cb =='queryRemove'?true:false;
     return getMethod(method,deleteRequest)(withSession(async(req,res)=>{
         try {
-            const query = extendObj({},req.query,req.body);
-            const args = {...query,findOptions:query,req,request:req,res,response:res,data:query,session:req.session,req};
-            const findOptions = typeof getFindOptions == 'function' ? defaultObj(await getFindOptions(args)) : defaultObj(query);
-            const data = await Model[cb||'queryRemove']({...rest,...args,...findOptions});
+            const query = prepareQuery({...options,req,res});
+            const args = {req,request:req,res,response:res,session:req.session,req};
+            const data = await Model[cb||'queryRemove'](query,{...rest,...args});
             return res.status(SUCCESS).json({data});
         } catch (e){
             console.log(e," found exception on remove api ",req.nextUrl?.basePath);
