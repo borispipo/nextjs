@@ -1,4 +1,4 @@
-import {isObj,defaultObj,defaultStr,defaultVal,isPromise,isNonNullString,isNumber,isBool} from "$utils";
+import {isObj,defaultObj,defaultStr,extendObj,defaultVal,isPromise,isNonNullString,isNumber,isBool} from "$utils";
 import {getDataSource,isDataSource} from "../dataSources";
 import defaultDataSource from "../dataSources/default";
 import {buildWhere} from "$cutils/filters";
@@ -64,7 +64,7 @@ export default class BaseModel {
     }
     /*** effectue une requête en base de données avec les options passés en paramètre */
     static buildWhere (whereClause,withStatementParams,fields,opts){
-        opts = extenObj({},opts,{
+        opts = extendObj({},opts,{
             dataSourceType : defaultStr(this.dataSource?.dataSourceType,defaultDataSource)
         });
         return buildWhere(whereClause,withStatementParams,this.getFields(fields),opts);
