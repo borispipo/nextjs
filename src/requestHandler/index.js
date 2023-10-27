@@ -211,7 +211,7 @@ function _queryMany (Model,options,cb){
     const {method,mutate,getQuery,...rest} = options;
     return getMethod(method,post)(withSession(async(req,res)=>{
         try {
-            const query = extendObj(true,{},req.query,req.body,query.fetchOptions,typeof getQuery == 'function' && await getQuery(args));
+            const query = extendObj(true,{},req.query,req.body,typeof getQuery == 'function' && await getQuery(args));
             const args = {req,request:req,res,response:res,...query,fetchOptions:query,session:req.session,req};
             const data = await Model[cb||'queryMany']({...rest,...query,...args});
             const result = isObj(data) && ('data' in data && 'total' in data && 'count' in data) ? data : {data};
