@@ -145,8 +145,8 @@ module.exports = (opts)=>{
       return config;
     },
   }
-  nextConfig.experimental = Object.assign({},nextConfig.experimental);
-  nextConfig.experimental.webpackBuildWorker = true;
+  //nextConfig.experimental = Object.assign({},nextConfig.experimental);
+  //nextConfig.experimental.webpackBuildWorker = true;
   return withImages(withTM(withFonts(nextConfig)));
 }
 

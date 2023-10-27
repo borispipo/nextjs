@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "3.0.8",
+  "version": "3.1.0",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "bin": {
@@ -15,7 +15,7 @@
     "unpublish": "npm -f unpublish @fto-consult/nextjs",
     "generate-api-doc": "node ./api-doc",
     "docs": "npm run build-docs",
-    "update": "npm i next@latest @fto-consult/common@latest next-fonts@latest next-images@latest react@latest  react-dom@latest bcrypt@latest -metadata@latest typeorm@latest string-builder@latest cookie@latest cors@latest apidoc@latest @emotion/styled@latest @emotion/react express@latest"
+    "update": "npm i next@13 @fto-consult/common@latest next-fonts@latest next-images@latest react@latest  react-dom@latest bcrypt@latest -metadata@latest typeorm@latest string-builder@latest cookie@latest cors@latest apidoc@latest @emotion/styled@latest @emotion/react express@latest"
   },
   "repository": {
     "type": "git",
@@ -46,7 +46,7 @@
     "express": "^4.18.2",
     "jose": "^4.10.3",
     "mysql2": "^2.3.3",
-    "next": "^14.0.0",
+    "next": "^13.5.6",
     "next-fonts": "^1.5.1",
     "next-images": "^1.8.5",
     "react": "^18.2.0",
