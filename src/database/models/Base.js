@@ -1,5 +1,6 @@
 import {isObj,defaultObj,defaultStr,defaultVal,isPromise,isNonNullString,isNumber,isBool} from "$utils";
 import {getDataSource,isDataSource} from "../dataSources";
+import defaultDataSource from "../dataSources/default";
 import {buildWhere} from "$cutils/filters";
 import Validator from "$lib/validator";
 import DateLib from "$date";
@@ -62,8 +63,11 @@ export default class BaseModel {
         return hasF ? r : mFields;
     }
     /*** effectue une requête en base de données avec les options passés en paramètre */
-    static buildWhere (whereClause,withStatementParams,fields){
-        return buildWhere(whereClause,withStatementParams,this.getFields(fields))
+    static buildWhere (whereClause,withStatementParams,fields,opts){
+        opts = extenObj({},opts,{
+            dataSourceType : defaultStr(this.dataSource?.dataSourceType,defaultDataSource)
+        });
+        return buildWhere(whereClause,withStatementParams,this.getFields(fields),opts);
     }
 
     static initialize (options){
@@ -294,7 +298,7 @@ export default class BaseModel {
                 const {queryBuilderMutator,mutateQueryBuilder,...queryOptions} = defaultObj(options);
                 const sort = isObj(queryOptions.sort) ? queryOptions.sort : queryOptions.orderBy;
                 fields = this.getFields(fields);
-                const where = this.buildWhere(queryOptions.where,withStatementParams,fields);
+                const where = this.buildWhere(queryOptions.where,withStatementParams,fields,queryOptions);
                 if(where){
                     builder.where(where);
                 }

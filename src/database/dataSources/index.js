@@ -46,6 +46,7 @@ export const getDataSource = (options)=>{
     }
     return dataSource.initialize().then((d)=>{
         global [dsString] = d;
+        d.dataSourceType = d.type = opts.type;
         return d;
     });
 }
