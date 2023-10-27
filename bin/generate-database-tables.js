@@ -87,7 +87,9 @@ const parseTable = (srcPath,destPath,paths,filter)=>{
                                             hasFound = true;
                                             jsContent = replaceAll(jsContent,st,"'"+mm.js+"'");
                                         }
-                                        jsContent = jsContent.replaceAll("length : ","maxLength : ").replaceAll("length: ","maxLength : ").replaceAll("length:","maxLength : ");
+                                        jsContent = jsContent.replaceAll("length : ","maxLength : ")
+                                            .replaceAll("length: ","maxLength : ").replaceAll("length:","maxLength : ")
+                                            .replaceAll("primary : ","primaryKey :").replaceAll("primary:","primaryKey : ").replaceAll("primary  : ","primaryKey : ");
                                     }
                                     if(hasFound){
                                         try {
