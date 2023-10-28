@@ -207,10 +207,10 @@ export const getMethod = (method,defaultMethod)=>{
     return isNonNullString(method) && handleRequestWithMethod[method.trim().toLowerCase()] || defaultMethod;
 }
 
-const prepareQuery = async ({findOptions, getFindOptions,req,res,...options})=>{
+const prepareQuery = async ({getFindOptions,req,res,...options})=>{
     parseRequestBody(req);
     parseRequestQuery(req);
-    const query = extendObj(true,{},req.query,req.body,findOptions);
+    const query = extendObj({},req.query,req.body);
     const args = {...options,req,res,...query,findOptions:query,session:req.session,req};
     if(typeof getFindOptions == 'function'){
         const q = await getFindOptions(args);
@@ -349,7 +349,7 @@ function _find (Model,options,cb){
     options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : false;
     const {method,mutate,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
-        const query = prepareOptions({...options,req,res});
+        const query = await prepareQuery({...options,req,res});
         const args = {...query,findOptions:query,req,res,session:req.session,req};
         try {
             const data = await Model[cb||'find'](query,{...rest,...args});
@@ -392,7 +392,7 @@ function _remove (Model,options,cb){
     options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : cb =='queryRemove'?true:false;
     return getMethod(method,deleteRequest)(withSession(async(req,res)=>{
         try {
-            const query = prepareQuery({...options,req,res,session:req.session});
+            const query = await prepareQuery({...options,req,res,session:req.session});
             const args = {...rest,req,res,session:req.session};
             const data = await Model[cb||'queryRemove'](query,{...rest,...args});
             return res.status(SUCCESS).json({data});
