@@ -337,7 +337,7 @@ export function count(Model,options){
             const count = await Model.repository.count(query,args);
             return res.json({count});
         } catch(e){
-            console.log(e," count data ",query);
+            console.log(e," count data ",method,options);
             return handleError(e,res);
         }
     }),options);
