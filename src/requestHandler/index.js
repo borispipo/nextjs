@@ -395,7 +395,7 @@ function _remove (Model,options,cb){
         try {
             const query = await prepareQuery({...options,req,res,session:req.session});
             const args = {...rest,req,res,session:req.session};
-            const data = await Model[cb||'queryRemove'](query,{...rest,...args});
+            const data = await Model[cb||'queryRemove']({...rest,...query},{...rest,...args});
             return res.status(SUCCESS).json({data});
         } catch (e){
             console.log(e," found exception on remove api ",req.nextUrl?.basePath);
