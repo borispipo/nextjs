@@ -281,7 +281,7 @@ export async function save(Model,options){
         const data = defaultObj(req.body.data);
         if(typeof getData =='function'){
             const d = await getData({req,res,data:reqData});
-            if(typeof d =='function'){
+            if(isObj(d)){
                 extendObj(data,d);
             }
         }
