@@ -274,7 +274,7 @@ export function queryOne (Model,options){
  * }
  * par défaut, utilise génère un handler écoutant la méthode put de requestHandler pour l'enregistrement des données
 */
-export async function save(Model,options){
+export function save(Model,options){
     options = prepareOptions(options);
     const {method,mutate,getData,doSave,beforeValidate,validateOptions,beforeSave,beforeUpsert,...rest} = options;
     return getMethod(method,put)(withSession(async(req,res)=>{
