@@ -198,8 +198,8 @@ export const METHODS = {
 export {deleteRequest as delete};
 
 Object.map(METHODS,(i,method)=>{
-    handleRequestWithMethod[method.toLowerCase()] = (handler,options)=>{
-        return handleRequest(handler,options,method);
+    handleRequestWithMethod[method.toLowerCase()] = async (handler,options)=>{
+        return await handleRequest(handler,options,method);
     }
 });
 
@@ -278,7 +278,7 @@ export async function save(Model,options){
     options = prepareOptions(options);
     const {method,mutate,getData,doSave,beforeValidate,validateOptions,beforeSave,beforeUpsert,...rest} = options;
     return getMethod(method,put)(withSession(async(req,res)=>{
-        const data = defaultObj(req.body.data);
+        const data = Object.assign({},req.body.data);
         if(typeof getData =='function'){
             const d = await getData({req,res,data:reqData});
             if(isObj(d)){
@@ -291,7 +291,7 @@ export async function save(Model,options){
         try {
             if(typeof mutate =='function'){
                 await mutate(args);
-            } else if(typeof beforeValidate =='function'){
+            } if(typeof beforeValidate =='function'){
                 await beforeValidate(args);
             }
             if(!Object.size(data,true)){
@@ -303,7 +303,8 @@ export async function save(Model,options){
             if(bef){
                 await bef({...args,data:d});
             }
-            const updated = typeof doSave =='function'? await doSave(d,{req,body}) : await Model.save(d,{req,res});
+            const sA = {...options,req,res,data:d,session:req.session}
+            const updated = typeof doSave =='function'? await doSave(d,sA) : await Model.save(d,sA);
             return res.json({data:updated});
         } catch(e){
             console.log(e," saving data",data);
