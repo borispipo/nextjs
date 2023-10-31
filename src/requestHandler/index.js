@@ -255,11 +255,16 @@ function _queryMany (Model,options,cb){
  * @param {object} options les options supplémentaires pour effectuer la requête
  *      de la forme : 
  *       { 
-            events : la liste des évènements à écouter lorsque le socket se connecte
+            {object|function} : la liste des évènements à écouter lorsque le socket se connecte
  *       }
  * @return la fonction de rappel, handler permettant d'exécuter la requête queryMany en s'appuyant sur le model passé en paramètre
  */
 export function socket (options,cb){
+    if(typeof options =='function'){
+        const t = cb;
+        cb = options;
+        options = t;
+    }
     options = prepareOptions(options);
     const {method,mutate,events:rEvents,serverOptions,send,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
