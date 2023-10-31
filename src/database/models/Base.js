@@ -457,8 +457,8 @@ export default class BaseModel {
         return new Promise((resolve,reject)=>{
             return this.getRepository().then((r)=>{
                 return r.save(...args).then(a=>{
-                    this.emitEvent("save",a,...args);
-                    this.emitChangeEvent("save",a,...args);
+                    this.emitEvent("save",{data:a,result:a},...args);
+                    this.emitChangeEvent("save",{data:a,result:a},...args);
                     resolve(a);
                 });
             }).catch(reject);
@@ -468,8 +468,8 @@ export default class BaseModel {
         return new Promise((resolve,reject)=>{
             return this.getRepository().then((r)=>{
                 return r.update(...args).then((a)=>{
-                    this.emitEvent("update",a,...args);
-                    this.emitChangeEvent("update",a,...args);
+                    this.emitEvent("update",{data:a,result:a},...args);
+                    this.emitChangeEvent("update",{data:a,result:a},...args);
                     return resolve(a);
                 });
             }).catch(reject);
@@ -479,8 +479,8 @@ export default class BaseModel {
         return new Promise((resolve,reject)=>{
             return this.getRepository().then((r)=>{
                 return r.upsert(...args).then((a)=>{
-                    this.emitEvent("upsert",a,...args);
-                    this.emitChangeEvent("upsert",a,...args);
+                    this.emitEvent("upsert",{data:a,result:a},...args);
+                    this.emitChangeEvent("upsert",{data:a,result:a},...args);
                     return resolve(a);
                 });
             }).catch(reject);
@@ -493,8 +493,8 @@ export default class BaseModel {
         return new Promise((resolve,reject)=>{
             this.buildQuery(queryOptions).then((builder)=>{
                 return builder.delete().from(this).then((a)=>{
-                    this.emitEvent("delete",a,queryOptions);
-                    this.emitChangeEvent("delete",a,queryOptions);
+                    this.emitEvent("delete",{data:a,result:a},queryOptions);
+                    this.emitChangeEvent("delete",{data:a,result:a},queryOptions);
                     resolve(a);
                 }).catch(reject);
             }).catch(reject);
@@ -504,8 +504,8 @@ export default class BaseModel {
         return new Promise((resolve,reject)=>{
             this.getRepository().then((r)=>{
                 return r.remove(...args).then(a=>{
-                    this.emitEvent("delete",a,...args);
-                    this.emitChangeEvent("delete",a,...args);
+                    this.emitEvent("delete",{data:a,result:a},...args);
+                    this.emitChangeEvent("delete",{data:a,result:a},...args);
                     resolve(a);
                 });
             }).catch(reject);
@@ -548,8 +548,8 @@ export default class BaseModel {
                 return isPromise(b)? b.then((data)=>{
                     return this.remove(Array.isArray(data)?data:allData).then(a=>{
                         const r = {...args,data,allData:data};
-                        this.emitEvent("deleteMany",a,r);
-                        this.emitChangeEvent("deleteMany",a,r);
+                        this.emitEvent("deleteMany",{data:a,result:a},r);
+                        this.emitChangeEvent("deleteMany",{data:a,result:a},r);
                         resolve(a);
                     }).catch(reject);
                 }) : this.remove(allData).then(resolve).catch(reject);
