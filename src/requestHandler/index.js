@@ -282,7 +282,6 @@ export function socket (options,cb){
             return success({io,socket:res.socket,server:res.socket.server});
         }
         const io = new Server(res.socket.server,{
-            path: "/api/socket/ping",
             addTrailingSlash: false,
             ...Object.assign({},serverOptions),
         });
