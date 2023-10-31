@@ -3,6 +3,7 @@ import {getProvider,createUserToken} from "$nauth";
 import {isObj,defaultObj,isNonNullString,defaultStr,extendObj} from "$cutils";
 import {post} from "$napiRequestHandler";
 import {isJSON,parseJSON} from "$utils/json";
+import {AUTH} from "$nevents";
 import "$date";
 /** 
  * @apiDefine ProiverNotFound lorsque le provider n'a pas été précisé dans les données passé à la requête
@@ -77,6 +78,7 @@ export default post((async (req, res,options) => {
       if(isObj(r)){
         extendObj(true,result,r);
       };
+      AUTH.emit("signin",r);
       res.status(200).send(result);
     } catch (error) {
       console.error(error," authentication login")
