@@ -261,7 +261,7 @@ function _queryMany (Model,options,cb){
  */
 function socket (options,cb){
     options = prepareOptions(options);
-    const {method,mutate,events:rEvents,send,...rest} = options;
+    const {method,mutate,events:rEvents,serverOptions,send,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
         const args = {...options,req,res,session:req.session};
         const success = async x=>{
@@ -274,7 +274,11 @@ function socket (options,cb){
         if (res.socket.server.io || res.socket.server.iiiioooo) {
             return success(args);
         }
-        const io = new Server(res.socket.server);
+        const io = new Server(res.socket.server,{
+            path: "/api/socket/ping",
+            addTrailingSlash: false,
+            ...Object.assign({},serverOptions),
+        });
         const callEvent = (eventName,opts)=>{
             const ev = typeof events[eventName] =="function"? events[eventName] : typeof events[eventName.toUpperCase()] =="function"? events[eventName.toUpperCase] : null;
             if(ev){
