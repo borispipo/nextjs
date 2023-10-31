@@ -6,8 +6,13 @@ import Validator from "$lib/validator";
 import DateLib from "$date";
 import DataTypes from "$schema/DataTypes";
 import {FORBIDEN,NOT_FOUND} from "$capi/status";
+import { model as ModelEvent } from "../../events";
 
 const notFound = {message:'Valeur non trouvée en base',status:NOT_FOUND}
+
+const getEmitEventArgs = (a,a1)=>{
+    return extendObj({},a1,a);
+}
 /**** crèe un schemas de base de données 
  * @see : https://typeorm.io/usage-with-javascript
  * @see : https://github.com/typeorm/typeorm/blob/master/src/entity-schema/EntitySchemaOptions.ts for schemas properties
@@ -29,6 +34,13 @@ export default class BaseModel {
     static get name() { return this.Entity?.name }
     static get tableName() { return this.Entity?.tableName;}
     static get fields() { return this.Entity?.fields; }
+    static emitEvent(eventName,opts1,opt2,...rest){
+        opts1 = {...defaultObj(opts1),context:this,tableName:this.tableName};
+        return ModelEvent.emit(eventName,isObj(opt2) ? getEmitEventArgs(opts1,opt2):opts1,opt2,...rest);
+    }
+    static emitChangeEvent(action,opt1,opt2,...rest){
+        this.emitEvent("change",{action},opt1,opt2,...rest);
+    }
     static init(options){
         options = typeof options =='object' && options && !Array.isArray(options)? options : {};
         const fields = defaultObj(this.fields,options.fields,options.columns);
@@ -38,6 +50,7 @@ export default class BaseModel {
         this.isIntialized = true;
         return getDataSource(options).then((d)=>{
             this.dataSource = d;
+            this.emitEvent("init",{dataSource:d});
             return d;
         })
     }
@@ -166,12 +179,15 @@ export default class BaseModel {
         return new Promise((resolve,reject)=>{
             Promise.all(promises).then(()=>{
                 const r = {data:result};
+                this.emitEvent("validate",r,options);
                 resolve(r);
                 return r;
             }).catch((e)=>{
                 console.log(e," error generated on validating model ",this.tableName);
                 const message = "{0}:\n{1}".sprintf(errorsMessages.length > 1 ? ("Les erreurs suivantes ont été générées") : "l'erreur suivante a été générée",errorsMessages.join(", "));
-                reject({errors : errorsMessages,errorsMessages,message})
+                const r = {errors : errorsMessages,errorsMessages,message};
+                this.emitEvent("novalidate",r,options);
+                reject(r)
             })
         });
     }
@@ -199,6 +215,7 @@ export default class BaseModel {
             let generatedValue = undefined,counterIndex = 0;
             const next = ()=>{
                 if(isNonNullString(generatedValue)){
+                    this.emitEvent("generate-primary-key",{primaryKey:generatedValue})
                     return resolve(generatedValue);
                 }
                 counterIndex++;
@@ -439,21 +456,33 @@ export default class BaseModel {
     static save (...args){
         return new Promise((resolve,reject)=>{
             return this.getRepository().then((r)=>{
-                return r.save(...args).then(resolve);
+                return r.save(...args).then(a=>{
+                    this.emitEvent("save",a,...args);
+                    this.emitChangeEvent("save",a,...args);
+                    resolve(a);
+                });
             }).catch(reject);
         })
     }
     static update (...args){
         return new Promise((resolve,reject)=>{
             return this.getRepository().then((r)=>{
-                return r.update(...args).then(resolve);
+                return r.update(...args).then((a)=>{
+                    this.emitEvent("update",a,...args);
+                    this.emitChangeEvent("update",a,...args);
+                    return resolve(a);
+                });
             }).catch(reject);
         })
     }
     static upsert (...args){
         return new Promise((resolve,reject)=>{
             return this.getRepository().then((r)=>{
-                return r.upsert(...args).then(resolve);
+                return r.upsert(...args).then((a)=>{
+                    this.emitEvent("upsert",a,...args);
+                    this.emitChangeEvent("upsert",a,...args);
+                    return resolve(a);
+                });
             }).catch(reject);
         })
     }
@@ -463,14 +492,22 @@ export default class BaseModel {
         queryOptions.withTotal = false;
         return new Promise((resolve,reject)=>{
             this.buildQuery(queryOptions).then((builder)=>{
-                return builder.delete().from(this).then(resolve).catch(reject);
+                return builder.delete().from(this).then((a)=>{
+                    this.emitEvent("delete",a,queryOptions);
+                    this.emitChangeEvent("delete",a,queryOptions);
+                    resolve(a);
+                }).catch(reject);
             }).catch(reject);
         })
     }
     static remove (...args){
         return new Promise((resolve,reject)=>{
             this.getRepository().then((r)=>{
-                return r.remove(...args).then(resolve);
+                return r.remove(...args).then(a=>{
+                    this.emitEvent("delete",a,...args);
+                    this.emitChangeEvent("delete",a,...args);
+                    resolve(a);
+                });
             }).catch(reject);
         });
     }
@@ -509,7 +546,12 @@ export default class BaseModel {
                     return reject(b);
                 }
                 return isPromise(b)? b.then((data)=>{
-                    return this.remove(Array.isArray(data)?data:allData).then(resolve).catch(reject);
+                    return this.remove(Array.isArray(data)?data:allData).then(a=>{
+                        const r = {...args,data,allData:data};
+                        this.emitEvent("deleteMany",a,r);
+                        this.emitChangeEvent("deleteMany",a,r);
+                        resolve(a);
+                    }).catch(reject);
                 }) : this.remove(allData).then(resolve).catch(reject);
             })
         }

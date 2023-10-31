@@ -8,6 +8,7 @@ import cors from "$cors";
 import {SUCCESS,FORBIDEN,INTERNAL_SERVER_ERROR,UNAUTHORIZED} from "$capi/status";
 import {withSession,getSession} from "$nauth";
 import Auth from "$cauth";
+import { Server } from "socket.io";
 
 export const getErrorStatus = (e)=>{
     if(isObj(e) && typeof e.status =='number'){
@@ -247,6 +248,57 @@ function _queryMany (Model,options,cb){
             console.log(e," found exception on api ",req.nextUrl?.basePath);
             return handleError(e,res);
         }
+    }),options)
+}
+
+/**** génère un évènement socket io 
+ * @param {object} options les options supplémentaires pour effectuer la requête
+ *      de la forme : 
+ *       { 
+            events : la liste des évènements à écouter lorsque le socket se connecte
+ *       }
+ * @return la fonction de rappel, handler permettant d'exécuter la requête queryMany en s'appuyant sur le model passé en paramètre
+ */
+function socket (options,cb){
+    options = prepareOptions(options);
+    const {method,mutate,events,send,...rest} = options;
+    return getMethod(method,get)(withSession(async(req,res)=>{
+        const args = {...options,req,res,session:req.session};
+        const success = async x=>{
+            if(typeof cb =='function') {
+                await cb(x);
+            }
+            return res.send();
+        };
+        events = Object.assign({},events);
+        if (res.socket.server.io || res.socket.server.iiiioooo) {
+            return success(args);
+        }
+        const io = new Server(res.socket.server);
+        const callEvent = (eventName,opts)=>{
+            const ev = typeof events[eventName] =="function"? events[eventName] : typeof events[eventName.toUpperCase()] =="function"? events[eventName.toUpperCase] : null;
+            if(ev){
+                return ev({...args,...opts,io,server:io});
+            }
+            return false;
+        }
+        // Event handler for client connections
+        io.on("connection", (socket) => {
+            const clientId = socket.id;
+            const opts = {clientId,socket}
+            callEvent("connection",opts);
+            // Event handler for receiving messages from the client
+            socket.on("message", (data) => {
+              callEvent("message",{...opts,data});
+            });
+            // Event handler for client disconnections
+            socket.on("disconnect", () => {
+              callEvent("disconnect",opts);
+            });
+        });
+        res.socket.server.io = io;
+        res.socket.server.iiiioooo = io;
+        return success(args);
     }),options)
 }
 

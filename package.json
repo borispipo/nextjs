@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "3.1.25",
+  "version": "3.2.2",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "bin": {
@@ -53,6 +53,7 @@
     "react-dom": "^18.2.0",
     "reflect-metadata": "^0.1.13",
     "sanitize-filename": "^1.6.3",
+    "socket.io": "^4.7.2",
     "string-builder": "^0.1.8",
     "typeorm": "^0.3.17"
   },
