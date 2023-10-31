@@ -34,7 +34,7 @@ module.exports = (opts)=>{
   alias["$ndatabase"] = path.resolve(next,"database");
   alias["$npages"] = path.resolve(dir,"pages");
   alias["$pages"] = path.resolve(src,"pages");
-  alias["$nevents"] = path.resolve(src,"events");
+  alias.$nevents = path.resolve(next,"events");
   alias.$events = alias.$events || alias.$nevents;
   
   const database = path.resolve(next,'database');
