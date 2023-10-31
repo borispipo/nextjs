@@ -259,20 +259,22 @@ function _queryMany (Model,options,cb){
  *       }
  * @return la fonction de rappel, handler permettant d'exécuter la requête queryMany en s'appuyant sur le model passé en paramètre
  */
-function socket (options,cb){
+export function socket (options,cb){
     options = prepareOptions(options);
     const {method,mutate,events:rEvents,serverOptions,send,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
         const args = {...options,req,res,session:req.session};
-        const success = async x=>{
-            if(typeof cb =='function') {
-                await cb(x);
+        const success = async opts=>{
+            const hasCb = typeof cb =='function';
+            if(hasCb) {
+                await cb({...args,...opts});
             }
             return res.send();
         };
         const events = Object.assign({},rEvents);
         if (res.socket.server.io || res.socket.server.iiiioooo) {
-            return success(args);
+            const io = res.socket.server.io || res.socket.server.iiiioooo;
+            return success({io,socket:res.socket,server:res.socket.server});
         }
         const io = new Server(res.socket.server,{
             path: "/api/socket/ping",
@@ -282,7 +284,7 @@ function socket (options,cb){
         const callEvent = (eventName,opts)=>{
             const ev = typeof events[eventName] =="function"? events[eventName] : typeof events[eventName.toUpperCase()] =="function"? events[eventName.toUpperCase] : null;
             if(ev){
-                return ev({...args,...opts,io,server:io});
+                return ev({...args,...opts,io});
             }
             return false;
         }
@@ -302,7 +304,7 @@ function socket (options,cb){
         });
         res.socket.server.io = io;
         res.socket.server.iiiioooo = io;
-        return success(args);
+        return success({io,socket:res.socket,server:res.socket.server});
     }),options)
 }
 
