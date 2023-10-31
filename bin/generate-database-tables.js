@@ -88,13 +88,9 @@ const parseTable = (srcPath,destPath,paths,filter)=>{
                                             jsContent = replaceAll(jsContent,st,"'"+mm.js+"'");
                                         }
                                         jsContent = jsContent.replaceAll("length : ","maxLength : ")
-                                            .replaceAll("length: ","maxLength : ")
-                                            .replaceAll("length:","maxLength : ")
-                                            .replaceAll("primary : ","primaryKey :").replaceAll("primary:","primaryKey : ")
-                                            .replaceAll("primary  : ","primaryKey : ")
-                                            .replaceAll("name : ","databaseName :")
-                                            .replaceAll("name: ","databaseName :")
-                                            .replaceAll("name  : ","databaseName : ").replaceAll("name:","databaseName : ")
+                                            .replace(/(length)(\s)*:/,"maxLength : ")
+                                            .replace(/(length)(\s)*:/,"primaryKey : ")
+                                            .replace(/(name)(\s)*:/,"databaseName : ")
                                     }
                                     if(hasFound){
                                         try {
