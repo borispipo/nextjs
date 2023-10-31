@@ -261,7 +261,7 @@ function _queryMany (Model,options,cb){
  */
 function socket (options,cb){
     options = prepareOptions(options);
-    const {method,mutate,events,send,...rest} = options;
+    const {method,mutate,events:rEvents,send,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
         const args = {...options,req,res,session:req.session};
         const success = async x=>{
@@ -270,7 +270,7 @@ function socket (options,cb){
             }
             return res.send();
         };
-        events = Object.assign({},events);
+        const events = Object.assign({},rEvents);
         if (res.socket.server.io || res.socket.server.iiiioooo) {
             return success(args);
         }
