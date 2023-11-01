@@ -199,8 +199,8 @@ export const METHODS = {
 export {deleteRequest as delete};
 
 Object.map(METHODS,(i,method)=>{
-    handleRequestWithMethod[method.toLowerCase()] = async (handler,options)=>{
-        return await handleRequest(handler,options,method);
+    handleRequestWithMethod[method.toLowerCase()] = (handler,options)=>{
+        return handleRequest(handler,options,method);
     }
 });
 
@@ -216,7 +216,7 @@ const prepareQuery = async ({getFindOptions,req,res,...options})=>{
     if(typeof getFindOptions == 'function'){
         const q = await getFindOptions(args);
         if(isObj(q)){
-            extendObj(query,q);
+            return q;
         }
     }
     return query;
