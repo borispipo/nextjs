@@ -212,7 +212,7 @@ const prepareQuery = async ({getFindOptions,req,res,...options})=>{
     parseRequestBody(req);
     parseRequestQuery(req);
     const query = extendObj({},req.query,req.body);
-    const args = {...options,req,res,...query,findOptions:query,session:req.session,req};
+    const args = {loginId:req.session?.loginId,...options,req,res,...query,findOptions:query,session:req.session,req};
     if(typeof getFindOptions == 'function'){
         const q = await getFindOptions(args);
         if(isObj(q)){
@@ -236,7 +236,7 @@ function _queryMany (Model,options,cb){
     const {method,mutate,...rest} = options;
     return getMethod(method,post)(withSession(async(req,res)=>{
         try {
-            const args = {...rest,req,res,session:req.session}
+            const args = {...rest,req,res,session:req.session,loginId:req.session?.loginId}
             const query = await prepareQuery(args);
             const data = await Model[cb||'queryMany'](query,args);
             const result = isObj(data) && ('data' in data && 'total' in data && 'count' in data) ? data : {data};
@@ -268,7 +268,7 @@ export function socket (options,cb){
     options = prepareOptions(options);
     const {method,mutate,events:rEvents,serverOptions,send,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
-        const args = {...options,req,res,session:req.session};
+        const args = {...options,req,res,session:req.session,loginId:req.session?.loginId};
         const success = async opts=>{
             const hasCb = typeof cb =='function';
             if(hasCb) {
@@ -347,7 +347,7 @@ export function save(Model,options){
                 extendObj(data,d);
             }
         }
-        const args = {...rest,req,res,user:req.session,userId:req.session.loginId,session:req.session,req,data};
+        const args = {...rest,req,res,user:req.session,userId:req.session.loginId,session:req.session,loginId:req.session?.loginId,req,data};
         let generatePrimaryKey = options.generatePrimaryKey;
         generatePrimaryKey = generatePrimaryKey != undefined? !!generatePrimaryKey : true;
         try {
@@ -365,7 +365,7 @@ export function save(Model,options){
             if(bef){
                 await bef({...args,data:d});
             }
-            const sA = {...options,req,res,data:d,session:req.session}
+            const sA = {...options,req,res,data:d,session:req.session,loginId:req.session?.loginId}
             const updated = typeof doSave =='function'? await doSave(d,sA) : await Model.save(d,sA);
             return res.json({data:updated});
         } catch(e){
@@ -394,7 +394,7 @@ export function count(Model,options){
     let {method} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
         try {
-            const args = {...options,req,res,session:req.session};
+            const args = {...options,req,res,session:req.session,loginId:req.session?.loginId};
             const query = await prepareQuery(args)
             await Model.init();
             const count = await Model.repository.count(query,args);
@@ -413,7 +413,7 @@ function _find (Model,options,cb){
     const {method,mutate,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
         const query = await prepareQuery({...options,req,res});
-        const args = {...query,findOptions:query,req,res,session:req.session,req};
+        const args = {...query,findOptions:query,req,res,session:req.session,loginId:req.session?.loginId,req};
         try {
             const data = await Model[cb||'find'](query,{...rest,...args});
             const result = {data};
@@ -459,8 +459,8 @@ function _remove (Model,options,cb){
     options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : cb =='queryRemove'?true:false;
     return getMethod(method,deleteRequest)(withSession(async(req,res)=>{
         try {
-            const query = await prepareQuery({...options,req,res,session:req.session});
-            const args = {...rest,req,res,session:req.session};
+            const query = await prepareQuery({...options,req,res,session:req.session,loginId:req.session?.loginId});
+            const args = {...rest,req,res,session:req.session,loginId:req.session?.loginId,loginId:req.session?.loginId};
             const data = await Model[cb||'queryRemove']({...rest,...query},{...rest,...args});
             return res.status(SUCCESS).json({data});
         } catch (e){
