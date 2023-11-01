@@ -418,6 +418,15 @@ export default class BaseModel {
             }).catch(reject);
         })
     }
+    
+    /*** @see : https://orkhan.gitbook.io/typeorm/docs/find-options */
+    static findBy (findOptions){
+        return new Promise((resolve,reject)=>{
+            return this.getRepository().then((r)=>{
+                return r.findBy(findOptions).then(resolve);
+            }).catch(reject);
+        })
+    }
     static queryOne (queryOptions,withStatementParams,fields){
         queryOptions = defaultObj(queryOptions);
         queryOptions.withTotal = false;

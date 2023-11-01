@@ -433,6 +433,10 @@ export function find(Model,options){
     return _find(Model,options,'find');
 }
 
+export function findBy(Model,options){
+    return _find(Model,options,'findBy');
+}
+
 /*** retourne le requestHandler permettant d'effectuer un queryOne en base de données*/
 export function findOne (Model,options){
     return _find(Model,options,'findOne');
