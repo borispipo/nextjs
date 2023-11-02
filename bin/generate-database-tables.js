@@ -89,7 +89,7 @@ const parseTable = (srcPath,destPath,paths,filter)=>{
                                         }
                                         jsContent = jsContent.replaceAll("length : ","maxLength : ")
                                             .replace(/(length)(\s)*:/,"maxLength : ")
-                                            .replace(/(length)(\s)*:/,"primaryKey : ")
+                                            .replace(/(primary)(\s)*:/,"primaryKey : ")
                                             .replace(/(name)(\s)*:/,"databaseName : ")
                                     }
                                     if(hasFound){
