@@ -167,6 +167,13 @@ export default class BaseModel {
                             primaryKey,
                             primaryKeyPrefix : defaultStr(piece,options.primaryKeyPrefix,field.primaryKeyPrefix),
                             userPiece : userPiece ? "/{0}-".sprintf(userPiece) : "",
+                            data,
+                            pieces,
+                            piece,
+                            session,
+                            loginId,
+                            userPiece,
+                            fields,
                         }).then((val)=>{
                             result[primaryKey] = val;
                             resolve({[primaryKey]:val});
@@ -200,7 +207,8 @@ export default class BaseModel {
             })
         });
     }
-    static async getPrimaryKeyPrefix(){
+    static async getPrimaryKeyPrefix({primaryKeyPrefix}){
+        if(isNonNullString(primaryKeyPrefix)) return primaryKeyPrefix.trim();
         const tbld = defaultStr(this.tableName).toUpperCase().trim();
         if(tbld.length<=10) return tbld;
         return tbld.substring(0,10)
@@ -217,10 +225,9 @@ export default class BaseModel {
      * }
     */
     static async generatePrimaryKey(options){
-        let {primaryKey,userPiece,primaryKeyPrefix} = options;
-        if(!isNonNullString(primaryKeyPrefix)){
-            primaryKeyPrefix = await this.getPrimaryKeyPrefix();
-        }
+        let {primaryKey,userPiece} = options;
+        const pkPrefix  = await this.getPrimaryKeyPrefix(options);
+        const primaryKeyPrefix = defaultStr(pkPrefix,options.primaryKeyPrefix);
         if(!isNonNullString(primaryKeyPrefix)|| !isNonNullString(primaryKey) || !isObj(this.fields[primaryKey]) || this.fields[primaryKey].primary !== true || this.fields[primaryKey].type !=DataTypes.STRING.type){
             return Promise.reject({error:true,message:'Impossible de générer une valeur pour la clé primaire liée à la table de données {0}. Veuillez spécifier à la fois le préfix à utiliser pour la génération des ids, champ primaryKeyPrefix. vous devez également Vous rassurer que le nom de la clé primaire figure dans les champs supportés par le model associé à la table de données. clé primaire spécifiée : [{1}], prefix : [{2}]'.sprintf(this.tableName,primaryKey,primaryKeyPrefix)})
         }
