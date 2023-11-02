@@ -106,6 +106,15 @@ export default class BaseModel {
         const userPiece = defaultStr(session.piece);
         const result = {};
         let fields = this.getFields(options.fields);
+        Object.map(this.fields,(f,i)=>{
+            if(isObj(f)){
+                ["updateDate","updateBy"].map(u=>{
+                    if(f[u] === true && !(i in fields)){
+                        fields[i] = f;
+                    }
+                });
+            }
+        })
         const {filter} = options;
         const errorsMessages = [];
         const promises = [];
