@@ -200,10 +200,14 @@ export default class BaseModel {
             })
         });
     }
-    static getPrimaryKeyPrefix(){
+    static async getPrimaryKeyPrefix(){
         const tbld = defaultStr(this.tableName).toUpperCase().trim();
         if(tbld.length<=10) return tbld;
         return tbld.substring(0,10)
+    }
+    ///permet de construire la clé primaire en prenant en paramètre
+    static async buildPrimaryKey({primaryKeyPrefix,userPiece,counterSuffix,counterIndex}){
+        return primaryKeyPrefix+userPiece+counterSuffix;
     }
     /**** génère la clé primaire 
      * {
@@ -212,10 +216,10 @@ export default class BaseModel {
      *      userPiece {string} le prefix à ajouter au champ à générer
      * }
     */
-    static generatePrimaryKey(options){
+    static async generatePrimaryKey(options){
         let {primaryKey,userPiece,primaryKeyPrefix} = options;
         if(!isNonNullString(primaryKeyPrefix)){
-            primaryKeyPrefix = this.getPrimaryKeyPrefix();
+            primaryKeyPrefix = await this.getPrimaryKeyPrefix();
         }
         if(!isNonNullString(primaryKeyPrefix)|| !isNonNullString(primaryKey) || !isObj(this.fields[primaryKey]) || this.fields[primaryKey].primary !== true || this.fields[primaryKey].type !=DataTypes.STRING.type){
             return Promise.reject({error:true,message:'Impossible de générer une valeur pour la clé primaire liée à la table de données {0}. Veuillez spécifier à la fois le préfix à utiliser pour la génération des ids, champ primaryKeyPrefix. vous devez également Vous rassurer que le nom de la clé primaire figure dans les champs supportés par le model associé à la table de données. clé primaire spécifiée : [{1}], prefix : [{2}]'.sprintf(this.tableName,primaryKey,primaryKeyPrefix)})
@@ -229,7 +233,7 @@ export default class BaseModel {
                 }
                 counterIndex++;
                 const cPrefix = (counterIndex<10)? ("0"+counterIndex) : counterIndex;
-                generatedValue = primaryKeyPrefix+defaultStr(userPiece)+cPrefix;
+                generatedValue = this.buildPrimaryKey({primaryKeyPrefix,userPiece:defaultStr(userPiece),counterSuffix:cPrefix,counterIndex});
                 const cb = (d)=>{
                     if(!isObj(d)){
                         return resolve(generatedValue);
