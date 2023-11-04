@@ -187,7 +187,7 @@ export default class BaseModel {
             if((!(i in data)) && !value) {
                 continue;
             }
-            promises.push(this.validateField({field,value,result,fieldIndex:i}).catch((e)=>{
+            promises.push(this.validateField({pieces,piece,userPiece,result,field,columnDef:field,loginId,session,value,result,data,columnField:i}).catch((e)=>{
                 getErrorMessage(e);
                 throw e;
             }));
@@ -262,22 +262,23 @@ export default class BaseModel {
             })
         })
     }
-    static validateField ({field,fieldIndex,value,result}){
+    static validateField ({field,columnField,value,result}){
         result = typeof result =="object" && result ? result : {};
         let error = false,message  = '';
         const fieldTitle = defaultStr(field.title,field.label);
+        const valueStr = String(value);
         if(field.nullable === false && value == null && !isNonNullString(value) && !isNumber(value) && !isBool(value)){
             error = true;
             message = "Le champ [{0}] est requis".sprintf(fieldTitle);
-        } else if(typeof field.length =='number' && field.length && (value+"").length > field.length){
+        } else if(typeof field.length =='number' && field.length && valueStr.length > field.length){
             error = true;
             message = "Le champ [{0}] doit avoir une longueur de {1} caractères maxmimum".sprintf(fieldTitle,field.length);
-        } else if(typeof field.minLength =='number' && field.minLength && (value+"").length < field.minLength){
+        } else if(typeof field.minLength =='number' && field.minLength && valueStr.length < field.minLength){
             error = true;
             message = "Le champ [{0}] doit avoir au moins {1} caractères".sprintf(fieldTitle,field.length);
-        } else if(typeof field.minLength =='number' && field.minLength && (value+"").length < field.minLength){
+        } else if(typeof field.maxLength =='number' && field.maxLength && valueStr.length > field.maxLength){
             error = true;
-            message = "Le champ [{0}] doit avoir au moins {1} caractères".sprintf(fieldTitle,field.length);
+            message = "Le champ [{0}] doit avoir au maximum {1} caractères".sprintf(fieldTitle,field.length);
         }
         if(error == true){
             return Promise.reject({message,error:true});
@@ -291,14 +292,14 @@ export default class BaseModel {
                     reject(args);
                 });
                 context.on("validatorValid",({value})=>{
-                    result[fieldIndex] = value;
+                    result[columnField] = value;
                     context.offAll && context.offAll();
-                    resolve({[fieldIndex]:value});
+                    resolve({[columnField]:value});
                 })
             });
         } else {
-            result[fieldIndex] = value;
-            return Promise.resolve({[fieldIndex]:value});
+            result[columnField] = value;
+            return Promise.resolve({[columnField]:value});
         }
     }
     static getRepository(force){
