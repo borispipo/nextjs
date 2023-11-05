@@ -562,14 +562,22 @@ export default class BaseModel {
         return true;
     }
     static validateCallException(b){
+        if(isPromise(b)){
+            return new Promise((resolve,reject)=>{
+                return b.then((b2)=>{
+                    return this.validateCallException(b2).then(resolve);
+                }).catch(reject);
+            });
+        }
         if(isNonNullString(b)){
             return Promise.reject({message:b,status:FORBIDEN});
         }
         if(typeof b === 'error' && b){
             const message = defaultStr(b?.message,b?.msg);
-            return Promise.reject(message ? {error:b,message}:b);
+            return Promise.reject(message ? {error:b,message,status:FORBIDEN}:b);
         }
         if(isObj(b) && (isNonNullString(b.message) || isNonNullString(b.msg))){
+            b.status = b.status || FORBIDEN;
             return Promise.reject(b);
         }
         return Promise.resolve(true);
