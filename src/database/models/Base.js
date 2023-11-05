@@ -576,13 +576,7 @@ export default class BaseModel {
                     return reject(b);
                 }
                 return isPromise(b)? b.then((data)=>{
-                    const toRemove = Array.isArray(data)?data:allData;
-                    return this.remove(toRemove).then(a=>{
-                        const r = {...args,data,allData:data};
-                        this.emitEvent("delete",{data:a,result:a,deleted:toRemove},r);
-                        this.emitChangeEvent("delete",{data:a,result:a,deleted:toRemove},r);
-                        resolve(a);
-                    }).catch(reject);
+                    return this.remove(Array.isArray(data)?data:allData).then(resolve).catch(reject);
                 }) : this.remove(allData).then(resolve).catch(reject);
             })
         }
