@@ -566,7 +566,8 @@ export default class BaseModel {
             return Promise.reject({message:b,status:FORBIDEN});
         }
         if(typeof b === 'error' && b){
-            return Promise.reject({error:b,message:defaultStr(b?.message,b?.msg)})
+            const message = defaultStr(b?.message,b?.msg);
+            return Promise.reject(message ? {error:b,message}:b);
         }
         if(isObj(b) && (isNonNullString(b.message) || isNonNullString(b.msg))){
             return Promise.reject(b);
@@ -585,7 +586,7 @@ export default class BaseModel {
             return this.validateCallException(this.beforeRemove(args)).then(()=>{
                 const b = typeof beforeRemove =='function'?beforeRemove(args) : null;
                 return (b && this.validateCallException(b)|| Promise.resolve()).then(()=>{
-                    return this.remove(Array.isArray(data)?data:allData).then(resolve).catch(reject);
+                    return this.remove(Array.isArray(data)?data:allData);
                 })
             });
         }
