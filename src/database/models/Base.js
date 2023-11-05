@@ -588,13 +588,13 @@ export default class BaseModel {
      *  si cette fonction retourne un objet et si l'objet porte le contenu message où msg et la valeur errort à true, alors il s'agit d'une exception générée
      *  si cette fonction n'est pas définie, alors toutes les données allData sont supprimés via la fonction remove du model
      */
-        static _checkBeforeRemoveAndRemove(args){
+        static _checkBeforeRemoveAndRemove(args,...rest){
             args = defaultObj(args);
             const {allData,data,beforeRemove} = args;
             return this.validateCallException(this.beforeRemove(args)).then(()=>{
                 const b = typeof beforeRemove =='function'?beforeRemove(args) : null;
                 return (b && this.validateCallException(b)|| Promise.resolve()).then(()=>{
-                    return this.remove(Array.isArray(data)?data:allData);
+                    return this.remove(Array.isArray(data)?data:allData,...rest);
                 })
             });
         }
