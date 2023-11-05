@@ -558,6 +558,21 @@ export default class BaseModel {
             return this._checkBeforeRemoveAndRemove({...queryOptions,allData,data:allData})
         });
     }
+    static beforeRemove(){
+        return true;
+    }
+    static validateCallException(b){
+        if(isNonNullString(b)){
+            return Promise.reject({message:b,status:FORBIDEN});
+        }
+        if(typeof b === 'error' && b){
+            return Promise.reject({error:b,message:defaultStr(b?.message,b?.msg)})
+        }
+        if(isObj(b) && (isNonNullString(b.message) || isNonNullString(b.msg))){
+            return Promise.reject(b);
+        }
+        return Promise.resolve(true);
+    }
     /**** la fonction check and before remove exécute la fonctioon beforeRemove, lorsqu'elle existe sur les données allData.
      *  si cette fonction retourne un string, alors il s'agit du message généré lors de l'éxécution de la requête
      *  si cette fonction retourne un array, alors le tableau en question est utilisé pour la suppression des données
@@ -566,18 +581,12 @@ export default class BaseModel {
      */
         static _checkBeforeRemoveAndRemove(args){
             args = defaultObj(args);
-            const {allData,beforeRemove} = args;
-            const b = typeof beforeRemove =='function'?beforeRemove(args) : null;
-            return new Promise((resolve,reject)=>{
-                if(isNonNullString(b)){
-                    return reject({message:b,status:FORBIDEN})
-                }
-                if(isObj(b) && b.error === true && (isNonNullString(b.message) || isNonNullString(b.message))){
-                    return reject(b);
-                }
-                return isPromise(b)? b.then((data)=>{
+            const {allData,data,beforeRemove} = args;
+            return this.validateCallException(this.beforeRemove(args)).then(()=>{
+                const b = typeof beforeRemove =='function'?beforeRemove(args) : null;
+                return (b && this.validateCallException(b)|| Promise.resolve()).then(()=>{
                     return this.remove(Array.isArray(data)?data:allData).then(resolve).catch(reject);
-                }) : this.remove(allData).then(resolve).catch(reject);
-            })
+                })
+            });
         }
 }
