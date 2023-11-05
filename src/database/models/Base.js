@@ -534,8 +534,8 @@ export default class BaseModel {
         return new Promise((resolve,reject)=>{
             this.getRepository().then((r)=>{
                 return r.remove(...args).then(a=>{
-                    this.emitEvent("delete",{data:a,result:a},...args);
-                    this.emitChangeEvent("delete",{data:a,result:a},...args);
+                    this.emitEvent("delete",{data:a,result:a,deleted:a},...args);
+                    this.emitChangeEvent("delete",{data:a,result:a,deleted:a},...args);
                     resolve(a);
                 });
             }).catch(reject);
@@ -576,10 +576,11 @@ export default class BaseModel {
                     return reject(b);
                 }
                 return isPromise(b)? b.then((data)=>{
-                    return this.remove(Array.isArray(data)?data:allData).then(a=>{
+                    const toRemove = Array.isArray(data)?data:allData;
+                    return this.remove(toRemove).then(a=>{
                         const r = {...args,data,allData:data};
-                        this.emitEvent("deleteMany",{data:a,result:a},r);
-                        this.emitChangeEvent("deleteMany",{data:a,result:a},r);
+                        this.emitEvent("delete",{data:a,result:a,deleted:toRemove},r);
+                        this.emitChangeEvent("delete",{data:a,result:a,deleted:toRemove},r);
                         resolve(a);
                     }).catch(reject);
                 }) : this.remove(allData).then(resolve).catch(reject);

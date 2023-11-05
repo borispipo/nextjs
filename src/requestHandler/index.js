@@ -433,6 +433,8 @@ export function find(Model,options){
     return _find(Model,options,'find');
 }
 
+export const findMany = find;
+
 export function findBy(Model,options){
     return _find(Model,options,'findBy');
 }
@@ -441,7 +443,6 @@ export function findBy(Model,options){
 export function findOne (Model,options){
     return _find(Model,options,'findOne');
 }
-
 
 /**** effectue une requête remove, de suppression directement en base de données
  * @param {ModelInstance} Model, le model à utiliser pour effectuer la requête
