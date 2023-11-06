@@ -506,17 +506,13 @@ export default class BaseModel {
     }
     /*** create new instance of entity based of object data
         @param {object}, given data
-        @return {new EntifyInstance};
+        @return {Promise.resolve(<new EntifyInstance>)};
     */
-    static createEntityInstance(data){
+    static createInstance(data){
         data = isObj(data)? data : {};
-        const instance = new this.Entity();
-        Object.map(this.getFields(),(f,i)=>{
-            if(isObj(f) && i in data){
-                instance[i] = data[i]
-            }
+        return this.getRepository().then((repository)=>{
+            return repository.create(data);
         });
-        return instance;
     }
     
     /*** @see : https://orkhan.gitbook.io/typeorm/docs/find-options */
