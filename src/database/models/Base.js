@@ -312,10 +312,16 @@ export default class BaseModel {
         }
     }
     /*** exécute une transaction
+        @param {string|function} serializeStr|callback
         @apram {function(transactionalEntityManager)}, callback, la fonction de rappel prenant en parmètre transactionalEntityManager
     */
-    static transaction(callback){
-        return this.getActiveDataSource().then((dataSource)=>{
+    static transaction(serializeStr,callback){
+        if(typeof serializeStr =='function'){
+            const t = callback;
+            callback = serializeStr;
+            serializeStr = typeof t =="string"? t : undefined;
+        }
+        return this.getActiveDataSource(serializeStr,callback).then((dataSource)=>{
             return dataSource.transaction(async (transactionalEntityManager) => {
                 // execute queries using transactionalEntityManager
                 return await callback(transactionalEntityManager);
@@ -360,6 +366,20 @@ export default class BaseModel {
     } 
     static get manager (){
         return this.dataSource.manager;
+    }
+    static getManager(){
+        return this.getActiveDataSource().then((dataSource)=>dataSource.manager);
+    }
+    /****
+        preload - Creates a new entity from the given plain javascript object. If the entity already exist in the database, then it loads it (and everything related to it), replaces all values with the new ones from the given object, and returns the new entity. The new entity is actually loaded from the database entity with all properties replaced from the new object.
+        @see : https://orkhan.gitbook.io/typeorm/docs/entity-manager-api
+        @param {data}, object, data to preload by manager
+        @return {object}, Entity, preloaded
+    */
+    preload(data,...rest){
+        return this.getManager().then((manager)=>{
+            return manager.preload(this.Entity,data,...rest);
+        });
     }
     /*** crère le query builder pour effectuer les requête typeorm */
     static createQueryBuilder(){
