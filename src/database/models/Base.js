@@ -34,6 +34,15 @@ export default class BaseModel {
     static get name() { return this.Entity?.name }
     static get tableName() { return this.Entity?.tableName;}
     static get fields() { return this.Entity?.fields; }
+    static session;
+    static req;
+    static getSessionData(key){
+        const sess = Object.assign({},isObj(this.authSession)? this.authSession : this.session);
+        if(isNonNullString(key)){
+            return sess[key]||undefined;
+        }
+        return sess;
+    }
     static emitEvent(eventName,opts1,opt2,...rest){
         opts1 = {...defaultObj(opts1),context:this,tableName:this.tableName};
         return ModelEvent.emit(eventName,isObj(opt2) ? getEmitEventArgs(opts1,opt2):opts1,opt2,...rest);

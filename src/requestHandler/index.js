@@ -221,6 +221,15 @@ const prepareQuery = async ({getFindOptions,req,res,...options})=>{
     }
     return query;
 }
+const prepareModel = (Model,req,res)=>{
+    if(Model){
+        Model.session = req.session;
+        Model.authSession = req.session;
+        Model.req = req;
+        Model.res = res;
+    }
+    return Model;
+}
 
 /**** effectue une requête queryMany directement en base de données
  * @param {ModelInstance} Model, le model à utiliser pour effectuer la requête
@@ -235,6 +244,7 @@ function _queryMany (Model,options,cb){
     options = prepareOptions(options);
     const {method,mutate,...rest} = options;
     return getMethod(method,post)(withSession(async(req,res)=>{
+        prepareModel(Model,req,res);
         try {
             const args = {...rest,req,res,session:req.session,loginId:req.session?.loginId}
             const query = await prepareQuery(args);
@@ -340,6 +350,7 @@ export function save(Model,options){
     options = prepareOptions(options);
     const {method,mutate,getData,doSave,beforeValidate,validateOptions,beforeSave,beforeUpsert,...rest} = options;
     return getMethod(method,put)(withSession(async(req,res)=>{
+        prepareModel(Model,req,res);
         const data = Object.assign({},req.body.data);
         if(typeof getData =='function'){
             const d = await getData({req,res,data});
@@ -393,6 +404,7 @@ export function count(Model,options){
     options = prepareOptions(options);
     let {method} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
+        prepareModel(Model,req,res);
         try {
             const args = {...options,req,res,session:req.session,loginId:req.session?.loginId};
             const query = await prepareQuery(args)
@@ -412,6 +424,7 @@ function _find (Model,options,cb){
     options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : false;
     const {method,mutate,...rest} = options;
     return getMethod(method,get)(withSession(async(req,res)=>{
+        prepareModel(Model,req,res);
         const query = await prepareQuery({...options,req,res});
         const args = {...query,findOptions:query,req,res,session:req.session,loginId:req.session?.loginId,req};
         try {
@@ -459,6 +472,7 @@ function _remove (Model,options,cb){
     const {method,...rest} = options;
     options.parseQuery = typeof options.parseQuery =='boolean'? options.parseQuery : cb =='queryRemove'?true:false;
     return getMethod(method,deleteRequest)(withSession(async(req,res)=>{
+        prepareModel(Model,req,res);
         try {
             const query = await prepareQuery({...options,req,res,session:req.session,loginId:req.session?.loginId});
             const args = {...rest,req,res,session:req.session,loginId:req.session?.loginId,loginId:req.session?.loginId};
