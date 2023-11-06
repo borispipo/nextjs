@@ -85,7 +85,7 @@ export default class BaseModel {
             });
             return hasF ? r : mFields;
         }
-        return this.mFields;
+        return mFields;
     }
     /*** effectue une requête en base de données avec les options passés en paramètre */
     static buildWhere (whereClause,withStatementParams,fields,opts){
