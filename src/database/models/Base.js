@@ -65,24 +65,27 @@ export default class BaseModel {
     }
     static getFields(fields){
         const mFields = this.fields;
-        const r = {};
-        let hasF = false;
-        Object.map(fields,(f,index)=>{
-            if(isNonNullString(f)){
-                f = f.trim();
-                if(f in mFields){
-                    r[f] = mFields[f];
-                    hasF = true;
+        if(Object.size(fields,true)){
+            const r = {};
+            let hasF = false;
+            Object.map(fields,(f,index)=>{
+                if(isNonNullString(f)){
+                    f = f.trim();
+                    if(f in mFields){
+                        r[f] = mFields[f];
+                        hasF = true;
+                    }
+                } else if(isObj(f)){
+                    const code = defaultStr(f.field,index).trim();
+                    if(code in mFields){
+                        r[code] = f;
+                        hasF = true;
+                    }
                 }
-            } else if(isObj(f)){
-                const code = defaultStr(f.field,index).trim();
-                if(code in mFields){
-                    r[code] = f;
-                    hasF = true;
-                }
-            }
-        });
-        return hasF ? r : mFields;
+            });
+            return hasF ? r : mFields;
+        }
+        return this.mFields;
     }
     /*** effectue une requête en base de données avec les options passés en paramètre */
     static buildWhere (whereClause,withStatementParams,fields,opts){
@@ -321,7 +324,8 @@ export default class BaseModel {
             callback = serializeStr;
             serializeStr = typeof t =="string"? t : undefined;
         }
-        return this.getActiveDataSource(serializeStr,callback).then((dataSource)=>{
+        const args = isNonNullString(serializeStr) ? [serializeStr,callback]: [callback];
+        return this.getActiveDataSource(...args).then((dataSource)=>{
             return dataSource.transaction(async (transactionalEntityManager) => {
                 // execute queries using transactionalEntityManager
                 return await callback(transactionalEntityManager);
@@ -506,11 +510,8 @@ export default class BaseModel {
     */
     static createEntityInstance(data){
         data = isObj(data)? data : {};
-        if(this.manager && this.manager?.create){
-            return this.manager.create(data);
-        }
         const instance = new this.Entity();
-        Object.map(this.fields,(f,i)=>{
+        Object.map(this.getFields(),(f,i)=>{
             if(isObj(f) && i in data){
                 instance[i] = data[i]
             }
