@@ -500,6 +500,23 @@ export default class BaseModel {
             }).catch(reject);
         })
     }
+    /*** create new instance of entity based of object data
+        @param {object}, given data
+        @return {new EntifyInstance};
+    */
+    static createEntityInstance(data){
+        data = isObj(data)? data : {};
+        if(this.manager && this.manager?.create){
+            return this.manager.create(data);
+        }
+        const instance = new this.Entity();
+        Object.map(this.fields,(f,i)=>{
+            if(isObj(f) && i in data){
+                instance[i] = data[i]
+            }
+        });
+        return instance;
+    }
     
     /*** @see : https://orkhan.gitbook.io/typeorm/docs/find-options */
     static findBy (findOptions){
