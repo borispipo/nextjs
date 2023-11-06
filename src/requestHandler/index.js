@@ -19,7 +19,7 @@ export const getErrorStatus = (e)=>{
 /*** handle l'erreur liée à l'exécution d'une requête */
 export const handleError = (e,res)=>{
     const status = getErrorStatus(e);
-    const r = {message:e && e.message,stackStrace:e && e.stackStrace,status};
+    const r = {message:isNonNullString(e)? e : e && (e.message || e.msg),error:e,stackStrace:e && e.stackStrace,status};
     if(res && typeof res.json =="function"){
         return res.status(status).json(r);
     }
@@ -342,9 +342,9 @@ export function save(Model,options){
     return getMethod(method,put)(withSession(async(req,res)=>{
         const data = Object.assign({},req.body.data);
         if(typeof getData =='function'){
-            const d = await getData({req,res,data:reqData});
+            const d = await getData({req,res,data});
             if(isObj(d)){
-                extendObj(data,d);
+                return d;
             }
         }
         const args = {...rest,req,res,user:req.session,userId:req.session.loginId,session:req.session,loginId:req.session?.loginId,req,data};
@@ -365,7 +365,7 @@ export function save(Model,options){
             if(bef){
                 await bef({...args,data:d});
             }
-            const sA = {...options,req,res,data:d,session:req.session,loginId:req.session?.loginId}
+            const sA = {...options,req,srcData:data,reqData:data,res,data:d,session:req.session,loginId:req.session?.loginId}
             const updated = typeof doSave =='function'? await doSave(d,sA) : await Model.save(d,sA);
             return res.json({data:updated});
         } catch(e){
