@@ -311,17 +311,49 @@ export default class BaseModel {
             return Promise.resolve({[columnField]:value});
         }
     }
-    static getRepository(force){
-        if(this.activeRepository && force !== true) return Promise.resolve(this.activeRepository);
+    /*** exécute une transaction
+        @apram {function(transactionalEntityManager)}, callback, la fonction de rappel prenant en parmètre transactionalEntityManager
+    */
+    static transaction(callback){
+        return this.getActiveDataSource().then((dataSource)=>{
+            return dataSource.transaction(async (transactionalEntityManager) => {
+                // execute queries using transactionalEntityManager
+                return await callback(transactionalEntityManager);
+            });
+        });
+    }
+    /**** permet de créer un queryRunner TypeOrm 
+        @param {boolean} connect, spécifie si le queryRunner crée sera connecté directement
+        @return {TypeORMQueryRunner}
+    */
+    static createQueryRunner(connect){
+        return this.getActiveDataSource().then(dataSource=>{
+            return this.dataSource.createQueryRunner().then((queryRunner)=>{
+                if(connect){
+                    return queryRunner.connect().then(()=>{
+                        return queryRunner;
+                    });
+                }
+                return queryRunner;
+            })
+        })
+    }
+    /*** retourne la dataSource active */
+    static getActiveDataSource(){
         if(!this.isIntialized || !isDataSource(this.dataSource)){
             return this.init().then((dataSource)=>{
                 this.dataSource = dataSource;
-                this.activeRepository = this.dataSource.getRepository(this.Entity);
-                return this.activeRepository;
+                return dataSource;
             });
         }
-        this.activeRepository = this.dataSource.getRepository(this.Entity);
-        return Promise.resolve(this.activeRepository);
+        return Promise.resolve(this.dataSource);
+    }
+    static getRepository(force){
+        if(this.activeRepository && force !== true) return Promise.resolve(this.activeRepository);
+        return this.getActiveDataSource().then((dataSource)=>{
+            this.activeRepository = dataSource.getRepository(this.Entity);
+            return this.activeRepository;
+        });
     }
     static get repository(){
         return this.dataSource.getRepository(this.Entity);
