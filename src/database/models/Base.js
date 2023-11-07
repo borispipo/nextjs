@@ -425,7 +425,7 @@ export default class BaseModel {
                 if(where){
                     builder.where(where);
                 }
-                if(Object.size(fields) !== Object.size(allFields)){
+                if(queryOptions.selectFields){
                     const ff = [];
                     Object.map(fields,(f,index)=>{
                         if(isNonNullString(f?.name)){
