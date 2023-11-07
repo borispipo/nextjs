@@ -114,7 +114,7 @@ export default class BaseModel {
         const piece = pieces[this.tableName] || pieces[this.tableName.toUpperCase()];
         const data = defaultObj(options.data);
         const session = defaultObj(options.session);
-        const loginId = defaultStr(session.loginId).trim();
+        const loginId = defaultStr(session.loginId, typeof session.loginId =='number' && String(session.loginId)).trim();
         const userPiece = defaultStr(session.piece);
         const result = {};
         let fields = this.getFields(options.fields);
@@ -151,11 +151,11 @@ export default class BaseModel {
             if(!isObj(field)) continue;
             let value = data[i];
             if(field.updateDate === true){
-                value = new Date().toSQLDateTime();
+                value  = data[i] = new Date().toSQLDateTime();
             }
             if((field.updateBy === true) || (!value && field.createBy === true)){
                 if(loginId && (typeof field.length != 'number' || (typeof field.length =='number' && loginId.length <= field.length))){
-                    value = loginId;
+                    value = data[i] = loginId;
                 }
             }    
             if(typeof filter =='function' && filter({field,fields:fields,index:i,columnField:i,name:field.name,columnDef:field,value:data[i]}) == false) {
