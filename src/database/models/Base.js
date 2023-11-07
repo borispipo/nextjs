@@ -93,8 +93,11 @@ export default class BaseModel {
             getDatabaseColumnName : ({field})=>{
                 const f = isObj(fields) && fields[field] || this.fields[field];
                 if(!isObj(f)) return null;
+                if(field in this.fields){
+                    return `${this.tableName}.${f.name}`;
+                }
                 return f.name;
-            }
+              }
             },opts,{
                 dataSourceType : defaultStr(this.dataSource?.dataSourceType,defaultDataSource),
             }
@@ -396,6 +399,13 @@ export default class BaseModel {
     static createQueryBuilder(){
         return this.getRepository().then(r=>r.createQueryBuilder());
     }
+    /***** appelée juste avant la création de la requête buildQuery par le queryBuilder*/
+    static beforeBuildQuery(queryOptions){
+        return queryOptions;
+    }
+    static mutateQueryBuilder(builder,queryOptions){
+        return builder;
+    }
     /*** retourne un object typeORM selectQueryBuilder query avec les paramètres pris en paramètres
      * @return {object} queryOptions, les options de la requête
      *      @param {queryBuilderMutator|mutateQueryBuilder: {function}, la fonction permettant de faire une mutation du query builder obtenue via la fonction buidQquery}
@@ -408,9 +418,23 @@ export default class BaseModel {
                 const {queryBuilderMutator,mutateQueryBuilder,...queryOptions} = defaultObj(options);
                 const sort = isObj(queryOptions.sort) ? queryOptions.sort : queryOptions.orderBy;
                 fields = this.getFields(fields);
+                const allFields = this.fields;
+                const opts2 = {...queryOptions,fields,allFields}
+                this.beforeBuildQuery(opts2);
                 const where = this.buildWhere(queryOptions.where,withStatementParams,fields,queryOptions);
                 if(where){
                     builder.where(where);
+                }
+                if(Object.size(fields) !== Object.size(allFields)){
+                    const ff = [];
+                    Object.map(fields,(f,index)=>{
+                        if(isNonNullString(f?.name)){
+                            ff.push(this.tableName+"."+index);
+                        }
+                    });
+                    if(ff.length){
+                        builder.select(ff).from(this.Entity);
+                    }
                 }
                 if(queryOptions.limit){
                     try {
@@ -429,14 +453,15 @@ export default class BaseModel {
                 }
                 if(isObj(sort) && isNonNullString(sort.column)){
                     const sortDir = isNonNullString(sort.dir) && sort.dir.toLowerCase().contains("desc") ? "DESC" : "ASC";
-                    if(isObj(fields) && isObj(fields[sort.column])){
-                        const sortColumn = fields[sort.column];
+                    if(isObj(fields[sort.column]) || isObj(allFields[sort.column])){
+                        const sortColumn = fields[sort.column] || allFields[sort.column];
                         if(isNonNullString(sortColumn.name)){
                             builder.orderBy(sortColumn.name,sortDir);
                         }
                     }
                 }
                 const mtator = typeof queryBuilderMutator =='function'? queryBuilderMutator : typeof mutateQueryBuilder =='function'? mutateQueryBuilder : undefined;
+                this.mutateQueryBuilder(builder,queryOptions);
                 const m = mtator && mtator(builder,queryOptions);
                 if(isPromise(m)){
                     return m.then((e)=>{
