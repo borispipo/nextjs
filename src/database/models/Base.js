@@ -93,7 +93,7 @@ export default class BaseModel {
             getDatabaseColumnName : ({field})=>{
                 const f = isObj(fields) && fields[field] || this.fields[field];
                 if(!isObj(f)) return null;
-                if(field in this.fields){
+                if(field in this.fields && opts?.selectFields){
                     return `${this.tableName}.${f.name}`;
                 }
                 return f.name;
@@ -421,6 +421,7 @@ export default class BaseModel {
                 const allFields = this.fields;
                 const opts2 = {...queryOptions,fields,allFields}
                 this.beforeBuildQuery(opts2);
+                withStatementParams = typeof withStatementParams=="boolean"? withStatementParams : false;
                 const where = this.buildWhere(queryOptions.where,withStatementParams,fields,queryOptions);
                 if(where){
                     builder.where(where);
