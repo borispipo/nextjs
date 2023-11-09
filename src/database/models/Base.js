@@ -90,16 +90,18 @@ export default class BaseModel {
     /*** effectue une requête en base de données avec les options passés en paramètre */
     static buildWhere (whereClause,withStatementParams,fields,opts){
         opts = extendObj({},{
+            dataSourceType : defaultStr(this.dataSource?.dataSourceType,defaultDataSource),
             getDatabaseColumnName : ({field})=>{
                 const f = isObj(fields) && fields[field] || this.fields[field];
                 if(!isObj(f)) return null;
+                if(isNonNullString(f.databaseTableName)){
+                    return `${f.databaseTableName}.${f.name}`;
+                }
                 if(field in this.fields && opts?.selectFields){
                     return `${this.tableName}.${f.name}`;
                 }
                 return f.name;
               }
-            },opts,{
-                dataSourceType : defaultStr(this.dataSource?.dataSourceType,defaultDataSource),
             }
         );
         return buildWhere(whereClause,withStatementParams,this.getFields(fields),opts);
