@@ -90,18 +90,16 @@ export default class BaseModel {
     /*** effectue une requête en base de données avec les options passés en paramètre */
     static buildWhere (whereClause,withStatementParams,fields,opts){
         opts = extendObj({},{
-            dataSourceType : defaultStr(this.dataSource?.dataSourceType,defaultDataSource),
             getDatabaseColumnName : ({field})=>{
                 const f = isObj(fields) && fields[field] || this.fields[field];
                 if(!isObj(f)) return null;
-                if(isNonNullString(f.databaseTableName)){
-                    return `${f.databaseTableName}.${f.name}`;
-                }
                 if(field in this.fields && opts?.selectFields){
                     return `${this.tableName}.${f.name}`;
                 }
                 return f.name;
               }
+            },opts,{
+                dataSourceType : defaultStr(this.dataSource?.dataSourceType,defaultDataSource),
             }
         );
         return buildWhere(whereClause,withStatementParams,this.getFields(fields),opts);
@@ -114,7 +112,7 @@ export default class BaseModel {
      * @param {object} options les options à paser à la requête
      * @return {Promise<object>} lorsque les donnés on été correctement validées
      * Prise en compte du champ loginId devent être rendu par le provider au moment de l'authentification de l'utilisateur
-        le champ loginId permet de garder l'informatioin sur l'id de l'utilisateur connecté à un moment donné il peut être utiliser pour populate les valeurs des champs de type createBy et updateBy
+        le champ loginId permet de garder l'informatioin sur l'id de l'utilisateur connecté à un moment donné il peut être utiliser pour populate les valeurs des champs de type createBy|createdBy et updateBy|updatedBy
         {
             generatePrimaryKey : {boolean}, si true, la clé primaire sera générée pour les table n'ayant qu'un seul champ de type string comme clé primaire
         } 
@@ -130,9 +128,10 @@ export default class BaseModel {
         const userPiece = defaultStr(session.piece);
         const result = {};
         let fields = this.getFields(options.fields);
-        Object.map(this.fields,(f,i)=>{
+        const allFields = this.fields;
+        Object.map(allFields,(f,i)=>{
             if(isObj(f)){
-                ["updateDate","updateBy"].map(u=>{
+                ["updateDate","updatedDate","updateBy","updatedBy"].map(u=>{
                     if(f[u] === true && !(i in fields)){
                         fields[i] = f;
                     }
@@ -162,10 +161,10 @@ export default class BaseModel {
             const field = fields[i];
             if(!isObj(field)) continue;
             let value = data[i];
-            if(field.updateDate === true){
+            if(field.updateDate === true || field.updatedDate){
                 value  = data[i] = new Date().toSQLDateTime();
             }
-            if((field.updateBy === true) || (!value && field.createBy === true)){
+            if((field.updateBy === true || field.updatedBy === true) || (!value && (field.createBy === true || field.createdBy))){
                 if(loginId && (typeof field.length != 'number' || (typeof field.length =='number' && loginId.length <= field.length))){
                     value = data[i] = loginId;
                 }
