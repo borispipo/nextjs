@@ -19,8 +19,8 @@ export const getErrorStatus = (e)=>{
 /*** handle l'erreur liée à l'exécution d'une requête */
 export const handleError = (e,res)=>{
     const status = getErrorStatus(e);
-    const r = {message:isNonNullString(e)? e : e && (e.message || e.msg),error:e,stackStrace:e && e.stackStrace,status};
-    if(res && typeof res.json =="function"){
+    const r = {message:isNonNullString(e)? e : e && (e.message || e.msg) || e?.toString()||null,error:e,stackStrace:e?.stackStrace,status};
+    if(res && typeof res?.json =="function" && typeof res?.status =="function"){
         return res.status(status).json(r);
     }
     return r;
