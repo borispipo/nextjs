@@ -343,6 +343,30 @@ export default class BaseModel {
             });
         });
     }
+    /**** exécute une transaction à travers le queryRunner
+        @param {function(queryRunner)<Promise>}, la fonction à exécuter
+        @return {mixted}, le résultat généré par la fonction callback
+    */
+    static runTransaction(callback){
+        return new Promise(async (resolve,reject)=>{
+            return this.createQueryRunner(true).then(async (queryRunner)=>{
+                try {
+                    await queryRunner.startTransaction();
+                    const r = await callback({queryRunner,manager:queryRunner.manager});
+                    // commit transaction now:
+                    await queryRunner.commitTransaction();
+                    resolve(r);
+                } catch(e){
+                    // since we have errors let's rollback changes we made
+                    await queryRunner.rollbackTransaction()
+                    reject(e);
+                } finally{
+                    // you need to release query runner which is manually created:
+                    await queryRunner.release();
+                }
+            });
+        })
+    }
     /**** permet de créer un queryRunner TypeOrm 
         @param {boolean} connect, spécifie si le queryRunner crée sera connecté directement
         @return {TypeORMQueryRunner}
