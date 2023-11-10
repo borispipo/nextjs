@@ -349,15 +349,14 @@ export default class BaseModel {
     */
     static createQueryRunner(connect){
         return this.getActiveDataSource().then(dataSource=>{
-            return this.dataSource.createQueryRunner().then((queryRunner)=>{
-                if(connect){
-                    return queryRunner.connect().then(()=>{
-                        return queryRunner;
-                    });
-                }
-                return queryRunner;
-            })
-        })
+            const queryRunner = dataSource.createQueryRunner();
+            if(connect){
+                return queryRunner.connect().then(()=>{
+                    return queryRunner;
+                });
+            }
+            return queryRunner;
+        });
     }
     /*** retourne la dataSource active */
     static getActiveDataSource(){
