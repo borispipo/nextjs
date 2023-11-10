@@ -350,7 +350,7 @@ export default class BaseModel {
     static createQueryRunner(connect){
         return this.getActiveDataSource().then(dataSource=>{
             const queryRunner = dataSource.createQueryRunner();
-            if(connect){
+            if(connect !== false){
                 return queryRunner.connect().then(()=>{
                     return queryRunner;
                 });
