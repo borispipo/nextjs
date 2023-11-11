@@ -27,15 +27,22 @@ export const getConfig = (options)=>{
     const dataSourcePrefix = dataSourceType.toUpperCase().ltrim("_").rtrim("_");
     const isDef = isDefault(dataSourceType);
     const opts = {};
+    const env = defaultStr(process.env.NODE_ENV).toUpperCase().trim();
     ["HOST","TYPE","USERNAME","PASSWORD","DATABASE","PORT"].map(v=>{
         const vv = v.toUpperCase();
         const prefix = "DB_"+dataSourcePrefix+"_"+vv;
         const key = v.toLowerCase();
-        const keyV = "DB_"+vv;
-        if(process.env[prefix]){
+        const keyV = "DB_"+vv,envPrefix = env && `${env}_${prefix}`,envKeyV = `${env}_${keyV}`;
+        if(envPrefix && process.env[envPrefix]){
+            opts[key] = process.env[envPrefix];
+        } else if(process.env[prefix]){
             opts[key] = process.env[prefix];
-        } else if(isDef && process.env[keyV]){
-            opts[key] = process.env[keyV];
+        } else if(isDef){
+            if(envKeyV && process.env[envKeyV]){
+                opts[key] = process.env[envKeyV];
+            } else if(process.env[keyV]){
+                opts[key] = process.env[keyV];
+            }
         }
         if(vv=="TYPE" && opts[key] && typeof opts[key] =='string'){
             opts[key] = opts[key].toLowerCase().trim();
