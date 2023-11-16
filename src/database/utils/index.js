@@ -1,7 +1,7 @@
 import {buildSQLWhere as cBuildSQLWhere} from "$cutils/filters";
 import defaultDataSource from "$ndataSources/default";
 
-import {extendObj,isObj,isNonNullString,defaultStr} from "$cutils";
+import {extendObj,isObj,isNonNullString,defaultStr,defaultVal} from "$cutils";
 
 export const buildSQLWhere = (whereClause,withStatementParams,fields,opts)=>{
     fields = Object.assign({},fields);
@@ -44,7 +44,7 @@ export const buildQuery = ({fields,withTotal,allFields,joins,where,sort,database
         fields = hasField && ffields || fields;
     }
     fields = isObj(fields)? fields : allFields;
-    where = Array.isArray(where) ? buildSQLWhere(where,allFields,withStatementParams,queryOptions) : "";
+    where = Array.isArray(where) ? buildSQLWhere(where,withStatementParams,allFields,queryOptions) : "";
     joins = Array.isArray(joins)? joins : [];
     const queryFields = [];
     const limit = typeof queryOptions.limit =='number'? queryOptions.limit : parseInt(queryOptions.limit) || 0;

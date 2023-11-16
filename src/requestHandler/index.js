@@ -20,6 +20,9 @@ export const getErrorStatus = (e)=>{
 export const handleError = (e,res)=>{
     const status = getErrorStatus(e);
     const r = {message:isNonNullString(e)? e : e && (e.message || e.msg) || e?.toString()||null,error:e,stackStrace:e?.stackStrace,status};
+    if(process.env.NODE_ENV === "development"){
+        console.log(e,`error gnenerated on handling request`)
+    }
     if(res && typeof res?.json =="function" && typeof res?.status =="function"){
         return res.status(status).json(r);
     }
