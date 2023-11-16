@@ -1,9 +1,8 @@
 import {isObj,defaultObj,defaultStr,extendObj,defaultVal,isPromise,isNonNullString,isNumber,isBool} from "$utils";
 import {getDataSource,isDataSource} from "../dataSources";
 import defaultDataSource from "../dataSources/default";
-import {buildWhere} from "$cutils/filters";
+import { buildSQLWhere } from "../utils";
 import Validator from "$lib/validator";
-import DateLib from "$date";
 import DataTypes from "$schema/DataTypes";
 import {FORBIDEN,NOT_FOUND} from "$capi/status";
 import { model as ModelEvent } from "../../events";
@@ -51,6 +50,12 @@ export default class BaseModel {
         this.emitEvent("change",{action},opt1,opt2,...rest);
     }
     static init(options){
+        /*** initialise les champs de l'application avec la proprité database table name */
+        Object.map(this.fields,(f,i)=>{
+            if(isObj(f)){
+                f.databaseTableName = defaultStr(f.databaseTableName,this.tableName);
+            }
+        });
         options = typeof options =='object' && options && !Array.isArray(options)? options : {};
         const fields = defaultObj(this.fields,options.fields,options.columns);
         if(!Object.size(this.fields,true)){
@@ -102,7 +107,7 @@ export default class BaseModel {
                 dataSourceType : defaultStr(this.dataSource?.dataSourceType,defaultDataSource),
             }
         );
-        return buildWhere(whereClause,withStatementParams,this.getFields(fields),opts);
+        return buildSQLWhere(whereClause,withStatementParams,this.fields,opts);
     }
 
     static initialize (options){
