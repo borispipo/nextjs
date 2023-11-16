@@ -1,12 +1,12 @@
 import {buildSQLWhere as cBuildSQLWhere} from "$cutils/filters";
 import defaultDataSource from "$ndataSources/default";
-import ProductsWarehouses from "$models/ProductsWarehouses";
+
 import {extendObj,isObj,isNonNullString,defaultStr} from "$cutils";
 
 export const buildSQLWhere = (whereClause,withStatementParams,fields,opts)=>{
     fields = Object.assign({},fields);
     opts = extendObj({},{
-        dataSourceType : defaultStr(ProductsWarehouses.dataSource?.dataSourceType,defaultDataSource),
+        dataSourceType : defaultStr(opts?.dataSourceType,defaultDataSource),
         getDatabaseColumnName : ({field})=>{
             const f = fields[field];
             if(!isObj(f)) return null;
