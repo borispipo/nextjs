@@ -3,7 +3,7 @@ import defaultDataSource from "$ndataSources/default";
 
 import {extendObj,isObj,isNonNullString,defaultStr,defaultVal} from "$cutils";
 
-export const buildSQLWhere = (whereClause,withStatementParams,fields,opts)=>{
+export const buildSQLWhere = (whereClause,statementsParams,fields,opts)=>{
     fields = Object.assign({},fields);
     opts = extendObj({},{
         dataSourceType : defaultStr(opts?.dataSourceType,defaultDataSource),
@@ -16,7 +16,7 @@ export const buildSQLWhere = (whereClause,withStatementParams,fields,opts)=>{
             return f.name;
         }
     },opts);
-    return cBuildSQLWhere(whereClause,withStatementParams,fields,opts);
+    return cBuildSQLWhere(whereClause,statementsParams,fields,opts);
 }
 
 /**** permet de construire une requête sql à partir des données passées en paramètre
@@ -30,7 +30,7 @@ export const buildSQLWhere = (whereClause,withStatementParams,fields,opts)=>{
         limit {number}, la limite de la page
     }
 */
-export const buildQuery = ({fields,withTotal,allFields,joins,where,sort,databaseTableName,withStatementParams,Model,...queryOptions})=>{
+export const buildQuery = ({fields,withTotal,allFields,joins,where,sort,databaseTableName,statementsParams,Model,...queryOptions})=>{
     if(!isObj(allFields)) allFields = isObj(fields)? fields : {};
     const ffields = {};
     if(Array.isArray(fields)){
@@ -44,7 +44,7 @@ export const buildQuery = ({fields,withTotal,allFields,joins,where,sort,database
         fields = hasField && ffields || fields;
     }
     fields = isObj(fields)? fields : allFields;
-    where = Array.isArray(where) ? buildSQLWhere(where,withStatementParams,allFields,queryOptions) : "";
+    where = Array.isArray(where) ? buildSQLWhere(where,statementsParams,allFields,queryOptions) : "";
     joins = Array.isArray(joins)? joins : [];
     const queryFields = [];
     const limit = typeof queryOptions.limit =='number'? queryOptions.limit : parseInt(queryOptions.limit) || 0;

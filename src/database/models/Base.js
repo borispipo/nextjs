@@ -93,7 +93,7 @@ export default class BaseModel {
         return mFields;
     }
     /*** effectue une requête en base de données avec les options passés en paramètre */
-    static buildWhere (whereClause,withStatementParams,fields,opts){
+    static buildWhere (whereClause,statementsParams,fields,opts){
         opts = extendObj({},{
             getDatabaseColumnName : ({field})=>{
                 const f = isObj(fields) && fields[field] || this.fields[field];
@@ -107,7 +107,7 @@ export default class BaseModel {
                 dataSourceType : defaultStr(this.dataSource?.dataSourceType,defaultDataSource),
             }
         );
-        return buildSQLWhere(whereClause,withStatementParams,this.fields,opts);
+        return buildSQLWhere(whereClause,statementsParams,this.fields,opts);
     }
 
     static initialize (options){
@@ -438,10 +438,9 @@ export default class BaseModel {
     /*** retourne un object typeORM selectQueryBuilder query avec les paramètres pris en paramètres
      * @return {object} queryOptions, les options de la requête
      *      @param {queryBuilderMutator|mutateQueryBuilder: {function}, la fonction permettant de faire une mutation du query builder obtenue via la fonction buidQquery}
-     * @param {bool|object} withStatementParams
      * @param {object} fields
      */
-    static buildQuery(options,withStatementParams,fields){
+    static buildQuery({fields,...options}){
         return new Promise((resolve,reject)=>{
             this.createQueryBuilder().then((builder)=>{
                 const {queryBuilderMutator,mutateQueryBuilder,...queryOptions} = defaultObj(options);
@@ -450,10 +449,10 @@ export default class BaseModel {
                 const allFields = this.fields;
                 const opts2 = {...queryOptions,fields,allFields}
                 this.beforeBuildQuery(opts2);
-                withStatementParams = typeof withStatementParams=="boolean"? withStatementParams : false;
-                const where = this.buildWhere(queryOptions.where,withStatementParams,fields,queryOptions);
+                const statementsParams = {};
+                const where = this.buildWhere(queryOptions.where,statementsParams,fields,queryOptions);
                 if(where){
-                    builder.where(where);
+                    builder.where(where,statementsParams);
                 }
                 if(queryOptions.selectFields){
                     const ff = [];
@@ -511,18 +510,22 @@ export default class BaseModel {
      * retourne plusieurs données résultat
      *  withTotal, si l'on retournera le résutat avec le total
      */
-    static queryMany ({withStatementParams,fields,...queryOptions}){
+    static queryMany (opts){
+        const {withTotal} = opts;
+        opts.queryAction = "queryMany";
+        const mutateOpts = {...opts,queryMany:true};
         return new Promise((resolve,reject)=>{
-            const withTotal = queryOptions.withTotal;
             if(withTotal){
                 return Promise.all([
                     new Promise((succcess,error)=>{
-                        this.buildQuery(queryOptions,withStatementParams,fields).then((builder)=>{
+                        this.buildQuery(opts).then((builder)=>{
+                            this.mutateQueryBuilder(builder,mutateOpts);
                             builder.getMany().then(succcess).catch(error);
                         }).catch(error);
                     }),
                     new Promise((succcess,error)=>{
-                        this.buildQuery({...queryOptions,limit:undefined,page:undefined,offset:undefined},withStatementParams,fields).then((builder)=>{
+                        this.buildQuery({...opts,limit:undefined,page:undefined,offset:undefined}).then((builder)=>{
+                            this.mutateQueryBuilder(builder,{...mutateOpts,count:true})
                             builder.getCount().then((total)=>{
                                 succcess(total);
                             }).catch(error);
@@ -532,8 +535,8 @@ export default class BaseModel {
                     resolve({data,total,count:total});
                 }).catch(reject);
             }
-            return this.buildQuery(queryOptions,withStatementParams,fields).then((builder)=>{
-                this.mutateQueryBuilder(builder,{...queryOptions,queryMany:true,fields})
+            return this.buildQuery(opts).then((builder)=>{
+                this.mutateQueryBuilder(builder,mutateOpts)
                 builder.getMany().then(resolve).catch(reject);
             }).catch(reject);
         })
@@ -585,11 +588,9 @@ export default class BaseModel {
             }).catch(reject);
         })
     }
-    static queryOne (queryOptions,withStatementParams,fields){
-        queryOptions = defaultObj(queryOptions);
-        queryOptions.withTotal = false;
+    static queryOne (queryOptions,fields){
         return new Promise((resolve,reject)=>{
-            this.buildQuery(queryOptions,withStatementParams,fields).then((builder)=>{
+            this.buildQuery({...Object.assign({},queryOptions),queryAction:"queryOne",fields,withTotal:false}).then((builder)=>{
                 builder.getOne().then((data)=>{
                     if(data === null){
                         return reject(notFound);
@@ -600,10 +601,8 @@ export default class BaseModel {
         })
     }
     static getRawOne(queryOptions){
-        queryOptions = defaultObj(queryOptions);
-        queryOptions.withTotal = false;
         return new Promise((resolve,reject)=>{
-            this.buildQuery(queryOptions).then((builder)=>{
+            this.buildQuery({...Object.assign({},queryOptions),queryAction:"getRawOne",withTotal:false}).then((builder)=>{
                 builder.getRawOne().then((data)=>{
                     if(data === null){
                         return reject(notFound);
@@ -655,10 +654,8 @@ export default class BaseModel {
     }
     /****supprime à partir des données issue de la requête fournie par un queryBuilder */
     static queryDelete(queryOptions){
-        queryOptions = defaultObj(queryOptions);
-        queryOptions.withTotal = false;
         return new Promise((resolve,reject)=>{
-            this.buildQuery(queryOptions).then((builder)=>{
+            this.buildQuery({...Object.assign({},queryOptions),withTotal:false,queryAction:"delete"}).then((builder)=>{
                 return builder.delete().from(this).then((a)=>{
                     this.emitEvent("delete",{data:a,result:a},queryOptions);
                     this.emitChangeEvent("delete",{data:a,result:a},queryOptions);
