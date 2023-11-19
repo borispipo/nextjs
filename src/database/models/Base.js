@@ -513,19 +513,16 @@ export default class BaseModel {
     static queryMany (opts){
         const {withTotal} = opts;
         opts.queryAction = "queryMany";
-        const mutateOpts = {...opts,queryMany:true};
         return new Promise((resolve,reject)=>{
             if(withTotal){
                 return Promise.all([
                     new Promise((succcess,error)=>{
                         this.buildQuery(opts).then((builder)=>{
-                            this.mutateQueryBuilder(builder,mutateOpts);
                             builder.getMany().then(succcess).catch(error);
                         }).catch(error);
                     }),
                     new Promise((succcess,error)=>{
                         this.buildQuery({...opts,limit:undefined,page:undefined,offset:undefined}).then((builder)=>{
-                            this.mutateQueryBuilder(builder,{...mutateOpts,count:true})
                             builder.getCount().then((total)=>{
                                 succcess(total);
                             }).catch(error);
@@ -536,7 +533,6 @@ export default class BaseModel {
                 }).catch(reject);
             }
             return this.buildQuery(opts).then((builder)=>{
-                this.mutateQueryBuilder(builder,mutateOpts)
                 builder.getMany().then(resolve).catch(reject);
             }).catch(reject);
         })
