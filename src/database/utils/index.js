@@ -102,7 +102,7 @@ export const buildQuery = ({fields,withTotal,allFields,joins,queryCount,where,so
     return builder;
 }
 
-export const buildSQLQueryCount = (opts,...res)=>{
+export const buildSQLQueryCount = (opts,...rest)=>{
     return buildQuery({...Object.assign({},opts),queryCount:true},...rest);
 }
 
