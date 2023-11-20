@@ -1,8 +1,10 @@
 import appConfig from "$capp/config";
+import {isObj} from "$cutils";
 
 function MyApp({ Component,config, pageProps }) {
-  config = typeof config =='object' && config ? config : {};
-  appConfig.current = config;
+  if(isObj(config) && Object.size(config,true)){
+    appConfig.current = config;
+  }
   return <Component {...pageProps} />
 }
 
