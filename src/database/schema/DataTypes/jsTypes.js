@@ -114,7 +114,7 @@ module.exports.DATETIME = {
     js : "datetime",
 }
 module.exports.SMALLDATETIME = {
-    ...DATE,
+    ...module.exports.DATE,
     type :"smalldatetime",
     sql : "smalldatetime",
     js : "datetime",
