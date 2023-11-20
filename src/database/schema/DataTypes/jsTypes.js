@@ -113,6 +113,13 @@ module.exports.DATETIME = {
     sql : "datetime",
     js : "datetime",
 }
+export const SMALLDATETIME = {
+    ...DATE,
+    type :"smalldatetime",
+    sql : "smalldatetime",
+    js : "datetime",
+}
+
 module.exports.TIMESTAMP = {
     ...module.exports.DATE,
     type : "timestamp",

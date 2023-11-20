@@ -137,6 +137,12 @@ export const TIMESTAMP = {
     sql:"timestamp",
     js : "datetime"
 }
+export const SMALLDATETIME = {
+    ...DATE,
+    type :"smalldatetime",
+    sql : "smalldatetime",
+    js : "datetime",
+}
 
 export const SWITCH = {
     type : "int",

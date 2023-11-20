@@ -1,4 +1,4 @@
-const appConfig = require("$capp/config");
+import appConfig from "$capp/config";
 
 function MyApp({ Component,config, pageProps }) {
   config = typeof config =='object' && config ? config : {};
