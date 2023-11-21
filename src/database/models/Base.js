@@ -462,7 +462,7 @@ export default class BaseModel {
                         }
                     });
                     if(ff.length){
-                        builder.select(ff).from(this.Entity);
+                        builder.select(ff);//.from(this.Entity);
                     }
                 }
                 if(queryOptions.limit){

@@ -94,7 +94,7 @@ export const buildQuery = ({fields,withTotal,allFields,joins,queryCount,where,so
         return "";
     }
     if(queryFields.length && databaseTableName){
-        builder.select(queryFields).from(databaseTableName);
+        builder.select(queryFields);//.from(databaseTableName);
         if(where){
             builder.where(where,statementsParams);
         }
