@@ -425,8 +425,14 @@ export default class BaseModel {
         });
     }
     /*** crère le query builder pour effectuer les requête typeorm */
-    static createQueryBuilder(){
-        return this.getRepository().then(r=>r.createQueryBuilder());
+    static createQueryBuilder(...args){
+        return this.getRepository().then(r=>{
+            const rr = r.createQueryBuilder(...args);
+            if(rr){
+                delete rr.___mustReturnRaw;
+            }
+            return rr;
+        });
     }
     /***** appelée juste avant la création de la requête buildQuery par le queryBuilder*/
     static beforeBuildQuery(queryOptions){
@@ -442,7 +448,7 @@ export default class BaseModel {
      */
     static buildQuery({fields,...options}){
         return new Promise((resolve,reject)=>{
-            this.createQueryBuilder().then((builder)=>{
+            return this.createQueryBuilder().then((builder)=>{
                 const {queryBuilderMutator,mutateQueryBuilder,...queryOptions} = defaultObj(options);
                 const sort = isObj(queryOptions.sort) ? queryOptions.sort : queryOptions.orderBy;
                 fields = this.getFields(fields);
@@ -458,11 +464,12 @@ export default class BaseModel {
                     const ff = [];
                     Object.map(fields,(f,index)=>{
                         if(isNonNullString(f?.name)){
-                            ff.push(`${this.tableName}.${f.name}`);
+                            ff.push(`"${this.tableName}"."${f.name}" AS "${index}"`);
                         }
                     });
                     if(ff.length){
-                        builder.select(ff);//.from(this.Entity);
+                        builder.select(ff);
+                        builder.___mustReturnRaw = true;
                     }
                 }
                 if(queryOptions.limit){
@@ -518,12 +525,12 @@ export default class BaseModel {
                 return Promise.all([
                     new Promise((succcess,error)=>{
                         this.buildQuery(opts).then((builder)=>{
-                            builder.getMany().then(succcess).catch(error);
+                            return (builder.___mustReturnRaw ? builder.getRawMany() : builder.getMany()).then(succcess).catch(error);
                         }).catch(error);
                     }),
                     new Promise((succcess,error)=>{
-                        this.buildQuery({...opts,limit:undefined,page:undefined,offset:undefined}).then((builder)=>{
-                            builder.getCount().then((total)=>{
+                        return this.buildQuery({...opts,limit:undefined,page:undefined,offset:undefined}).then((builder)=>{
+                            return builder.getCount().then((total)=>{
                                 succcess(total);
                             }).catch(error);
                         }).catch(error);
@@ -533,7 +540,7 @@ export default class BaseModel {
                 }).catch(reject);
             }
             return this.buildQuery(opts).then((builder)=>{
-                builder.getMany().then(resolve).catch(reject);
+                return (builder.___mustReturnRaw ? builder.getRawMany() : builder.getMany()).then(resolve).catch(reject);
             }).catch(reject);
         })
     }
@@ -587,7 +594,7 @@ export default class BaseModel {
     static queryOne (queryOptions,fields){
         return new Promise((resolve,reject)=>{
             this.buildQuery({...Object.assign({},queryOptions),queryAction:"queryOne",fields,withTotal:false}).then((builder)=>{
-                builder.getOne().then((data)=>{
+                (builder.___mustReturnRaw ? builder.getRawOne() : builder.getOne()).then((data)=>{
                     if(data === null){
                         return reject(notFound);
                     }
