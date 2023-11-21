@@ -458,7 +458,7 @@ export default class BaseModel {
                     const ff = [];
                     Object.map(fields,(f,index)=>{
                         if(isNonNullString(f?.name)){
-                            ff.push(`${this.tableName}.${f.name} as ${index}`);
+                            ff.push(`${this.tableName}.${f.name}`);
                         }
                     });
                     if(ff.length){
