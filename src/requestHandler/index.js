@@ -98,8 +98,7 @@ export default function handleRequestWithMethod(handler,options){
         }
     })
     const {withCors,onNoMatch,noFound,parseQuery,parseBody,onNotFound} = options;
-    return async function customRouteHandler(){
-        const args = Array.prototype.slice.call(arguments,0);
+    return async function customRouteHandler(...args){
         const req = args[0], res = args[1];
         const reqMethod = defaultStr(req.method).toUpperCase().trim();
         await cors(req,res);
@@ -149,7 +148,13 @@ export default function handleRequestWithMethod(handler,options){
                 return res.status(FORBIDEN).send({message});
             }
         }
-        return typeof handler =='function'? handler.apply({},args) : null;
+        try {
+            return await typeof handler =='function'? handler(...args) : null
+        }
+        catch(e){
+            handleError(e,res);
+        }
+        return null;
     }
 }   
 
