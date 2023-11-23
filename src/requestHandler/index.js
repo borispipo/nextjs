@@ -51,7 +51,7 @@ export const parseRequestQuery = (req,parseQuery)=>{
     if(parseQuery !== false && isNonNullString(req?.url)){
         try {
             const q = getQueryParams(req.url);
-            req.query =  Object.size(q,true)? q : query;
+            req.query =  Object.size(q,true)? extendObj(true,{},req?.query,q) : query;
         } catch(e){
             req.query = query;
         }
@@ -59,15 +59,11 @@ export const parseRequestQuery = (req,parseQuery)=>{
     return req;
 }
 export const parseRequestBody = (req,parseBody)=>{
-    if(parseBody !== false && isNonNullString(req?.body)){
+    if(parseBody !== false && isNonNullString(req?.body) && isJSON(req?.body)){
         try {
-             if( isJSON(req?.body)){
-                 const b =   parseJSON(req.body);
-                 req.body = b;
-             }
-        } catch(e){
-        
-        }
+            const b = parseJSON(req.body);
+            req.body = b;
+        } catch(e){}
     }
     return req;
 }
@@ -152,7 +148,7 @@ export default function handleRequestWithMethod(handler,options){
             return await typeof handler =='function'? handler(...args) : null
         }
         catch(e){
-            handleError(e,res);
+            return handleError(e,res);
         }
         return null;
     }
