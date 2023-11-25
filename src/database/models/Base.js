@@ -99,7 +99,7 @@ export default class BaseModel {
                 const f = isObj(fields) && fields[field] || this.fields[field];
                 if(!isObj(f)) return null;
                 if(field in this.fields && opts?.selectFields){
-                    return `${this.tableName}.${f.name}`;
+                    return `${this.Entity.name}.${f.name}`;
                 }
                 return f.name;
               }
