@@ -19,7 +19,8 @@
  
  const TOKEN_NAME = 'token'
  
- export const MAX_AGE = 3* 60 * 60 * 24 // 3 days
+ const maxProcessSessionAge = parseFloat(process.env.AUTH_SESSION_MAX_AGE||'') || 0;
+ export const MAX_AGE = typeof maxProcessSessionAge =="number" && maxProcessSessionAge > 1000 ? maxProcessSessionAge : 3* 60 * 60 * 24  // 3 days
  
  /**** Sauvegarde/persiste un token dans l'objet res{NextResponse} 
   * @module $nauth/auth
