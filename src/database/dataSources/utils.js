@@ -3,9 +3,6 @@ import isNonNullString from "$cutils/isNonNullString";
 import defaultStr from "$cutils/defaultStr";
 import "$cutils";
 import defaultDataSource from "./default";
-import Logger from "../Logger";
-const fs = require("fs"), path = require("path");
-
 export * from "./types/exports";
 
 export * as dataSourceTypes from "./types/exports";
@@ -53,7 +50,6 @@ export const getConfig = (options)=>{
     options = {
         synchronize: false,
         ...options,
-        logger : new Logger(),
         type : dataSourceType,
         ...opts,
     };

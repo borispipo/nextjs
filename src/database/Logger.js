@@ -42,6 +42,8 @@ export default class Logger extends AbstractLogger {
                     } else {
                         console.error(message.message)
                     }
+                    const prefix = message.prefix ? `${message.prefix}. `: '';
+                    throw {message:`${prefix}${message}`}
                     break
             }
         }
