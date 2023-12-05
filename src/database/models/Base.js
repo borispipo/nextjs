@@ -176,13 +176,13 @@ export default class BaseModel {
         lors de la validation, le champ databaseData portera les informations sur la données en base de données, s'il s'agit d'une mise a jour ou nulle
         le champ isDocEditing, est un booléan qui permettra de sépcifier s'il s'agit d'une mise à jour où non
     */
-    static validate (options){
+    static async validate (options){
         options = defaultObj(options);
         const {generatePrimaryKey} = options;
         const pieces = defaultObj(options.pieces);
         const piece = pieces[this.tableName] || pieces[this.tableName.toUpperCase()];
         const data = defaultObj(options.data);
-        const isDocEditing = this.isDocEditing(data,true);
+        const isDocEditing = await this.isDocEditing(data,true);
         const databaseData = isObj(isDocEditing)? isDocEditing : null;
         const isUpdate = !!isDocEditing;
         const session = defaultObj(options.session);
@@ -190,7 +190,8 @@ export default class BaseModel {
         const userPiece = defaultStr(session.piece);
         const result = {databaseData,isUpdate,isDocEditing};
         let fields = this.getFields(options.fields);
-        const allFields = extendObj(true,{},this.getExtraFields(),this.fields);
+        const eFields = this.getExtraFields();
+        const allFields = Object.size(eFields,true)? extendObj(true,{},eFields,this.fields) : this.fields;
         Object.map(allFields,(f,i)=>{
             if(isObj(f)){
                 ["updateDate","updatedDate","updateBy","updatedBy"].map(u=>{
@@ -282,6 +283,11 @@ export default class BaseModel {
         }
         return new Promise((resolve,reject)=>{
             Promise.all(promises).then(()=>{
+                for(let i in data){
+                    if(!(i in fields)){
+                        result[i] = data[i]; 
+                    }
+                }
                 const r = {data:result};
                 this.emitEvent("validate",r,options);
                 resolve(r);
