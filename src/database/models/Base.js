@@ -360,8 +360,8 @@ export default class BaseModel {
             }
             return Promise.resolve(this.generatePrimaryKeyGetStartIndex(options)).then((count)=>{
                 counterIndex= count;
-                next();
-            })
+                return next();
+            }).catch(reject);
         })
     }
     static validateField ({field,columnField,value,result}){
