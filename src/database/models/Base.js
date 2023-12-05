@@ -262,7 +262,7 @@ export default class BaseModel {
                             fields,
                             databaseData,
                             isUpdate,
-                            isDocEditing,
+                            isDocEditing:isUpdate,
                         }).then((val)=>{
                             result[primaryKey] = val;
                             resolve({[primaryKey]:val});
