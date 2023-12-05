@@ -68,6 +68,52 @@ export default class BaseModel {
             return d;
         })
     }
+    static getPrimaryKeyFields(){
+        if(typeof this.___primaryKeyFields =="object" && Object.size(this.___primaryKeyFields,true)) return this.___primaryKeyFields;
+        this.___primaryKeyFields = {};
+        Object.map(this.getFields(),(field,i)=>{
+            if(isObj(field) && field.primary ===true){
+                this.___primaryKeyFields[i] = field;
+            }
+        })
+        return this.___primaryKeyFields;
+    }
+    static checkPrimaryKey(data,f){
+        return !(!(f in data) || (data[f] == null) || (!data[f] && typeof data !=='number'));
+    }
+    /*** vérifie si le document data passé en paramètre est en mise à jour
+        @param {object} data, la données à vérifier
+        @param {boolean} checkInDatabase, spécifie si la donnée sera vérifiée en base de données
+    */
+    static async isDocEditing(data,checkInDatabase){
+        if(!isObj(data)) return false;
+        const primaryKeys = {};
+        let hasFound = true;
+        const pkFields = this.getPrimaryKeyFields();
+        const pkKeys = Object.keys(pkFields);
+        if(!pkKeys.length) return true;
+        let pkCounter = 0;
+        for(let i in pkFields){
+            if(!this.checkPrimaryKey(data,i)){
+                hasFound = false;
+            } else {
+                primaryKeys[i] = data[i];
+                pkCounter++;
+            }
+        }
+        if(!hasFound) return false;
+        if(pkCounter !== pkKeys.length) return false;
+        if(checkInDatabase){
+            try {
+                const d = await this.findOne({where:primaryKeys});
+                if(!isObj(d)) return false;
+                return d;
+            } catch{
+                return false;
+            }
+        }
+        return true;
+    }
     static getFields(fields){
         const mFields = this.fields;
         if(Object.size(fields,true)){
@@ -113,6 +159,12 @@ export default class BaseModel {
     static initialize (options){
         return this.init(options);
     }
+    /****
+        retourne les champs extra qui ne figurent pas dans la déclaration du model
+    */
+    static getExtraFields(){
+        return {};
+    }
     /***validate les données pour la mise à jour
      * @param {object} options les options à paser à la requête
      * @return {Promise<object>} lorsque les donnés on été correctement validées
@@ -121,6 +173,8 @@ export default class BaseModel {
         {
             generatePrimaryKey : {boolean}, si true, la clé primaire sera générée pour les table n'ayant qu'un seul champ de type string comme clé primaire
         } 
+        lors de la validation, le champ databaseData portera les informations sur la données en base de données, s'il s'agit d'une mise a jour ou nulle
+        le champ isDocEditing, est un booléan qui permettra de sépcifier s'il s'agit d'une mise à jour où non
     */
     static validate (options){
         options = defaultObj(options);
@@ -128,12 +182,15 @@ export default class BaseModel {
         const pieces = defaultObj(options.pieces);
         const piece = pieces[this.tableName] || pieces[this.tableName.toUpperCase()];
         const data = defaultObj(options.data);
+        const isDocEditing = this.isDocEditing(data,true);
+        const databaseData = isObj(isDocEditing)? isDocEditing : null;
+        const isUpdate = !!isDocEditing;
         const session = defaultObj(options.session);
         const loginId = defaultStr(session.loginId, typeof session.loginId =='number' && String(session.loginId)).trim();
         const userPiece = defaultStr(session.piece);
-        const result = {};
+        const result = {databaseData,isUpdate,isDocEditing};
         let fields = this.getFields(options.fields);
-        const allFields = this.fields;
+        const allFields = extendObj(true,{},this.getExtraFields(),this.fields);
         Object.map(allFields,(f,i)=>{
             if(isObj(f)){
                 ["updateDate","updatedDate","updateBy","updatedBy"].map(u=>{
@@ -142,7 +199,7 @@ export default class BaseModel {
                     }
                 });
             }
-        })
+        });
         const {filter} = options;
         const errorsMessages = [];
         const promises = [];
@@ -202,6 +259,9 @@ export default class BaseModel {
                             loginId,
                             userPiece,
                             fields,
+                            databaseData,
+                            isUpdate,
+                            isDocEditing,
                         }).then((val)=>{
                             result[primaryKey] = val;
                             resolve({[primaryKey]:val});
