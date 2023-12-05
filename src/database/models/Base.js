@@ -311,6 +311,13 @@ export default class BaseModel {
     static async buildPrimaryKey({primaryKeyPrefix,userPiece,counterSuffix,counterIndex}){
         return primaryKeyPrefix+userPiece+counterSuffix;
     }
+    /***
+        retourne le premier index à utiliser pour la génération de la clé primaire
+        return <Promise<number>>;
+    */
+    static async generatePrimaryKeyGetStartIndex(){
+        return this.count();
+    }
     /**** génère la clé primaire 
      * {
      *      primaryKey : {string} le nom du champ qui fait office de clé primaire
@@ -336,9 +343,10 @@ export default class BaseModel {
                 const cPrefix = (counterIndex<10)? ("0"+counterIndex) : counterIndex;
                 generatedValue = this.buildPrimaryKey({primaryKeyPrefix,userPiece:defaultStr(userPiece),counterSuffix:cPrefix,counterIndex});
                 const cb = (d)=>{
-                    if(!isObj(d)){
+                    if(!isObj(d) || !this.checkPrimaryKey(d,primaryKey)){
                         return resolve(generatedValue);
                     }
+                    generatedValue = undefined;
                     return next();
                 }
                 this.findOne({
@@ -350,7 +358,7 @@ export default class BaseModel {
                     reject(e);
                 });
             }
-            this.count().then((count)=>{
+            return Promise.resolve(this.generatePrimaryKeyGetStartIndex(options)).then((count)=>{
                 counterIndex= count;
                 next();
             })
