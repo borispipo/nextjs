@@ -37,7 +37,6 @@ program
   
   .action((str, options) => {
     const opts = {...Object.assign({},str),...Object.assign({},options.opts())};
-    console.log(opts," is opts heeein")
     callback = typeof callback =='function'? callback : x=>x;
     const {src,dest,srcPath,destPath,filter,out} = opts;
     const s = getArgPath([src,srcPath]);
@@ -58,6 +57,8 @@ const pp = path.join(__dirname,"..","src","database","schema","DataTypes","jsTyp
 const models = require(pp);
 const parseTable = (srcPath,destPath,paths,params)=>{
     let {filter,include,exclude} = params;
+    srcPath = srcPath && path.resolve(srcPath) || '';
+    destPath = destPath && path.resolve(destPath) ||'';
     if(typeof filter =='string'){
         const ff = filter.trim().split(",");
         filter = (tableName)=>{
