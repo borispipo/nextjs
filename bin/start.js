@@ -43,7 +43,7 @@ const shell = process.env.SHELL
 const port = parseInt(process.env.PORT, 10) || 3000
 const hostname = process.env.HOSTNAME || 'localhost';
 const isDev = process.env.NODE_ENV =='development';
-const isProd = program.env.NODE_ENV =='production';
+//const isProd = process.env.NODE_ENV == 'production';
 const app = next({
   dev: isDev,
   dir: program.root || process.cwd(),
