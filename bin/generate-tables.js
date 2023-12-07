@@ -33,7 +33,7 @@ program
   //.option('-i, --include <includeStr>', `la liste des chemins relatifs des fichiers ou dossiers à inclure`, '*')
   .option('-f, --filter <filterStr>', `la liste des models à ignorer, chaine de caractère séparée par des virgules`, '')
   .option('-e, --exclude <excludeStr>', `la liste des chemins relatifs des fichiers ou sous dossiers du dossier [model] à exclure lors de la copie`, '')
-  .option('-n, --no-overwrite <noOverwrite>', `la liste des chemins relatifs des fichiers ou sous dossiers du dossier [model] qui ne seront pas overwrite`, '')
+  .option('-n, --no-overwrite <noOverwrite>', `la liste des chemins relatifs des fichiers ou sous dossiers du dossier [model] qui ne seront pas remplacés(overwrite)`, '')
   
   .action((str, options) => {
     const opts = {...Object.assign({},str),...Object.assign({},options.opts())};
@@ -56,9 +56,10 @@ program
 const pp = path.join(__dirname,"..","src","database","schema","DataTypes","jsTypes");
 const models = require(pp);
 const parseTable = (srcPath,destPath,paths,params)=>{
-    let {filter,include,exclude} = params;
+    let {filter,include,exclude,noOverwrite} = params;
     srcPath = srcPath && path.resolve(srcPath) || '';
     destPath = destPath && path.resolve(destPath) ||'';
+    noOverwrite = noOverwrite && typeof noOverwrite =='string'? noOverwrite.split(",") : [];
     if(typeof filter =='string'){
         const ff = filter.trim().split(",");
         filter = (tableName)=>{
@@ -186,9 +187,16 @@ const parseTable = (srcPath,destPath,paths,params)=>{
                 if(destinationPath){
                     const toExclude = [];
                     exclude.map((file)=>{
+                        file = file.trim();
                         if(!file) return false;
                         toExclude.push(path.resolve(srcPath,file));
                         toExclude.push(path.resolve(destinationPath,file));
+                    });
+                    const noOver = noOverwrite.map((file)=>{
+                        file = file.trim();
+                        if(!file) return false;
+                        noOver.push(path.resolve(srcPath,file));
+                        noOver.push(path.resolve(destinationPath,file));
                     })
                     allowedFiles.map((file)=>{
                         const from = path.join(srcPath,file);
@@ -197,7 +205,7 @@ const parseTable = (srcPath,destPath,paths,params)=>{
                         try {   
                             fsExtra.copySync(from,to,{
                                 ...params,
-                                overwrite : true,
+                                overwrite : noOver.length ? !noOver.includes(from) && noOver.includes(to) : true,
                                 filter : (srcPath,destPath)=>{
                                    if(!srcPath || !destPath) return false;
                                    if(toExclude.length && (toExclude.includes(srcPath) || toExclude.includes(destPath))) return false;
