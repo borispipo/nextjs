@@ -23,13 +23,14 @@ const getArgPath = (paths)=>{
     return null;
 }
 program
+  .command("generate-tables")
   .description(`prend en paramètre un dossier, options -s|--src puis parcours tous les fichiers du dossiers et sous dossiers
   à la recherche des models correspondants, les fichier ui héritents de la classe BaseModel.  elle générera les champs correpondants à la table définit dans le fichier .fields du model en question
 `)
   .version(package.version)
   //.argument('<string>', 'string to split')
-  .option('-s --src <srcPath>', 'the source directory')
-  .option('-d, --dest <destPath>', 'the destination directory', ',')
+  .option('-s --src <srcPath>', 'le dossier source')
+  .option('-d, --dest <destPath>', 'le dossier destination', ',')
   //.option('-i, --include <includeStr>', `la liste des chemins relatifs des fichiers ou dossiers à inclure`, '*')
   .option('-f, --filter <filterStr>', `la liste des models à ignorer, chaine de caractère séparée par des virgules`, '')
   .option('-e, --exclude <excludeStr>', `la liste des chemins relatifs des fichiers ou sous dossiers du dossier [model] à exclure lors de la copie`, '')
