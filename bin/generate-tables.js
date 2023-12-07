@@ -131,34 +131,37 @@ const parseTable = (srcPath,destPath,paths,params)=>{
                                     if(hasFound){
                                         try {
                                             const dPath = destinationPath = path.join(destPath,tableName);
-                                            
                                             const tablePath = path.join(dPath,"table.js");
                                             const indexPath = path.join(dPath,"index.js");
                                             const srcI18nPath = path.join(srcPath,"i18n.js");
                                             const destI18nPath = path.join(dPath,"i18n.js");
                                             const typesPath = path.join(dPath,"types.js");
-                                            writeFile(path.join(dPath,file),jsContent);
+                                            
                                             generatedFiles.push(path.join(srcPath,'entity.js'));
                                             generatedFiles.push(path.join(srcPath,'entity.ts'));
+                                            generatedFiles.push(path.join(srcPath,'types.js'));
+                                            generatedFiles.push(path.join(srcPath,'types.ts'));
+                                            generatedFiles.push(path.join(srcPath,'table.js'));
+                                            generatedFiles.push(path.join(srcPath,'table.ts'));
+                                            generatedFiles.push(path.join(srcPath,'index.js'));
+                                            generatedFiles.push(path.join(srcPath,'index.ts'));
+                                            generatedFiles.push(path.join(srcPath,'i18n.js'));
+                                            generatedFiles.push(path.join(srcPath,'i18n.ts'));
+                                            
+                                            
+                                            writeFile(path.join(dPath,file),jsContent);
                                             if(fs.existsSync(path.join(srcPath,"types.js"))){
                                                 writeFile(typesPath,fs.readFileSync(path.join(srcPath,"types.js"))?.toString());
-                                                generatedFiles.push(path.join(srcPath,'types.js'));
-                                                generatedFiles.push(path.join(srcPath,'types.ts'));
                                             }
                                             ///on crèe le fichier table name
                                             writeFile(tablePath,"export default \""+tableName+"\";");
-                                            generatedFiles.push(path.join(srcPath,'table.js'));
-                                            generatedFiles.push(path.join(srcPath,'table.ts'));
+                                            
                                             if(!fs.existsSync(indexPath)){
                                                 const indexStr = "export default \n{\n\ttableName : require('./table').default,\n\tfields : require('./"+replaceAll(file,ext,"")+"').default,\n}";
                                                 writeFile(indexPath,indexStr);
-                                                generatedFiles.push(path.join(srcPath,'index.js'));
-                                                generatedFiles.push(path.join(srcPath,'index.ts'));
                                             }
                                             if(fs.existsSync(srcI18nPath)){
                                                 writeFile(destI18nPath,fs.readFileSync(srcI18nPath)?.toString())
-                                                generatedFiles.push(path.join(srcPath,'i18n.js'));
-                                                generatedFiles.push(path.join(srcPath,'i18n.ts'));
                                             }
                                             paths[srcPath]= dPath;
                                             console.log("******************** ",tableName, " is generated")
@@ -194,6 +197,7 @@ const parseTable = (srcPath,destPath,paths,params)=>{
                         try {   
                             fsExtra.copySync(from,to,{
                                 ...params,
+                                overwrite : true,
                                 filter : (srcPath,destPath)=>{
                                    if(!srcPath || !destPath) return false;
                                    if(toExclude.length && (toExclude.includes(srcPath) || toExclude.includes(destPath))) return false;
