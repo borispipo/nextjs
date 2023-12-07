@@ -18,6 +18,8 @@ if(pkg.version){
   program.version(pkg.version)
 }
 program
+  .name("start")
+  .description("start @fto-consult/nextjs application")
   .option('-r, --root [dir]', 'root directory of your nextjs app')
   .option(
     '-s, --script [path]',
@@ -39,9 +41,11 @@ program
 
 const shell = process.env.SHELL
 const port = parseInt(process.env.PORT, 10) || 3000
-const hostname = process.env.HOSTNAME || 'localhost'
+const hostname = process.env.HOSTNAME || 'localhost';
+const isDev = process.env.NODE_ENV =='development';
+const isProd = program.env.NODE_ENV =='production';
 const app = next({
-  dev: true,
+  dev: isDev,
   dir: program.root || process.cwd(),
   // When using middlewares in NextJS 12, `hostname` and `port` must be provided
   // (https://nextjs.org/docs/advanced-features/custom-server)
@@ -52,7 +56,7 @@ const handle = app.getRequestHandler()
 
 app.prepare().then(() => {
   // if directories are provided, watch them for changes and trigger reload
-  if (program.args.length > 0) {
+  if (program.args.length > 0 && isDev) {
     chokidar
       .watch(program.args, { usePolling: Boolean(program.polling) })
       .on(
@@ -104,22 +108,24 @@ app.prepare().then(() => {
   // create an express server
   const server = express()
 
-  // special handling for mdx reload route
-  const reloadRoute = express.Router()
-  reloadRoute.use(express.json())
-  reloadRoute.all('/', (req, res) => {
-    // log message if present
-    const msg = req.body.message
-    const color = req.body.color
-    msg && console.log(color ? chalk[color](msg) : msg)
-
-    // reload the nextjs app
-    app.server.hotReloader.send('building')
-    app.server.hotReloader.send('reloadPage')
-    res.end('Reload initiated')
-  })
-
-  server.use('/__next_reload', reloadRoute)
+  if(isDev){
+    // special handling for mdx reload route
+    const reloadRoute = express.Router()
+    reloadRoute.use(express.json())
+    reloadRoute.all('/', (req, res) => {
+      // log message if present
+      const msg = req.body.message
+      const color = req.body.color
+      msg && console.log(color ? chalk[color](msg) : msg)
+  
+      // reload the nextjs app
+      app.server.hotReloader.send('building')
+      app.server.hotReloader.send('reloadPage')
+      res.end('Reload initiated')
+    })
+  
+    server.use('/__next_reload', reloadRoute)
+  }
 
   // handle all other routes with next.js
   server.all('*', (req, res) => handle(req, res, parse(req.url, true)))

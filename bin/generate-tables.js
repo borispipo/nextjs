@@ -1,8 +1,10 @@
 // Copyright 2022 @fto-consult/Boris Fouomene. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+const {package,program} = require("./utils");
 const isNonNullString = x=> x && typeof x =='string';
 const fs = require("fs");
+const fsExtra = require('fs-extra')
 const path = require("path");
 const StringBuilder = require("string-builder");
 
@@ -20,12 +22,22 @@ const getArgPath = (paths)=>{
     }
     return null;
 }
-/**** cette fonction prend en paramètre un dossier, options srcPath puis parcoures tous les fichiers du dossiers et sous dossiers
- * à la recherche des models correspondants, les fichier ui héritents de la classe BaseModel
- * elle générera les champs correpondants à la table définit dans le fichier .fields du model en question
- */
-module.exports  = (opts,callback)=>{
-    opts = typeof opts =='object' && opts ? opts : {};
+program
+  .description(`prend en paramètre un dossier, options -s|--src puis parcours tous les fichiers du dossiers et sous dossiers
+  à la recherche des models correspondants, les fichier ui héritents de la classe BaseModel.  elle générera les champs correpondants à la table définit dans le fichier .fields du model en question
+`)
+  .version(package.version)
+  //.argument('<string>', 'string to split')
+  .option('-s --src <srcPath>', 'the source directory')
+  .option('-d, --dest <destPath>', 'the destination directory', ',')
+  //.option('-i, --include <includeStr>', `la liste des chemins relatifs des fichiers ou dossiers à inclure`, '*')
+  .option('-f, --filter <filterStr>', `la liste des models à ignorer, chaine de caractère séparée par des virgules`, '')
+  .option('-e, --exclude <excludeStr>', `la liste des chemins relatifs des fichiers ou sous dossiers du dossier [model] à exclure lors de la copie`, '')
+  .option('-n, --no-overwrite <noOverwrite>', `la liste des chemins relatifs des fichiers ou sous dossiers du dossier [model] qui ne seront pas overwrite`, '')
+  
+  .action((str, options) => {
+    const opts = {...Object.assign({},str),...Object.assign({},options.opts())};
+    console.log(opts," is opts heeein")
     callback = typeof callback =='function'? callback : x=>x;
     const {src,dest,srcPath,destPath,filter,out} = opts;
     const s = getArgPath([src,srcPath]);
@@ -36,16 +48,31 @@ module.exports  = (opts,callback)=>{
     if(!d || !fs.lstatSync(d).isDirectory() ){
         return callback({message:'Vous devez specifier un repertire destination valide'});
     }
-    parseTable(s,d,{},filter).then((p)=>{
+    parseTable(s,d,{},opts).then((p)=>{
         callback(false,p);
     }).catch((e)=>{
         console.log(e, " was parsingg")
     });
-}
+});
 const pp = path.join(__dirname,"..","src","database","schema","DataTypes","jsTypes");
 const models = require(pp);
-const parseTable = (srcPath,destPath,paths,filter)=>{
-    filter = typeof filter =='function'? filter : x=>true;
+const parseTable = (srcPath,destPath,paths,params)=>{
+    let {filter,include,exclude} = params;
+    if(typeof filter =='string'){
+        const ff = filter.trim().split(",");
+        filter = (tableName)=>{
+            tableName = tableName.trim().toUpperCase();
+            for(let i in ff){
+                const tb = ff[i];
+                if(tb.trim().toUpperCase() === tableName) return false;
+            }
+            return true;
+        }
+    } else {
+        filter = typeof filter =='function'? filter : x=>true;
+    }
+    //include = typeof include =='string' && include ? include.trim().split(",") : [];
+    exclude = typeof exclude =='string' && exclude ? exclude.trim().split(",") : [];
     paths = paths && typeof paths =='object' ? paths : {};
     return new Promise((resolve,reject)=>{
         // Loop through all the files in the temp directory
@@ -56,16 +83,24 @@ const parseTable = (srcPath,destPath,paths,filter)=>{
                     return reject({message:'Could not list the directory. '+err?.message,error:e})
                 }
                 const promises = [];
+                const allowedFiles = [];
+                let destinationPath = null;
+                const generatedFiles = [];
                 files.forEach(function (file, index) {
                     // Make one pass and make the file complete
                     const fromPath = path.join(srcPath, file);
                     try {
                         const stat = fs.statSync(fromPath);
-                        if (stat.isFile()){
+                        const isFile = stat.isFile(), isDirectory = stat.isDirectory();
+                        if(isFile || isDirectory){
+                            allowedFiles.push(file);
+                        }
+                        if (isFile){
                             const ext = path.extname(fromPath)?.toLowerCase();
                             if(file.toLowerCase().includes("fields") && (ext =='.js' || ext =='.ts')){
                                 const tbName = path.basename(path.dirname(fromPath));
                                 const tableName = tbName?.toUpperCase();
+                                allowedFiles.pop();
                                 ///ajout des filtre
                                 if(!tableName || !filter(tbName)) return;
                                 try {
@@ -87,31 +122,42 @@ const parseTable = (srcPath,destPath,paths,filter)=>{
                                             hasFound = true;
                                             jsContent = replaceAll(jsContent,st,"'"+mm.js+"'");
                                         }
-                                        jsContent = jsContent.replaceAll("length : ","maxLength : ")
-                                            .replace(/(length)(\s)*:/,"maxLength : ")
-                                            .replace(/(primary)(\s)*:/,"primaryKey : ")
-                                            .replace(/(name)(\s)*:/,"databaseName : ")
+                                        jsContent = jsContent
+                                            .replace(new RegExp(/(length)(\s)*:/,'g'),"maxLength : ")
+                                            .replace(new RegExp(/(primary)(\s)*:/,'g'),"primaryKey : ")
+                                            .replace(new RegExp(/(name)(\s)*:/, 'g'),"databaseName : ")
                                     }
                                     if(hasFound){
                                         try {
-                                            const dPath = path.join(destPath,tableName);
+                                            const dPath = destinationPath = path.join(destPath,tableName);
+                                            
                                             const tablePath = path.join(dPath,"table.js");
                                             const indexPath = path.join(dPath,"index.js");
                                             const srcI18nPath = path.join(srcPath,"i18n.js");
                                             const destI18nPath = path.join(dPath,"i18n.js");
                                             const typesPath = path.join(dPath,"types.js");
                                             writeFile(path.join(dPath,file),jsContent);
+                                            generatedFiles.push(path.join(srcPath,'entity.js'));
+                                            generatedFiles.push(path.join(srcPath,'entity.ts'));
                                             if(fs.existsSync(path.join(srcPath,"types.js"))){
-                                                writeFile(typesPath,fs.readFileSync(path.join(srcPath,"types.js"))?.toString())
+                                                writeFile(typesPath,fs.readFileSync(path.join(srcPath,"types.js"))?.toString());
+                                                generatedFiles.push(path.join(srcPath,'types.js'));
+                                                generatedFiles.push(path.join(srcPath,'types.ts'));
                                             }
                                             ///on crèe le fichier table name
                                             writeFile(tablePath,"export default \""+tableName+"\";");
+                                            generatedFiles.push(path.join(srcPath,'table.js'));
+                                            generatedFiles.push(path.join(srcPath,'table.ts'));
                                             if(!fs.existsSync(indexPath)){
                                                 const indexStr = "export default \n{\n\ttableName : require('./table').default,\n\tfields : require('./"+replaceAll(file,ext,"")+"').default,\n}";
                                                 writeFile(indexPath,indexStr);
+                                                generatedFiles.push(path.join(srcPath,'index.js'));
+                                                generatedFiles.push(path.join(srcPath,'index.ts'));
                                             }
                                             if(fs.existsSync(srcI18nPath)){
                                                 writeFile(destI18nPath,fs.readFileSync(srcI18nPath)?.toString())
+                                                generatedFiles.push(path.join(srcPath,'i18n.js'));
+                                                generatedFiles.push(path.join(srcPath,'i18n.ts'));
                                             }
                                             paths[srcPath]= dPath;
                                             console.log("******************** ",tableName, " is generated")
@@ -124,15 +170,38 @@ const parseTable = (srcPath,destPath,paths,filter)=>{
                                     //reject({message:'Error on lokking for file '+fromPath,error:e})
                                 }
                             }
-                        } else if (stat.isDirectory()){
+                        } else if (isDirectory){
                             //console.log("parsing '%s' directory", fromPath);
-                            promises.push(parseTable(fromPath,destPath,paths,filter));
+                            promises.push(parseTable(fromPath,destPath,paths,params));
                         }
                     } catch(error){
                         console.error("Error stating file.", error);
                         return;
                     }
                 });
+                if(destinationPath){
+                    const toExclude = [];
+                    exclude.map((file)=>{
+                        if(!file) return false;
+                        toExclude.push(path.resolve(srcPath,file));
+                        toExclude.push(path.resolve(destinationPath,file));
+                    })
+                    allowedFiles.map((file)=>{
+                        const from = path.join(srcPath,file);
+                        if(generatedFiles.includes(from)) return false;
+                        const to = path.join(destinationPath,file);
+                        try {   
+                            fsExtra.copySync(from,to,{
+                                ...params,
+                                filter : (srcPath,destPath)=>{
+                                   if(!srcPath || !destPath) return false;
+                                   if(toExclude.length && (toExclude.includes(srcPath) || toExclude.includes(destPath))) return false;
+                                   return true;
+                                }
+                            })
+                        }catch{}
+                    });
+                }
                 return Promise.all(promises).then(resolve).catch(reject).finally(()=>{
                     let i18nstr= "import i18n from '$i18n';";
                     let rootPath = null;
@@ -271,3 +340,6 @@ String.prototype.sprintf = function ()
     });
     return str;
 }
+
+
+program.parse(process.argv);

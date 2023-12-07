@@ -10,10 +10,6 @@ const supportedScript = {
   "generate-tables" : true, ///generate all tables appllication
 }
 
-const path= require("path");
-const fs = require("fs");
-const dir = path.resolve(__dirname);
-
 const parsedArgs = require("./paseArgs")(null,supportedScript);
 if(!parsedArgs.script || !(parsedArgs.script in supportedScript)){
    console.error ("Erreur : script invalide, vous devez spécifier script figurant parmi les script : ["+Object.keys(supportedScript).join(", ")+"]");
@@ -24,7 +20,7 @@ const script = typeof parsedArgs.script =='string' ? parsedArgs.script.toLowerCa
 if(script?.toLowerCase() =='start'){
   require("./start");
 } else if(script ==="generate-tables"){
-  require("./generate-database-tables")(parsedArgs);
+  require("./generate-tables");
 } else {
   process.exit();
 }
