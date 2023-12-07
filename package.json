@@ -1,13 +1,14 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "3.18.1",
+  "version": "3.18.2",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "bin": {
     "@fto-consult/nextjs": "bin/index.js"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "node ./bin/start",
+    "start" : "node ./bin/start",
     "build": "next build",
     "lint": "next lint",
     "test": "test",
