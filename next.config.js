@@ -102,7 +102,7 @@ module.exports = (opts)=>{
           });
       }
       if(typeof rewrites =='function'){
-         const r = rewrites(ret);
+         const r = await rewrites(ret);
          if(Array.isArray(r)){
             return r;
          }
@@ -123,8 +123,7 @@ module.exports = (opts)=>{
       }
       let r2 = [];
       if(typeof optsHeaders =='function'){
-          r2 = optsHeaders({headers});
-          
+          r2 = await optsHeaders({headers});
       }
       return [
         ...(Array.isArray(r2)?r2 : []),
