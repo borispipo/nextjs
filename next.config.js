@@ -74,7 +74,7 @@ module.exports = (opts)=>{
     }
   }
   const{nextConfig:nConfig} = opts;
-  const {rewrites,eslint,headers:optsHeaders,webpack,...nRest} = Object.assign({},nConfig);
+  const {rewrites,eslint,headers:optsHeaders,webpack:nWebpack,...nRest} = Object.assign({},nConfig);
   const nextConfig = {
     reactStrictMode: true,
     swcMinify: false,
@@ -101,7 +101,7 @@ module.exports = (opts)=>{
       }
       if(typeof rewrites =='function'){
          const r = await rewrites(ret);
-         if(Array.isArray(r)){
+         if(Array.isArray(r) || ret && typeof ret =="object"){
             return r;
          }
       }
@@ -159,8 +159,8 @@ module.exports = (opts)=>{
         config.externals = [...config.externals,'pg', 'sqlite3', 'tedious', 'pg-hstore','react-native-sqlite-storage'];
       }
       config.plugins.push(require("@fto-consult/common/circular-dependencies"));
-      if(typeof webpack =='function'){
-         webpack(config,options,...rest);
+      if(typeof nWebpack =='function'){
+        nWebpack(config,options,...rest);
       }
       return config;
     },
