@@ -73,15 +73,14 @@ module.exports = (opts)=>{
       delete alias[i];//delete all empty alias
     }
   }
-  const{rewrites,eslint,headers:optsHeaders,webpack,...rest} = opts;
-  ["base","projectRoot","alias","root","platform"].map((v)=>{
-    delete rest[v];
-  });
+  const{nextConfig:nConfig} = opts;
+  const {rewrites,eslint,headers:optsHeaders,webpack,...nRest} = Object.assign({},nConfig);
   const nextConfig = {
     reactStrictMode: true,
     swcMinify: false,
     basePath: '',
-    ...rest,
+    swcMinify: true,
+    ...nRest,
     //reactStrictMode: true,
     eslint: {
       // Warning: This allows production builds to successfully complete even if
@@ -89,7 +88,6 @@ module.exports = (opts)=>{
       ignoreDuringBuilds: true,
       ...Object.assign({},eslint)
     },
-    swcMinify: true,
     async rewrites() {
       const rewriteUrl = process.env.API_REWRITE_URL;
       const ret = [];
