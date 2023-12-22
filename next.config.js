@@ -73,15 +73,21 @@ module.exports = (opts)=>{
       delete alias[i];//delete all empty alias
     }
   }
+  const{rewrites,eslint,headers:optsHeaders,webpack,...rest} = opts;
+  ["base","projectRoot","alias","root","platform"].map((v)=>{
+    delete rest[v];
+  });
   const nextConfig = {
     reactStrictMode: true,
     swcMinify: false,
     basePath: '',
+    ...rest,
     //reactStrictMode: true,
     eslint: {
       // Warning: This allows production builds to successfully complete even if
       // your project has ESLint errors.
       ignoreDuringBuilds: true,
+      ...Object.assign({},eslint)
     },
     swcMinify: true,
     async rewrites() {
@@ -94,6 +100,12 @@ module.exports = (opts)=>{
             source: '/api/:path*',
             destination: rewriteUrl+'/:path*',
           });
+      }
+      if(typeof rewrites =='function'){
+         const r = rewrites(ret);
+         if(Array.isArray(r)){
+            return r;
+         }
       }
       return ret;
     },
@@ -109,7 +121,13 @@ module.exports = (opts)=>{
           });
         }
       }
+      let r2 = [];
+      if(typeof optsHeaders =='function'){
+          r2 = optsHeaders({headers});
+          
+      }
       return [
+        ...(Array.isArray(r2)?r2 : []),
         {
           // matching all API routes
           "source": "/api/(.*)",
@@ -117,7 +135,7 @@ module.exports = (opts)=>{
         }
       ]
     },
-    webpack: (config,options) => {
+    webpack: (config,options,...rest) => {
       const { isServer, buildId, dev, defaultLoaders, nextRuntime, webpack } = options;
       config.resolve.alias = {
         ...(config.resolve.alias || {}),
@@ -144,6 +162,9 @@ module.exports = (opts)=>{
         config.externals = [...config.externals,'pg', 'sqlite3', 'tedious', 'pg-hstore','react-native-sqlite-storage'];
       }
       config.plugins.push(require("@fto-consult/common/circular-dependencies"));
+      if(typeof webpack =='function'){
+         webpack(config,options,...rest);
+      }
       return config;
     },
   }
