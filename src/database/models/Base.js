@@ -701,6 +701,11 @@ export default class BaseModel {
             return this.getRepository().then((r)=>{
                 return r.save(...args).then(a=>{
                     if(isObj(a)){
+                        Object.map(a.databaseData,(d,i)=>{
+                            if(!(i in a)){
+                                a[i] = d;
+                            }
+                        });
                         delete a.databaseData;
                         delete a.isDocEditing;
                     }
