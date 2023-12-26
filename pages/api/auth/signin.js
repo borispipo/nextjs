@@ -68,12 +68,7 @@ export default post((async (req, res,options) => {
         return res.status(NOT_ACCEPTABLE).json({message:'Données de sessions invalidates. Le fournisseur d\'authentification ne définie aucune valeur (props loginId) identifiant de manière unique, la session à persister. La fonction autorize du provider doit retourner un objet ayant à la prop loginId, une chaine de caractère non nulle ou un nombre entier identifiant de manière unique, l\'utilisateur où la connection, où la resource demandant à être authentifiée'});
       }
       const token = await createUserToken(res, session);
-      const result = { done: true,token,perms:session.perms,preferences:session.preferences};
-      ["firstName","piece","lastName","fullName","pseudo","isMasterAdmin","code","label",'theme','avatar','status','phone','mobile','tel','lastLoginDate','role','profile'].map(v=>{
-        if(login.hasOwnProperty(v)){
-            result[v] = login[v];
-        }
-      });
+      const result = {...session,token};
       const r = typeof mutator == 'function'? await mutator({...result,session}) : null; 
       if(isObj(r)){
         extendObj(true,result,r);
