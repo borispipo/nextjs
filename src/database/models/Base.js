@@ -700,6 +700,10 @@ export default class BaseModel {
         return new Promise((resolve,reject)=>{
             return this.getRepository().then((r)=>{
                 return r.save(...args).then(a=>{
+                    if(isObj(a)){
+                        delete a.databaseData;
+                        delete a.isDocEditing;
+                    }
                     this.emitEvent("save",{data:a,result:a},...args);
                     this.emitChangeEvent("save",{data:a,result:a},...args);
                     resolve(a);
