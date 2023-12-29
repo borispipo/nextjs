@@ -8,7 +8,7 @@
  */
 import {isObj,extendObj} from "$utils";
 import { getProvider } from "./providers";
-import { signInRef } from "$cauth/authSignIn2SignOut";
+import SignIn2SignOut from "$cauth/utils";
 
 export * from "./utils";
 
@@ -20,12 +20,12 @@ export * from "$auth-utils";
 
 export * from "./utils/password";
 
-extendObj(signInRef.current,{
+SignIn2SignOut.setRef({
     isMasterAdmin : (user)=>{
         if(!isObj(user)) return false;
         const provider = getProvider(user.providerId);
         if(!isObj(provider)) return false;
         if(typeof provider.isMasterAdmin =="function") return provider.isMasterAdmin(user);
         return user.isMasterAdmin ? true : false;
-    },
+    }
 });
