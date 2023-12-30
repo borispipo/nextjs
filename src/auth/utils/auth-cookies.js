@@ -169,12 +169,12 @@
  
  /*** hoook utile pour le rendu des contenu avec les session utilisateur */
  export function withSession(handler){
-   return async function handlerWithSession(req, res,a1,a2) {
+   return async function handlerWithSession(req, res,...rest) {
      const session = await setSessionOnRequest(req,res);
      if(!session || typeof session!='object'){
          return res.status(UNAUTHORIZED).json({message:'Vous devez vous connecter afin de solliciter ce type de ressource'});
      }
-     return handler(req, res,a1,a2);
+     return handler(req, res,...rest);
    };
  }
 
