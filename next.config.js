@@ -23,6 +23,7 @@ module.exports = (opts)=>{
   ]);
   const alias = require("@fto-consult/common/babel.config.alias")({...opts,platform:"web",assets:path.resolve(base,"assets"),base});
   const src = alias.$src;
+  const public = path.resolve(projectRoot,"public");
   const next = require("./lookup-next-path")()?path.resolve(src,"..","nextjs","src") : path.resolve(dir,"src");
   alias["$nproviders"] = path.resolve(next,"auth","providers");
   alias["$providers"] = alias["$providers"] || alias["$nproviders"];
@@ -34,6 +35,7 @@ module.exports = (opts)=>{
   alias["$ndatabase"] = path.resolve(next,"database");
   alias["$npages"] = path.resolve(dir,"pages");
   alias["$pages"] = path.resolve(src,"pages");
+  alias.$public = alias.$public || public;
   alias.$nevents = path.resolve(next,"events");
   alias.$events = alias.$events || alias.$nevents;
   
