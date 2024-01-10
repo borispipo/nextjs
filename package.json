@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "3.24.3",
+  "version": "3.25.0",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "bin": {
@@ -35,7 +35,7 @@
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@fto-consult/common": "^4.1.4",
+    "@fto-consult/common": "^4.4.0",
     "apidoc": "^1.2.0",
     "bcrypt": "^5.1.1",
     "chalk": "^4.1.2",

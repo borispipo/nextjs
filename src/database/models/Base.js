@@ -316,7 +316,7 @@ export default class BaseModel {
         return <Promise<number>>;
     */
     static async generatePrimaryKeyGetStartIndex(){
-        return this.count();
+        return this.count().then((c)=>c+1);
     }
     /**** génère la clé primaire 
      * {
@@ -334,12 +334,15 @@ export default class BaseModel {
         }
         return new Promise((resolve,reject)=>{
             let generatedValue = undefined,counterIndex = 0;
-            const next = ()=>{
+            const next = (increment)=>{
                 if(isNonNullString(generatedValue)){
                     this.emitEvent("generate-primary-key",{primaryKey:generatedValue})
                     return resolve(generatedValue);
                 }
-                counterIndex++;
+                if(counterIndex <0) counterIndex = 0;
+                if(increment === false || counterIndex === 0){
+                    counterIndex++;
+                }
                 const cPrefix = (counterIndex<10)? ("0"+counterIndex) : counterIndex;
                 generatedValue = this.buildPrimaryKey({primaryKeyPrefix,userPiece:defaultStr(userPiece),counterSuffix:cPrefix,counterIndex});
                 const cb = (d)=>{
@@ -359,8 +362,9 @@ export default class BaseModel {
                 });
             }
             return Promise.resolve(this.generatePrimaryKeyGetStartIndex(options)).then((count)=>{
-                counterIndex= count;
-                return next();
+                count = typeof count ==='string'? parseInt(count) || 0 : typeof count ==='number'? count : 0;
+                counterIndex = Math.max(count,0);
+                return next(false);
             }).catch(reject);
         })
     }
