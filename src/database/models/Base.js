@@ -340,7 +340,7 @@ export default class BaseModel {
                     return resolve(generatedValue);
                 }
                 if(counterIndex <0) counterIndex = 0;
-                if(increment === false || counterIndex === 0){
+                if(increment !== false || counterIndex === 0){
                     counterIndex++;
                 }
                 const cPrefix = (counterIndex<10)? ("0"+counterIndex) : counterIndex;
