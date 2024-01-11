@@ -75,7 +75,7 @@ module.exports = (opts)=>{
       delete alias[i];//delete all empty alias
     }
   }
-  ["transpileModules","base","projectRoot"].map((v)=>delete opts[v]);
+  ["transpileModules","base","projectRoot","alias","src","platform"].map((v)=>delete opts[v]);
   const {rewrites,eslint,headers:optsHeaders,webpack:nWebpack,...nRest} = opts;
   const nextConfig = {
     reactStrictMode: true,
