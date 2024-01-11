@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "3.25.1",
+  "version": "3.26.0",
   "description": "nextjs boilerplate",
   "main": "index.js",
   "bin": {

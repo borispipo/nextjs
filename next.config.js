@@ -75,8 +75,8 @@ module.exports = (opts)=>{
       delete alias[i];//delete all empty alias
     }
   }
-  const{nextConfig:nConfig} = opts;
-  const {rewrites,eslint,headers:optsHeaders,webpack:nWebpack,...nRest} = Object.assign({},nConfig);
+  ["transpileModules","base","projectRoot"].map((v)=>delete opts[v]);
+  const {rewrites,eslint,headers:optsHeaders,webpack:nWebpack,...nRest} = opts;
   const nextConfig = {
     reactStrictMode: true,
     swcMinify: false,
@@ -167,8 +167,6 @@ module.exports = (opts)=>{
       return config;
     },
   }
-  //nextConfig.experimental = Object.assign({},nextConfig.experimental);
-  //nextConfig.experimental.webpackBuildWorker = true;
   return withImages(withTM(withFonts(nextConfig)));
 }
 
