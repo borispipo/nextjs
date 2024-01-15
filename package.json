@@ -1,10 +1,15 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "4.2.2",
+  "version": "5.0.0",
   "description": "nextjs boilerplate",
   "main": "bin/start.js",
   "bin": {
     "@fto-consult/nextjs": "bin/index.js"
+  },
+  "theme": {
+    "light": {
+      "primary": "green"
+    }
   },
   "scripts": {
     "dev": "node ./bin/start",
@@ -16,7 +21,7 @@
     "unpublish": "npm -f unpublish @fto-consult/nextjs",
     "generate-api-doc": "node ./api-doc",
     "docs": "npm run build-docs",
-    "update": "npm i next@13 @fto-consult/common@latest next-fonts@latest next-images@latest react@latest  react-dom@latest bcrypt@latest -metadata@latest typeorm@latest string-builder@latest cookie@latest cors@latest apidoc@latest @emotion/styled@latest @emotion/react express@latest"
+    "update": "npm i next@latest @fto-consult/common@latest next-fonts@latest next-images@latest react@latest  react-dom@latest bcrypt@latest -metadata@latest typeorm@latest string-builder@latest cookie@latest cors@latest apidoc@latest @emotion/styled@latest @emotion/react express@latest"
   },
   "repository": {
     "type": "git",
@@ -33,10 +38,13 @@
   },
   "homepage": "https://github.com/borispipo/nextjs#readme",
   "dependencies": {
+    "@chakra-ui/icons": "^2.1.1",
+    "@chakra-ui/next-js": "^2.2.0",
+    "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@fto-consult/common": "^4.7.1",
-    "@fto-consult/node-utils": "^1.4.4",
+    "@fto-consult/node-utils": "^1.4.5",
     "apidoc": "^1.2.0",
     "bcrypt": "^5.1.1",
     "chalk": "^4.1.2",
@@ -44,21 +52,25 @@
     "commander": "^10.0.1",
     "cookie": "^0.6.0",
     "cors": "^2.8.5",
-    "eslint-config-next": "^13.5.3",
+    "eslint-config-next": "^14.0.4",
     "express": "^4.18.2",
+    "framer-motion": "^10.18.0",
     "fs-extra": "^11.2.0",
     "jose": "^4.10.3",
     "mysql2": "^2.3.3",
-    "next": "^13.5.6",
+    "next": "^14.0.4",
     "next-fonts": "^1.5.1",
     "next-images": "^1.8.5",
     "pm2": "^5.3.0",
+    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^5.0.1",
     "reflect-metadata": "^0.1.13",
     "sanitize-filename": "^1.6.3",
     "socket.io": "^4.7.2",
     "string-builder": "^0.1.8",
+    "tippy.js": "^6.3.7",
     "typeorm": "^0.3.19"
   },
   "apidoc": {

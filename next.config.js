@@ -21,7 +21,6 @@ module.exports = (opts)=>{
       modToToTranspiles.unshift(package.name);
   }
   const base = opts.base || projectRoot;
-  const withTM = require('./transpileModules')(modToToTranspiles);
   const alias = require("@fto-consult/common/babel.config.alias")({...opts,platform:"web",projectRoot,assets:path.resolve(base,"assets"),base});
   const src = alias.$src;
   const public = path.resolve(projectRoot,"public");
@@ -36,8 +35,8 @@ module.exports = (opts)=>{
   alias["$nmiddleware"] = path.resolve(next,"middleware");
   alias["$middleware"] = alias["$middleware"] || path.resolve(next,"middleware");
   alias["$ndatabase"] = path.resolve(next,"database");
-  alias["$npages"] = path.resolve(dir,"pages");
-  alias["$pages"] = path.resolve(src,"pages");
+  alias["$npages"] = alias["$pages"] = path.resolve(dir,"pages");
+  alias.$napp = alias.$app = path.resolve(dir,"app");
   alias.$public = alias.$public || public;
   alias.$nevents = path.resolve(next,"events");
   alias.$events = alias.$events || alias.$nevents;
@@ -73,6 +72,13 @@ module.exports = (opts)=>{
   alias["$auth-cookies"] = alias["$auth-cookies"] || path.resolve(next,"auth","utils","$auth-cookies");
   /**** pour étendre la fonction utils de auth */
   alias["$auth-utils"] = alias["$auth-utils"] || path.resolve(next,"auth","utils","$auth-utils");
+  alias["$chakra-next"] = alias["$chakra-ui-next"] = "@chakra-ui/next-js";
+  alias["$chakra-ui"] = alias.$ui = alias["$chakra"] = "@chakra-ui/react";
+  
+  const client = alias.$nclient = path.resolve(next,"client");
+  alias.$ncomponents = path.resolve(client,"components");
+  alias.$components = alias.$components || alias.$ncomponents;
+  alias.$nlayouts = path.resolve(client,"layouts");
   alias["$database-config"] = alias["$database.config"] = alias["$database.config.js"] = fs.existsSync(databaseConfPath)? databaseConfPath : localDatabaseConfPath;
   for(let i in alias){
     if(!alias[i]){
@@ -80,13 +86,14 @@ module.exports = (opts)=>{
     }
   }
   ["transpileModules","base","projectRoot","alias","src","platform"].map((v)=>delete opts[v]);
-  const {rewrites,eslint,headers:optsHeaders,webpack:nWebpack,extensions:cExtensions,...nRest} = opts;
+  const {rewrites,eslint,headers:optsHeaders,webpack:nWebpack,extensions:cExtensions,transpilePackages,...nRest} = opts;
   const nextConfig = {
     reactStrictMode: true,
     swcMinify: false,
     basePath: '',
     swcMinify: true,
     ...nRest,
+    transpilePackages : [...(Array.isArray(transpilePackages)?transpilePackages:[]),...modToToTranspiles],
     //reactStrictMode: true,
     eslint: {
       // Warning: This allows production builds to successfully complete even if
@@ -177,7 +184,7 @@ module.exports = (opts)=>{
       return config;
     },
   }
-  return withImages(withTM(withFonts(nextConfig)));
+  return withImages(withFonts(nextConfig));
 }
 
 const rtrim = function(current,str) {
