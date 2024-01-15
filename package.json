@@ -12,8 +12,8 @@
     }
   },
   "scripts": {
-    "dev": "node ./bin/start",
-    "start": "node ./bin/start.js",
+    "dev": "npx next dev",
+    "start": "npx next dev",
     "build": "next build",
     "lint": "next lint",
     "test": "test",

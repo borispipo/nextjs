@@ -1,43 +1,54 @@
 "use client"
 import fetch from "$capi";
-import {useEffect,useState,useMemo} from "react";
+import {useEffect,useState,useRef,useMemo} from "react";
 const rootPath = `pm2`;
 import Box from "$ncomponents/Box"
-import Button from "$ncomponents/Button";
 import Container from "$ncomponents/Container";
 import {Table,Thead,Tbody,Tfoot,Tr,Th,Td,TableCaption,TableContainer} from '$ui'
-import {defaultNumber,isObj} from "$cutils";
+import {defaultNumber,isObj,extendObj} from "$cutils";
 import CircularProgress from "$ncomponents/CircularProgress";
 import Icon from "$ncomponents/Icon";
+import useSWR from "$swr";
 
-const fetchList = (opts)=>fetch(rootPath,opts);
+export const useFetchData = (path,options)=>{
+    return useSWR(path,extendObj(true,{},{
+        refreshInterval : 5000,
+        fetcher : (url,options)=>fetch(url,options),
+    },options,options?.swrConfig));
+}
 
-
+/***@see : https://pm2.keymetrics.io/docs/usage/pm2-api/ */
 export default function PM2Page (){
     return <Container>
+        <Box className="settings">
+            <AppSettings/>
+        </Box>
         <Box w="100%">
             <ListProcesses/>
         </Box>
     </Container>
 }
-
-const ListProcesses = ()=>{
-    const [data,setData] = useState([]);
-    const [isLoading,setIsLoading] = useState(true);
-    const refresh = ()=>{
-        if(!isLoading){
-            setIsLoading(true);
+const AppSettings = ()=>{
+    const {data:cData,isLoading,refresh} = useFetchData(`${rootPath}/options`);
+    const dataRef = useRef({});
+    const data = useMemo(()=>{
+        if(isObj(cData) && isObj(cData.data)) {
+            dataRef.current = cData.data;
         }
-        fetchList().then(({data})=>{
-            console.log("found ",data);
-           setData(data);
-        }).finally(()=>{
-            setIsLoading(false);   
-        })
-    }
-    useEffect(()=>{
-        refresh();
-    },[]);
+        return dataRef.current;
+    },[cData]);
+    console.log(data, " is data");
+    return null;
+}
+const ListProcesses = ()=>{
+    const {data:cData,isLoading,refresh} = useFetchData(rootPath);
+    const dataRef = useRef([]);
+    const data = useMemo(()=>{
+        if(isObj(cData) && Array.isArray(cData.data)) {
+            dataRef.current = cData.data;
+        }
+        return dataRef.current;
+    },[cData]);
     const getEnv = (rowData)=>Object.assign({},rowData.pm2_env);
     const fields = {
         name : {
@@ -96,7 +107,13 @@ const ListProcesses = ()=>{
         pm_id : {
             label : "Id | daemon"
         },
-        
+        instances  : {
+            label : "Nombre d'instances",
+            render : ({rowData})=>{
+                const {instances } = getEnv(rowData);
+                return defaultNumber(instances).formatNumber();
+            }
+        },
         monit : {
             label : "Monitoring",
             width : "120px",
