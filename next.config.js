@@ -42,11 +42,9 @@ module.exports = (opts)=>{
   alias.$nevents = path.resolve(next,"events");
   alias.$events = alias.$events || alias.$nevents;
   alias.$nutils = path.resolve(__dirname,"src","utils");
-  alias.$npm2 = path.resolve(alias.$nutils,"pm2");
+  alias.$npm2 = path.resolve(nextRoot,"pm2");
   alias.$pm2 = alias.$pm2 || alias.$npm2;
-  
   const database = path.resolve(next,'database');
-
   alias["$nmodels"] = path.resolve(database,"models");
   alias["$BaseModel"] = path.resolve(database,"models","Base");
   alias["$baseModel"] = alias["$BaseModel"];
