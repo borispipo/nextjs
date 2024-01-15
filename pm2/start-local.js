@@ -18,7 +18,7 @@ apps[name] = {
   ...Object.assign({},apps[name]),
   script : path.resolve(__dirname,"server.js")
 };
-start({app}).then((opts)=>{
+start(options).then((opts)=>{
   console.log(`server started with pm2 for the application ${name}`);
 }).catch((e)=>{
   console.error(e," starting pmn Server");
