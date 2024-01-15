@@ -1,6 +1,8 @@
 const {Session} = require("@fto-consult/node-utils");
 const {packageJSON} = require("./program");
-module.exports = Session({appName:packageJSON?.name});
+
+const session = Session({appName:packageJSON?.name});
+
 const sessionKey = "PM2-SESSION-KEY";
 
 const checkSession = ()=>{
