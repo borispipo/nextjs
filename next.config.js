@@ -9,6 +9,7 @@ const withImages = require('next-images');
 const dir = path.resolve(__dirname);
 const package = require(path.resolve(dir,"package.json"));
 const requestHeaders = require("./request.headers");
+const {extendObj} = require("@fto-consult/node-utils");
 module.exports = (opts)=>{
   opts = typeof opts =='object' && opts ? opts : {};
   const projectRoot = path.resolve(process.cwd());
@@ -21,7 +22,7 @@ module.exports = (opts)=>{
     package.name,
     ...transpileModules,
   ]);
-  const alias = require("@fto-consult/common/babel.config.alias")({...opts,platform:"web",assets:path.resolve(base,"assets"),base});
+  const alias = require("@fto-consult/common/babel.config.alias")({...opts,platform:"web",projectRoot,assets:path.resolve(base,"assets"),base});
   const src = alias.$src;
   const public = path.resolve(projectRoot,"public");
   const next = require("./lookup-next-path")()?path.resolve(src,"..","nextjs","src") : path.resolve(dir,"src");
@@ -38,6 +39,9 @@ module.exports = (opts)=>{
   alias.$public = alias.$public || public;
   alias.$nevents = path.resolve(next,"events");
   alias.$events = alias.$events || alias.$nevents;
+  alias.$nutils = path.resolve(__dirname,"src","utils");
+  alias.$npm2 = path.resolve(alias.$nutils,"pm2");
+  alias.$pm2 = alias.$pm2 || alias.$npm2;
   
   const database = path.resolve(next,'database');
 
@@ -76,7 +80,7 @@ module.exports = (opts)=>{
     }
   }
   ["transpileModules","base","projectRoot","alias","src","platform"].map((v)=>delete opts[v]);
-  const {rewrites,eslint,headers:optsHeaders,webpack:nWebpack,...nRest} = opts;
+  const {rewrites,eslint,headers:optsHeaders,webpack:nWebpack,extensions:cExtensions,...nRest} = opts;
   const nextConfig = {
     reactStrictMode: true,
     swcMinify: false,
@@ -136,26 +140,32 @@ module.exports = (opts)=>{
     },
     webpack: (config,options,...rest) => {
       const { isServer, buildId, dev, defaultLoaders, nextRuntime, webpack } = options;
+      const ccEx = typeof cExtensions ==="function"? cExtensions({config,...options,options}) : cExtensions;
+      const confExtensions = Array.isArray(config.resolve.extensions) ? config.resolve.extensions : [];
+      const extensions = config.resolve.extensions = Array.isArray(ccEx)? [...ccEx,...confExtensions] : [...confExtensions];
       config.resolve.alias = {
         ...(config.resolve.alias || {}),
         ...alias,
       };
       ///les extensions côté serveur portent l'extensions .server, ceux côté web portent .web, côté platforme react native portent l'extension de la plateforme en question
       const ext =  !isServer ? ".client":".server";
-      const defaultExts = [".js",".ts",".tsx",".jsx"];
-      const sideExtensions =  defaultExts.map(t=>{
-          return ext+t;
-      });
+      const defaultExts = [".js", ".jsx",".ts",".tsx",".mjs",".mts"];
       /**** les ficheirs à exécuter côté client porteront toujours l'extension .client.js, ceux côtés serveur porterons l'extension .server.js */
-      config.resolve.extensions = [
-        ...sideExtensions,
-        ".web.js",
-        ".web.ts",
-        ".web.tsx",
-        ".web.jsx",
-        ...defaultExts,
-        ".ts",
-      ];
+      defaultExts.map((ex)=>{
+        const nExt =  `.${ext}${ex}`;
+        if(!extensions.includes(nExt)){
+          extensions.unshift(nExt);
+        }
+        const nExt2 =  `.node${ex}`;
+        if(isServer && !extensions.includes(nExt2)){
+          extensions.unshift(nExt2);
+        }
+      });
+      defaultExts.map(e=>{
+        if(!extensions.includes(e)){
+          extensions.push(e);
+        }
+      });
       if(!isServer){
         config.resolve.fallback.fs = config.resolve.fallback.net = config.resolve.fallback.path = config.resolve.fallback.os = false;
         config.externals = [...config.externals,'pg', 'sqlite3', 'tedious', 'pg-hstore','react-native-sqlite-storage'];
