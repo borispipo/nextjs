@@ -38,6 +38,7 @@ module.exports = function (...args){
     if(p && fs.existsSync(p)){
         return suffix ? path.resolve(p,suffix).replace(sep,(sep+sep)) : p;
     }
-    return suffix ? path.join("@fto-consult/nextjs",suffix).replace(sep,"/"):"@fto-consult/nextjs";
+    const root = path.resolve(projectRoot,"node_modules","@fto-consult/nextjs")
+    return suffix ? path.join(root,suffix).replace(sep,"/"):root;
 };
 

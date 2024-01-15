@@ -3,13 +3,10 @@ const { createServer } = require('http')
 const { parse } = require('url')
 const next = require('next')
 const { dir,dev, hostname, port} = require("./program");
-console.log(dir," is dir ",dev," is dev ",hostname,port, " are host");
 // when using middleware `hostname` and `port` must be provided below
 const app = next({ dir,dev, hostname, port});
 
 const handle = app.getRequestHandler();
-
-console.log("staring ",dir,dev,hostname,port);
 
 app.prepare().then(() => {
   createServer(async (req, res) => {
