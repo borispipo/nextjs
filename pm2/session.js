@@ -1,4 +1,6 @@
-const session  = require('@fto-consult/common/src/session/index.node');
+const {Session} = require("@fto-consult/node-utils");
+const {packageJSON} = require("./program");
+module.exports = Session({appName:packageJSON?.name});
 const sessionKey = "PM2-SESSION-KEY";
 
 const checkSession = ()=>{
@@ -17,4 +19,4 @@ const setOptions = (options)=>{
     return session.set(sessionKey,{...getOptions(),...Object.assign({},options)});
 }
 
-module.exports = {checkSession,getOptions,setOptions};
+module.exports = {...session,checkSession,getOptions,setOptions};
