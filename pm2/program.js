@@ -2,15 +2,7 @@
 const program = require('commander')
 const path = require("path");
 const fs = require("fs");
-let packagePath = path.resolve(process.cwd(),"package.json");
-if(!fs.existsSync(packagePath)){
-    packagePath = path.resolve(__dirname,"..","package.json");
-}
-let packageJSON = {};
-try {
-  packageJSON = fs.existsSync(packagePath)?  require(packagePath) : {};
-} catch{};
-
+const packageJSON = require("./package");
 program
   .name("start")
   .description(`permet de déparer l'instance du serveur de l'application ${packageJSON?.name && `[${packageJSON.name}]` ||""}`)
@@ -34,5 +26,6 @@ module.exports = {
     port,
     projectRoot,
     dev,
+    getAppName : ()=>typeof packageJSON?.name =="string" && packageJSON?.name.trim() || "",
     packageJSON,
 }

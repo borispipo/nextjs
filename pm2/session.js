@@ -1,7 +1,7 @@
-const {Session} = require("@fto-consult/node-utils");
-const {packageJSON} = require("./program");
+const {Session,extendObj} = require("@fto-consult/node-utils");
+const {getAppName} = require("./program");
 
-const session = Session({appName:packageJSON?.name});
+const session = Session({appName:getAppName()});
 
 const sessionKey = "PM2-SESSION-KEY";
 
@@ -11,14 +11,16 @@ const checkSession = ()=>{
     }
     return true;
 }
-
 const getOptions = ()=>{
     checkSession();
-    return Object.assign({},session.get(sessionKey));
+    const appName = getAppName();
+    const apps = appName?{[appName]:{}}:null
+    const opts = extendObj(true,{},{apps},{currentAppName:appName},session.get(sessionKey));
+    return opts;
 }
 
 const setOptions = (options)=>{
-    return session.set(sessionKey,{...getOptions(),...Object.assign({},options)});
+    return session.set(sessionKey,extendObj(true,{},getOptions(),options));
 }
 
 module.exports = {...session,checkSession,getOptions,setOptions};
