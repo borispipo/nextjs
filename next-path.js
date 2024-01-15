@@ -10,13 +10,26 @@ module.exports = function (...args){
     const projectRoot = path.resolve(process.cwd()), dir = path.resolve(__dirname);
     let p = projectRoot === dir ? projectRoot : null;
     if(!p){
-        const pp = path.resolve(projectRoot,"nextjs");
-        const mainP = require("./package.json");
-        if(fs.existsSync(path.resolve(pp,"package.json"))){
+        try {
+            const mP = path.resolve(projectRoot,"package.json");
+            if(fs.existsSync(mP)){
+                const mpp = JSON.parse(fs.readFileSync(mP));
+                if(mpp?.name =="@fto-consult/nextjs"){
+                    p = projectRoot;
+                }
+            }
+        } catch{}
+        if(!p){
             try {
-                const package = require(`${path.resolve(pp,"package.json")}`);
-                if(package?.name === mainP.name){
-                    p = pp;
+                const pp = path.resolve(projectRoot,"nextjs");
+                const mainP = JSON.parse(fs.readFileSync("./package.json"));
+                if(fs.existsSync(path.resolve(pp,"package.json"))){
+                    try {
+                        const packageM = JSON.parse(fs.readFileSync(path.resolve(pp,"package.json")));
+                        if(packageM?.name === mainP.name){
+                            p = pp;
+                        }
+                    } catch{}
                 }
             } catch{}
         }

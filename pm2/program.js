@@ -19,12 +19,12 @@ const port = parseInt(programOptions.port||process.env.port) || 3000
 const pRoot = programOptions.root && path.resolve(programOptions.root) || null;
 const projectRoot = pRoot && fs.existsSync(pRoot)? pRoot : process.cwd();
 const dev = programOptions.mode ==="development"? true : false;
-
 module.exports = {
     ...programOptions,
     hostname,
     port,
     projectRoot,
+    dir : projectRoot,
     dev,
     getAppName : ()=>typeof packageJSON?.name =="string" && packageJSON?.name.trim() || "",
     packageJSON,

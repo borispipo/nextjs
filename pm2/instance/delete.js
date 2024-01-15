@@ -1,0 +1,1 @@
+require("./cb/delete")().finally(process.exit);

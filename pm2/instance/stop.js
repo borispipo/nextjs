@@ -1,0 +1,1 @@
+require("./cb/stop")().finally(process.exit);

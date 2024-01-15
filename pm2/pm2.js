@@ -27,15 +27,18 @@ const connect = (no_daemon_mode, fn)=>{
 const execPM2 = (method,process,fn)=>{
     return new Promise((resolve,reject)=>{
         return connect().then((meta)=>{
-            return pm2[method](process,(err,...rest)=>{
+            const callback = (err,...rest)=>{
                 if(typeof fn ==="function"){
                     fn(err,...rest);
                 }
                 if(err){
+                    pm2.disconnect();
                     return reject(err);
                 }
                 return resolve(...rest);
-            });
+            };
+            if(typeof method =="function") return method(callback);
+            return pm2[method](process,callback);
         });
     });
 }
@@ -51,5 +54,10 @@ const list = function(...rest){
 const deletePM2 = (...rest)=>{
     return execPM2("delete",...rest);
 }
+const restart = (process, options, fn)=>{
+    return execPM2(function(cb){
+        return pm2.restart(process,options,cb);
+    },process,fn);
+}
 
-module.exports = {...pm2,...session,connectNative:pm2.connect,connect,start,stop,list,execPM2,delete:deletePM2};
+module.exports = {...pm2,...session,restart,connectNative:pm2.connect,connect,start,stop,list,execPM2,delete:deletePM2};
