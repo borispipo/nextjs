@@ -1,14 +1,14 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "4.0.0",
+  "version": "4.0.2",
   "description": "nextjs boilerplate",
-  "main": "index.js",
+  "main": "bin/start.js",
   "bin": {
     "@fto-consult/nextjs": "bin/index.js"
   },
   "scripts": {
     "dev": "node ./bin/start",
-    "start": "node ./bin/start",
+    "start": "node ./bin/start.js",
     "build": "next build",
     "lint": "next lint",
     "test": "test",
@@ -36,7 +36,7 @@
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@fto-consult/common": "^4.7.1",
-    "@fto-consult/node-utils": "^1.4.1",
+    "@fto-consult/node-utils": "^1.4.4",
     "apidoc": "^1.2.0",
     "bcrypt": "^5.1.1",
     "chalk": "^4.1.2",

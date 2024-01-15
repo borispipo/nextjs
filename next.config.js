@@ -16,18 +16,20 @@ module.exports = (opts)=>{
   const databaseConfPath = path.resolve(projectRoot,"database.config.js");
   const localDatabaseConfPath = path.resolve(__dirname,"database.config");
   const transpileModules = Array.isArray(opts.transpileModules)? opts.transpileModules : [];
+  const modToToTranspiles = ["@fto-consult/common",...transpileModules]
+  if(projectRoot !== dir && fs.existsSync(path.resolve(projectRoot,"node_modules",package.name))){
+      modToToTranspiles.unshift(package.name);
+  }
   const base = opts.base || projectRoot;
-  const withTM = require('./transpileModules')([
-    "@fto-consult/common",
-    package.name,
-    ...transpileModules,
-  ]);
+  const withTM = require('./transpileModules')(modToToTranspiles);
   const alias = require("@fto-consult/common/babel.config.alias")({...opts,platform:"web",projectRoot,assets:path.resolve(base,"assets"),base});
   const src = alias.$src;
   const public = path.resolve(projectRoot,"public");
-  const next = require("./lookup-next-path")()?path.resolve(src,"..","nextjs","src") : path.resolve(dir,"src");
+  const nextRoot = require("./next-path")();
+  const next = path.resolve(nextRoot,"src");
+  alias.$nroot = alias["$nroot-path"] = nextRoot;
   alias["$nproviders"] = path.resolve(next,"auth","providers");
-  alias["$providers"] = alias["$providers"] || alias["$nproviders"];
+  alias["$providers"] = alias["$providers"] || path.resolve(alias["$nproviders"],"list");
   alias["$nauth"] = path.resolve(next,"auth");
   alias["$nmiddlewares"] = path.resolve(next,"middlewares");
   alias["$middlewares"] = alias["$middlewares"] || alias["$nmiddlewares"];

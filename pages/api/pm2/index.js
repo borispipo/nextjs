@@ -1,5 +1,5 @@
-import {get,handleError} from "$nrequestHanlder";
-import { extendObj } from "@fto-consult/node-utils";
+import {get,handleError} from "$nrequestHandler";
+import { extendObj } from "$cutils";
 import {list} from "$pm2";
 export default get(async function(req,res){
     const options = extendObj({},req.query,req.body);
