@@ -1,6 +1,6 @@
 {
   "name": "@fto-consult/nextjs",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "nextjs boilerplate",
   "main": "bin/start.js",
   "bin": {
@@ -43,7 +43,7 @@
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
-    "@fto-consult/common": "^4.7.1",
+    "@fto-consult/common": "^4.7.2",
     "@fto-consult/node-utils": "^1.4.5",
     "apidoc": "^1.2.0",
     "bcrypt": "^5.1.1",
