@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import React from "$react";
 import {defaultStr,isNonNullString,classNames} from "$cutils";
 import PropTypes from "prop-types";
@@ -10,7 +10,6 @@ import * as ChakraIcons from '@chakra-ui/icons';
 import theme,{withStyles} from "$theme";
 import {Icon as ChakraIcon} from "$ui";
 import Tooltip from "$components/Tooltip";
-
 
 /*** *
  * @see : https://chakra-ui.com/docs/components/icon for all suported icons
@@ -26,17 +25,16 @@ import Tooltip from "$components/Tooltip";
  * - antd- || ai- for ant design icon
  * 
 */
-const IconComponent = React.forwardRef(({icon,size,className,boxSize,name,tooltip,title,...props},ref)=>{
+const IconComponent = React.forwardRef(({icon,size,as:asIcon,className,boxSize,name,tooltip,title,...props},ref)=>{
     if(React.isValidElement(icon)) return icon;
     if(React.isValidElement(name)) return name;
     icon = defaultStr(icon,name).trim();
-    const isMaterial = isIcon(icon,"material");
+    const isMaterial = isIcon(icon,["material","md"]);
     const isSocial = isIcon(icon,"si");
     const isAntd = isIcon(icon,["antd","ai"]);
     const isBi = isIcon(icon,"bs");
     const isFa = false;//isIcon(icon,"fa");
-    let iconName = icon
-    .ltrim("material-") //material-icons
+    let iconName = icon.ltrim("material-") //material-icons
     .ltrim("si-") //simple icon
     .ltrim("antd-") //antd icon
     .ltrim("ai-") //antd icon
@@ -46,31 +44,37 @@ const IconComponent = React.forwardRef(({icon,size,className,boxSize,name,toolti
     .toCamelCase()
     .ucFirst().trim();
     let IconSet = ChakraIcons;
-    if(isFa){
+    if(false && isMaterial){
+        IconSet = {}//("react-icons/md");
+        iconName = "Md"+iconName.ltrim("Md");
+    } else if(false && isAntd){
+        IconSet = //("react-icons/ai")// we remote antd icon set
+        iconName = "Ai"+iconName.ltrim("Ai");
+    } else if(false && isBi){
+        //IconSet = //("react-icons/bs");
+        iconName = "Bs"+iconName.ltrim("Bs");
+    } else if(false && isFa){
         IconSet = {};//FontAwesomeIcons;
         iconName = "Fa"+iconName.ltrim("Fa");
-    } else if(isMaterial){
-        IconSet = require("react-icons/md");
-        iconName = "Md"+iconName.ltrim("Md");
-    } else if(isBi){
-        IconSet = {};
-        iconName = "Bs"+iconName.ltrim("Bs");
-    } else if(isAntd){
-        IconSet = require("react-icons/ai");//we remote antd icon set
-        iconName = "Ai"+iconName.ltrim("Ai");
-    } else {
-        iconName = iconName.rtrim("Icon")+"Icon";
-    }
+    }  
     const isChakra = IconSet == ChakraIcons;
+    if(isChakra){
+        iconName = iconName.rtrim("Icon")+"Icon"
+    }
     if(!iconName || !IconSet[iconName]){
         console.warn("Icon not defined for the component IconComponent, icon [{0}] with generated name is {1}, please specify an icon supported by the module list https://chakra-ui.com/docs/components/icon".sprintf(icon,iconName),props);
         return null;
     }
     const Icon = IconSet[iconName];
+    asIcon = React.isComponent(asIcon) || React.isValidElement(asIcon,true) && typeof asIcon !=="boolean"? asIcon : null;
+    if(!asIcon && !React.isComponent(Icon)){
+        console.error(`Invalid icon component `,Icon, " for generated name ",iconName," name is ",name,icon,props);
+        return null;
+    }
     boxSize = boxSize || size;
     props.cursor = props.cursor || !props.disabled && !props.isDisabled && "pointer";
     const clx = classNames(className,"icon","icon-"+icon,"icon-"+iconName);
-    const children = isChakra ? <Icon {...props} className={clx} boxSize={boxSize}/> : <ChakraIcon {...props} className={clx} boxSize={boxSize} as = {Icon}/>;
+    const children = asIcon || isChakra ? <Icon {...props} className={clx} boxSize={boxSize}/> : <ChakraIcon  as = {asIcon||Icon} {...props} className={clx} boxSize={boxSize}/>;
     return <Tooltip lineHeight={"0px"} className={classNames("tooltip-icon","tooltip-icon-"+iconName,"tooltip-icon-"+icon)} ref={ref} title={title} tooltip={tooltip} children={children} />
 });
 
@@ -92,7 +96,7 @@ IconComponent.propTypes = {
 }
 IconComponent.displayName = "IconComponent";
 
-export default withStyles(IconComponent,{variant:'ghost',shouldForwardProp:(name)=>{
+const DefExport = withStyles(IconComponent,{variant:'ghost',shouldForwardProp:(name)=>{
     return !["bgColor"].includes(name);
 },propsMutator:(props)=>{
     delete props.bgColors;
@@ -112,8 +116,9 @@ export const isIcon = (name,iconSet)=>{
         return false;
     }
     if(!isNonNullString(name) || !isNonNullString(iconSet)) return false;
-    name = name.toLowerCase();
-    iconSet = iconSet.toLowerCase().trim();
-    return name.startsWith(iconSet+"-") ? true : false;
+    return name.toLowerCase().startsWith(iconSet.toLowerCase().trim()+"-") ? true : false;
 }
-  
+
+DefExport.propTypes = IconComponent.propTypes;
+
+export default DefExport;

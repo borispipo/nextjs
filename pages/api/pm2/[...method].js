@@ -22,7 +22,7 @@ export default get(async function(req,res){
     const {method:m} = req.query;
     const m2 = Array.isArray(m)? defaultStr(m[0]).toLowerCase() : isNonNullString(m)? m.toLowerCase() : "";
     const method = oMethods.includes(m2) || methods.includes(m2)? m2 : "list";
-    const options = extendObj({},req.query,req.body);
+    const {override,...options} = extendObj({},req.query,req.body);
     delete options.method;
     try {
         ///permet de définir les paramètres de l'instance pm2 à utiliser pour la gestion du serveur
@@ -44,7 +44,7 @@ export default get(async function(req,res){
                 throw {message:`methode ${action} inconnue pour l'instance pm2. les actions supportées sont : ${instanceMethods.join(",")}`}
             }
             await cbActions[action](processName);
-            res.json({message:`L'action ${action} de l'instance pm2 a été exécutée avec succès!!`});
+            res.json({message:`L'action ${action} de l'instance ${processName?`[${processName}] de `:""} pm2 a été exécutée avec succès!!`});
             return;
         }
         const data = await pm2[method](options.process);
@@ -52,4 +52,4 @@ export default get(async function(req,res){
     } catch(e){
         handleError(e,res);
     }
-},{method:"get,post"});
+},{method:"get,post,put"});

@@ -5,9 +5,12 @@ import {updateTheme,defaultTheme} from "$theme";
 import {extendTheme, CSSReset,} from '@chakra-ui/react'
 import {useMemo} from "react";
 import {classNames} from "$cutils";
-import { fonts } from './fonts'
+import { fonts } from './fonts';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 
 export default function RootLayout({children,htmlProps,bodyProps,...rest}) {
+  "use client"
   const theme = useMemo(()=>{
     return extendTheme(updateTheme({
       ...defaultTheme,
@@ -20,10 +23,11 @@ export default function RootLayout({children,htmlProps,bodyProps,...rest}) {
   bodyProps = Object.assign({},bodyProps);
   htmlProps = Object.assign({},htmlProps);
   return (
-    <html lang='en'  {...htmlProps} className={classNames(fonts.rubik.variable,htmlProps.className)}>
-      <body {...bodyProps} className={classNames(bodyProps.className,"main-body")} suppressHydrationWarning>
+    <html suppressHydrationWarning lang='en'  {...htmlProps} className={classNames(fonts.rubik.variable,htmlProps.className)}>
+      <body {...bodyProps} className={classNames(bodyProps.className,"main-body")} suppressHydrationWarning={true}>
         <CSSReset/>
-        <Providers disableTransitionOnChange theme={theme} {...rest}>{children}</Providers>
+        <Providers theme={theme} {...rest}>{children}</Providers>
+        <ToastContainer />
       </body>
     </html>
   )

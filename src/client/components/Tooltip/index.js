@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 import React from "$react";
@@ -15,9 +15,19 @@ const TippyTooltipComponent  = React.forwardRef(({children,tooltip,title,...rest
     const buttonRef = React.useRef(null);
     const innerRef = React.useMergeRefs(ref,buttonRef);
     const selector = "#"+instanceIdRef.current;
+    const cProps = {
+        ...rest,
+        id:instanceIdRef.current,
+    }
     let content= React.isValidElement(tooltip,true) && tooltip || title;
     if(!content || rest.disabled === true || rest.readOnly === true || rest.isDisabled === true){
-        return children;
+        const cBackup = children;
+        if(typeof children =='function'){
+            children = children(cProps,innerRef);
+        }
+        if(React.isValidElement(children,true)) return children;
+        console.error(children,cBackup," is not valid element for tooltip component ",tooltip,title,rest);
+        return null;
     }
     React.useEffect(()=>{
         content = React.getTextContent(content);
@@ -45,15 +55,14 @@ const TippyTooltipComponent  = React.forwardRef(({children,tooltip,title,...rest
             }
         }
     },[content])
-    const cProps = {
-        ...rest,
-        id:instanceIdRef.current,
-    }
     React.useEffect(()=>{
         React.setRef(ref,innerRef);
     });
     if(typeof children =='function'){
-        return children(cProps,innerRef);
+        const child = children(cProps,innerRef);
+        if(React.isValidElement(child,true)) return child;
+        console.error(child," is not valid element for tooltip component ",tooltip,title,rest)
+        return null;
     }
     return  <Box {...cProps} className={classNames(cProps.className,"tooltip")} ref={innerRef}>
         {children}

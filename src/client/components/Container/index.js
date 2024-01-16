@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import {Container} from "$ui";
 import {useGetContainerProps} from "./hooks";
 export * from "./hooks";

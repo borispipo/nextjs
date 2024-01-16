@@ -3,7 +3,6 @@ import {Box,CircularProgress} from "$chakra";
 import appConfig from "$capp/config";
 
 export default function LoadingProgress ({}){
-    return null;
     return <Box display="flex" alignItems="center" justifyContent="center" h="100vh" w="100%" className="loading-progress-container">
         <Box className="logo-content-container">
             <Box className="app-name">

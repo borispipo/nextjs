@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import {classNames} from "$utils";
 
 export const useGetContainerProps = ({withContainer,className,...props})=>{

@@ -19,8 +19,8 @@ const getOptions = ()=>{
     return opts;
 }
 
-const setOptions = (options)=>{
-    return session.set(sessionKey,extendObj(true,{},getOptions(),options));
+const setOptions = (options,override=true)=>{
+    return session.set(sessionKey,extendObj(true,{},override !== true ? getOptions():{},options));
 }
 
 module.exports = {...session,checkSession,getOptions,setOptions};

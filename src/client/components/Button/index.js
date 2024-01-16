@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import {Button} from "$ui";
 import {withStyles} from "$theme";
 import PropTypes from "prop-types";

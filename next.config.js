@@ -78,6 +78,7 @@ module.exports = (opts)=>{
   const client = alias.$nclient = path.resolve(next,"client");
   alias.$ncomponents = path.resolve(client,"components");
   alias.$components = alias.$components || alias.$ncomponents;
+  alias.$nhooks = path.resolve(client,"hooks");
   alias.$nlayouts = path.resolve(client,"layouts");
   alias["$database-config"] = alias["$database.config"] = alias["$database.config.js"] = fs.existsSync(databaseConfPath)? databaseConfPath : localDatabaseConfPath;
   for(let i in alias){
@@ -86,13 +87,23 @@ module.exports = (opts)=>{
     }
   }
   ["transpileModules","base","projectRoot","alias","src","platform"].map((v)=>delete opts[v]);
-  const {rewrites,eslint,headers:optsHeaders,webpack:nWebpack,extensions:cExtensions,transpilePackages,...nRest} = opts;
+  const {rewrites,eslint,headers:optsHeaders,webpack:nWebpack,extensions:cExtensions,transpilePackages,compiler:cCompiler,...nRest} = opts;
+  const compiler = Object.assign({},cCompiler);
   const nextConfig = {
     reactStrictMode: true,
     swcMinify: false,
     basePath: '',
     swcMinify: true,
     ...nRest,
+    compiler: {
+      // Enables the styled-components SWC transform
+      ...compiler,
+      styledComponents: {
+        ssr : true,
+        cssProp : true,
+        ...Object.assign({},compiler.styledComponents) 
+      },
+    },
     transpilePackages : [...(Array.isArray(transpilePackages)?transpilePackages:[]),...modToToTranspiles],
     //reactStrictMode: true,
     eslint: {
@@ -147,6 +158,10 @@ module.exports = (opts)=>{
     },
     webpack: (config,options,...rest) => {
       const { isServer, buildId, dev, defaultLoaders, nextRuntime, webpack } = options;
+      if(!isServer){
+        alias.$nnotify = path.resolve(client,"notify");
+        alias.$notify = alias.$notify !== alias.$cnotify && alias.$notify || alias.$nnotify;
+      }
       const ccEx = typeof cExtensions ==="function"? cExtensions({config,...options,options}) : cExtensions;
       const confExtensions = Array.isArray(config.resolve.extensions) ? config.resolve.extensions : [];
       const extensions = config.resolve.extensions = Array.isArray(ccEx)? [...ccEx,...confExtensions] : [...confExtensions];
