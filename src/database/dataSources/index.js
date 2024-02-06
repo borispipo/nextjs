@@ -38,7 +38,14 @@ export const getDataSource = (options)=>{
     if(!dsString){
         delete opts.password;
         delete opts.pass;
-        throw ({message:'Options de la source de base de données invalide!! merci de spécifier les options valide pour la source de données',opts})
+        const _opts = {};
+        for(let i in opts){
+            const o = opts[i];
+            if(typeof o !=='object' && typeof o !== 'function'){
+                _opts[i] = o;
+            }
+        }
+        throw ({message:'Options de la source de base de données invalide!! merci de spécifier les options valide pour la source de données',options:_opts})
     }
     if ((dsString in global) && (isDev || isDataSource(global[dsString]))) {
         return Promise.resolve(global[dsString]);
