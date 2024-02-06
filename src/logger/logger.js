@@ -42,7 +42,7 @@ export default function logger(logLevel,...errors) {
     const fileName = getFilePath();
     const currentTime = DateLib.format(new Date(),"ddd dd mmm yyyy à HH:MM:SS");
     const logInConsole = x => console.log(logInfo,currentTime,...errors);;
-    if(!fileName || (isDev && !process.env.LOGS_IN_CONSOLE)){
+    if(!fileName || (!process.env.LOGS_IN_FILE && (isDev && !process.env.LOGS_IN_CONSOLE))){
         ///file is not writable or environnement is 
         logInConsole();
         return true;
