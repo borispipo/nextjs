@@ -16,7 +16,7 @@ export const getFilePath = function() {
     let fPath = process.env.LOGS_FOLDER && typeof process.env.LOGS_FOLDER =="string" ? FILE.sanitize(process.env.LOGS_FOLDER) : null;
     if(!fPath || !isWritable(fPath)){
         try {
-            fPath = path.resolve(getAppDataPath(),"logs")
+            fPath = path.resolve(getAppDataPath(appConfig.name),"logs")
         }catch(e){
             const cwd = process.execPath || process.cwd();
             if(cwd && isWritable(cwd)){
@@ -28,7 +28,7 @@ export const getFilePath = function() {
         }
     }
     const folderPath = path.join(fPath,String(years),date);
-    const fileName = `${appName ? `${appName}.log.`:""}${DateLib.format(new Date(),"dd-mm-yyyy")}.log`; 
+    const fileName = `${appName ? `${appName}-`:""}${DateLib.format(new Date(),"dd-mm-yyyy")}.log`; 
     if(!createDir(folderPath)){
         return null;
     }

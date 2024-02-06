@@ -82,7 +82,7 @@ export default post((async (req, res,options) => {
         for(let i in req.body){
           const iLower = i.toLocaleLowerCase() ;
           if(!iLower.includes("pass") && !iLower.includes("token") && i !=="providerId" && isNonNullString(req.body[i])){
-            fields +=`${fields? `,`:""} i : [${req.body[i]}]`
+            fields +=`${fields? `,`:""} ${i} : [${req.body[i]}]`
           }
         }
       }

@@ -17,12 +17,7 @@ export default class Logger extends AbstractLogger {
                 log(mLevel,message);
             } else switch(mLevel){
                 case "query":
-                    break;
-                    if (message.prefix) {
-                        console.info(message.prefix, message.message)
-                    } else {
-                        console.info(message.message)
-                    }
+                    log("info",message,"Query");
                     break
                 case "query-slow":
                     log("warn",message,"Query slow");

@@ -9,5 +9,5 @@ logLevels.map((log)=>{
             return logger(log,...errors);
         }
     }
-})
+});
 export default Logger;

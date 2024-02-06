@@ -19,7 +19,7 @@ export const getErrorStatus = (e)=>{
 }
 
 const isReq = (req)=>{
-    return req && typeof req !=="boolean" && req?.nextUrl && (isNonNullString(req?.method) || req?.nextUrl?.pathname || req?.nextUrl?.basePath || req?.nextUrl?.buildId ) ? true : false;
+    return req && typeof req !=="boolean" && (isNonNullString(req?.method) || req?.nextUrl?.pathname || req?.nextUrl?.basePath || req?.nextUrl?.buildId ) ? true : false;
 }
 /****
     log d'un messge d'erreur
