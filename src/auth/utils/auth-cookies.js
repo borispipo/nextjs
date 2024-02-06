@@ -9,6 +9,7 @@
  import defaultStr from "$utils/defaultStr";
  import * as jose from 'jose';
  import {UNAUTHORIZED } from "$api/status";
+ import logger from "$nlogger";
 
  import * as AuthCookies from "$auth-cookies";
 
@@ -156,7 +157,7 @@
     }
     return session
   } catch (e){
-      console.log(e," getting token");
+      logger.log(e," getting token");
   }
   return null;
 }

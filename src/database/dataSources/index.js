@@ -4,6 +4,7 @@ import defaultStr from "$cutils/defaultStr";
 import {mysql} from "./types/exports";
 import { isDataSource,optionsToString,defaultDataSource as defaultDataSourceType,isDefault,getOptions} from "./utils";
 import entities from "../models/entities";
+import Logger from "../Logger";
 
 let defaultDataSource = null;
 
@@ -27,7 +28,11 @@ export const getDataSource = (options)=>{
     type = defaultStr(type,defaultDataSourceType).toLowerCase().trim();
     opts.type = type;
     opts.entities = Array.isArray(opts.entities) && opts.entities.length ? opts.entities : entities;
-    opts.logging = typeof opts.logging =='boolean'? opts.logging : process.env.NODE_ENV =='development'? true : false;
+    opts.logging = (typeof opts.logging =='boolean' || Array.isArray(options.logging) && options.logging.length)? opts.logging : true;
+    const isDev = String(process.env.NODE_ENV).toLowerCase().trim() !== 'production';
+    if(opts.logger && !isDev && !options.logger){
+        options.logger =  new Logger();
+    }
     opts = getOptions(opts);
     const dsString = optionsToString(opts);
     if(!dsString){
@@ -35,7 +40,6 @@ export const getDataSource = (options)=>{
         delete opts.pass;
         throw ({message:'Options de la source de base de données invalide!! merci de spécifier les options valide pour la source de données',opts})
     }
-    const isDev = process.env.NODE_ENV === 'development';
     if ((dsString in global) && (isDev || isDataSource(global[dsString]))) {
         return Promise.resolve(global[dsString]);
     }

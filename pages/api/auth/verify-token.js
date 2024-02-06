@@ -1,6 +1,6 @@
 import {UNAUTHORIZED,NOT_ACCEPTABLE,SUCCESS} from "$capi/status";
 /**** cette route permet de vérifier si le token utilisateur passé en paramètre est à jour où nom */
-import {post} from "$requestHandler";
+import {post,logError} from "$requestHandler";
 import { getProviderSession } from '$nauth/utils/auth-cookies';
 import {isObj} from "$cutils";
 
@@ -25,7 +25,7 @@ export default post((async (req, res)=>{
         } 
         return res.status(SUCCESS).json(session)
     } catch (error) {
-        console.error(error," authentication user")
+        logError(error,req,res);
         res.status(error?.status||UNAUTHORIZED).send(error)
     }
 }));

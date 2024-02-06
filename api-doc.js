@@ -3,4 +3,3 @@
 // license that can be found in the LICENSE file.
 
 require("./generate-api-doc")();
-//console.log("uddddd")

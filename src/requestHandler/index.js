@@ -1,7 +1,7 @@
 // Copyright 2022 @fto-consult/Boris Fouomene. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-import {defaultStr,extendObj,defaultObj,isNonNullString,isObj} from "$cutils";
+import {defaultStr,extendObj,defaultObj,isNonNullString,isObj,stringify} from "$cutils";
 import {isJSON,parseJSON} from "$cutils/json";
 import {getQueryParams} from "$cutils/uri";
 import cors from "$cors";
@@ -9,6 +9,7 @@ import {SUCCESS,FORBIDEN,INTERNAL_SERVER_ERROR,UNAUTHORIZED} from "$capi/status"
 import {withSession,getSession} from "$nauth";
 import Auth from "$cauth";
 import { Server } from "socket.io";
+import logger from "$nlogger";
 
 export const getErrorStatus = (e)=>{
     if(isObj(e) && typeof e.status =='number'){
@@ -16,13 +17,39 @@ export const getErrorStatus = (e)=>{
     }
     return INTERNAL_SERVER_ERROR;
 }
+
+const isReq = (req)=>{
+    return req && typeof req !=="boolean" && req?.nextUrl && (isNonNullString(req?.method) || req?.nextUrl?.pathname || req?.nextUrl?.basePath || req?.nextUrl?.buildId ) ? true : false;
+}
+/****
+    log d'un messge d'erreur
+    @param {anay} e, le message d'erreur
+    @param {NextRequest} req, l'objet next request
+    @param {NextResponse} res, l'objet next response
+*/
+export const logError = async (e,req,res)=>{
+    req = isReq(req) && req || res && typeof res !=="boolean" && typeof res !=="number"  && (isReq(res) && res || isReq(res?.req) && res?.req) || null;
+    let logParams = '';
+    if(req){
+        logParams+= ` path : ${req.path} [${String(req.method).toUpperCase().trim()}], `
+        try {
+            const session = await getSession(req);
+            if(isObj(session)){
+                ["firstName","lastName","fullName","label","pseudo","code","email","loginId"].map((f)=>{
+                    if(isNonNullString(session[f])){
+                        logParams+=` ${f.ucFirst()} : [${session[f]}]`
+                    }
+                });
+            }
+        } catch(e){}
+    }
+    return logger[process.env.NODE_ENV !== "production" ? 'warn':'error'](`request handler ${logParams} `,e);
+}
 /*** handle l'erreur liée à l'exécution d'une requête */
 export const handleError = (e,res)=>{
     const status = getErrorStatus(e);
-    const r = {message:isNonNullString(e)? e : e && (e.message || e.msg) || e?.toString()||null,error:e,stackStrace:e?.stackStrace,status};
-    if(process.env.NODE_ENV === "development"){
-        console.log(e,`error gnenerated on handling request`)
-    }
+    const r = {message:stringify(e),status};
+    logError(e,undefined,res);
     if(res && typeof res?.json =="function" && typeof res?.status =="function"){
         return res.status(status).json(r);
     }
@@ -37,7 +64,6 @@ export const tryCatch = (handler)=>{
                 await handler.apply({},args);
             } 
         } catch (e){
-            console.log(e," executing try catch request");
             handleError(e,args[1]);
         }
     }
@@ -113,7 +139,7 @@ export default function handleRequestWithMethod(handler,options){
         }
         if (!hasFound && canCheck) {
             const nF = typeof onNoMatch =='function'? onNoMatch : typeof onNotFound =='function'? onNotFound : noFound;
-            console.log(req?.nextUrl?.pathname || req.url," not allowed for method <<",req.method,">>. supported methods are ",methods,req.nextUrl)
+            logError(((req?.nextUrl?.pathname || req.url)+" not allowed for method <<"+req.method+">>. supported methods are "+JSON.stringify(methods)),req,res);
             if(typeof nF =='function' && nF({req,res,status:NOT_FOUND,response:res}) == false) return;
             return res.status(405).send({message:"Page Non trouvée!! impossible d'exécuter la requête pour la méthode [{0}]; url : {1}, la où les méthodes supportées pour la requête sont : {2}".sprintf(req.method,req.url,methods.join(","))});
         }
@@ -259,7 +285,6 @@ function _queryMany (Model,options,cb){
             }
             return res.status(SUCCESS).json(result);
         } catch (e){
-            console.log(e," found exception on api ",req.nextUrl?.basePath);
             return handleError(e,res);
         }
     }),options)
@@ -384,7 +409,6 @@ export function save(Model,options){
             const updated = typeof doSave =='function'? await doSave(d,sA) : await Model.save(d,sA);
             return res.json({data:updated});
         } catch(e){
-            console.log(e," saving data",data);
             return handleError(e,res);
         }
     }),options);
@@ -416,7 +440,6 @@ export function count(Model,options){
             const count = await Model.repository.count(query,args);
             return res.json({count});
         } catch(e){
-            console.log(e," count data ",method,options);
             return handleError(e,res);
         }
     }),options);
@@ -439,7 +462,6 @@ function _find (Model,options,cb){
             }
             return res.status(SUCCESS).json(result);
         } catch (e){
-            console.log(e," found exception on api ",req.nextUrl?.basePath);
             return handleError(e,res);;
         }
     }),options)
@@ -483,7 +505,6 @@ function _remove (Model,options,cb){
             const data = await Model[cb||'queryRemove']({...rest,...query},{...rest,...args});
             return res.status(SUCCESS).json({data});
         } catch (e){
-            console.log(e," found exception on remove api ",req.nextUrl?.basePath);
             return handleError(e,res);
         }
     }),options)

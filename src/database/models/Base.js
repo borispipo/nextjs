@@ -6,6 +6,7 @@ import Validator from "$lib/validator";
 import DataTypes from "$schema/DataTypes";
 import {FORBIDEN,NOT_FOUND} from "$capi/status";
 import { model as ModelEvent } from "../../events";
+import logger from "$nlogger";
 
 const notFound = {message:'Valeur non trouvée en base',status:NOT_FOUND}
 
@@ -293,7 +294,7 @@ export default class BaseModel {
                 resolve(r);
                 return r;
             }).catch((e)=>{
-                console.log(e," error generated on validating model ",this.tableName);
+                logger.error(e," error generated on validating model on table name "+this.tableName);
                 const message = "{0}:\n{1}".sprintf(errorsMessages.length > 1 ? ("Les erreurs suivantes ont été générées") : "l'erreur suivante a été générée",errorsMessages.join(", "));
                 const r = {errors : errorsMessages,errorsMessages,message};
                 this.emitEvent("novalidate",r,options);

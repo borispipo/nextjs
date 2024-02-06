@@ -1,49 +1,34 @@
 /**** @see : https://typeorm.io/logging# */
-import { AbstractLogger } from "typeorm"
+import { AbstractLogger } from "typeorm";
+import logger from "$nlogger";
 
 export default class Logger extends AbstractLogger {
     /**
      * Write log to specific output.
      */
     writeLog(level,logMessage,queryRunner) {
-        const messages = this.prepareLogMessages(logMessage, {
-            highlightSql: false,
-        })
+        const messages = this.prepareLogMessages(logMessage, {highlightSql: false});
+        const log = (mLevel,message,title)=>{
+            return logger[mLevel](`Typeorm LOG ${title && String(title) || ''} [${message.type}] ${message.prefix && message.prefix ||''}`,message.message);
+        }
         for (let message of messages) {
-            switch (message.type ?? level) {
-                case "log":
-                case "schema-build":
-                case "migration":
-                    console.log(message.message)
-                    break
-
-                case "info":
+            const mLevel  = String(message.type ?? level).toLowerCase().trim();
+            if(typeof logger[mLevel] =="function"){
+                log(mLevel,message);
+            } else switch(mLevel){
                 case "query":
+                    break;
                     if (message.prefix) {
                         console.info(message.prefix, message.message)
                     } else {
                         console.info(message.message)
                     }
                     break
-
-                case "warn":
                 case "query-slow":
-                    if (message.prefix) {
-                        console.warn(message.prefix, message.message)
-                    } else {
-                        console.warn(message.message)
-                    }
+                    log("warn",message,"Query slow");
                     break
-
-                case "error":
                 case "query-error":
-                    if (message.prefix) {
-                        console.error(message.prefix, message.message)
-                    } else {
-                        console.error(message.message)
-                    }
-                    const prefix = message.prefix ? `${message.prefix}. `: '';
-                    throw {message:`${prefix}${message}`}
+                    log("error",message,"Query error ");
                     break
             }
         }

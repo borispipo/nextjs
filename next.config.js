@@ -74,6 +74,8 @@ module.exports = (opts)=>{
   alias["$auth-utils"] = alias["$auth-utils"] || path.resolve(next,"auth","utils","$auth-utils");
   alias["$chakra-next"] = alias["$chakra-ui-next"] = "@chakra-ui/next-js";
   alias["$chakra-ui"] = alias.$ui = alias["$chakra"] = "@chakra-ui/react";
+  alias.$nlogger = path.resolve(next,"logger");
+  alias.$logger = alias.$logger || alias.$nlogger;
   
   const client = alias.$nclient = path.resolve(next,"client");
   alias.$ncomponents = path.resolve(client,"components");

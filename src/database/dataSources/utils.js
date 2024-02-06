@@ -3,7 +3,10 @@ import isNonNullString from "$cutils/isNonNullString";
 import defaultStr from "$cutils/defaultStr";
 import "$cutils";
 import defaultDataSource from "./default";
+import logger from "$nlogger";
+
 export * from "./types/exports";
+
 
 export * as dataSourceTypes from "./types/exports";
 
@@ -76,7 +79,7 @@ export const getConfig = (options)=>{
             }
         }
     } catch (e){
-        console.log(e," is errrorrr loading database error");
+        logger.error(e,"loading database error");
     }
     options.port = typeof options.port =='string'? parseInt(options.port) || options.port : options.port;
     return options;

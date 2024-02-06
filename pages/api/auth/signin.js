@@ -4,6 +4,7 @@ import {isObj,defaultObj,isNonNullString,defaultStr,extendObj} from "$cutils";
 import {post} from "$napiRequestHandler";
 import {isJSON,parseJSON} from "$utils/json";
 import {AUTH} from "$nevents";
+import logger from "$nlogger";
 import "$date";
 /** 
  * @apiDefine ProiverNotFound lorsque le provider n'a pas été précisé dans les données passé à la requête
@@ -76,7 +77,16 @@ export default post((async (req, res,options) => {
       AUTH.emit("signin",r);
       res.status(200).send(result);
     } catch (error) {
-      console.error(error," authentication login")
+      let fields = "";
+      if(isObj(req.body)){
+        for(let i in req.body){
+          const iLower = i.toLocaleLowerCase() ;
+          if(!iLower.includes("pass") && !iLower.includes("token") && i !=="providerId" && isNonNullString(req.body[i])){
+            fields +=`${fields? `,`:""} i : [${req.body[i]}]`
+          }
+        }
+      }
+      logger.error(`login authentication, providerId : [${req.body?.providerId}], ${fields}`,error)
       if(isNonNullString(error)){
         error = {message:error};
       }
