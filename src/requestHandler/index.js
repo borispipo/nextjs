@@ -31,8 +31,8 @@ export const logError = async (e,req,res)=>{
     req = isReq(req) && req || res && typeof res !=="boolean" && typeof res !=="number"  && (isReq(res) && res || isReq(res?.req) && res?.req) || null;
     let logParams = '';
     if(req){
-        const path = req.path || req?.nextUrl?.pathname || req?.nextUrl?.basePath || ""
-        logParams+= ` ${path && `path : ${String(path)}`||''} [${String(req.method).toUpperCase().trim()}], `
+        const path = isNonNullString(req?.nextUrl?.pathname) && req?.nextUrl?.pathname || isNonNullString(req.url) && req.url || req?.nextUrl?.basepath || ""
+        logParams+= `${path && `path : ${String(path)}`||''} [${String(req.method).toUpperCase().trim()}], `
         try {
             const session = await getSession(req);
             if(isObj(session)){
