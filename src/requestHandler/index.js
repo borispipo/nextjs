@@ -129,15 +129,7 @@ export default function handleRequestWithMethod(handler,options){
             return handler(req,res);
         }
         let canCheck = methods.length;
-        let hasFound = false;
-        if(canCheck){
-            for(let i in methods){
-                if(methods[i] == reqMethod){
-                    hasFound = true;
-                    break;
-                }
-            }
-        }
+        const hasFound = canCheck ? methods.includes(reqMethod)  : true;
         if (!hasFound && canCheck) {
             const nF = typeof onNoMatch =='function'? onNoMatch : typeof onNotFound =='function'? onNotFound : noFound;
             logError(((req?.nextUrl?.pathname || req.url)+" not allowed for method <<"+req.method+">>. supported methods are "+JSON.stringify(methods)),req,res);
