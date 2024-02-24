@@ -1,13 +1,6 @@
-import logger,{logLevels} from "./logger";
+import appConfig from "$capp/config";
+const {logger} = require("@fto-consult/node-utils");
 
-export * from "./logger";
+logger.setConfig("appName",appConfig.name);
 
-const Logger =  {};
-logLevels.map((log)=>{
-    if(typeof Logger[log] !=="function"){
-        Logger[log] = (...errors)=>{
-            return logger(log,...errors);
-        }
-    }
-});
-export default Logger;
+export default logger;
