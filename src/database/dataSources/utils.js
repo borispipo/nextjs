@@ -23,7 +23,7 @@ export const isDefault = (type)=> isNonNullString(type) && type.trim().toLowerCa
  *  ainsi, la variables d'environnement DB_HOST représente l'hôte de la source de données par défaut. 
  */
 export const getConfig = (options)=>{
-    options = options || {};
+    options = Object.assign({},options);
     const dataSourceType = defaultStr(options.type,options.dataSource,defaultDataSource).trim().toLowerCase();
     const dataSourcePrefix = dataSourceType.toUpperCase().ltrim("_").rtrim("_");
     const isDef = isDefault(dataSourceType);
@@ -52,9 +52,9 @@ export const getConfig = (options)=>{
     options = typeof options =='object' && options && !Array.isArray(options)? options : {};
     options = {
         synchronize: false,
-        ...options,
         type : dataSourceType,
         ...opts,
+        ...options,
     };
     const t = defaultStr(options.type).trim();
     try {
