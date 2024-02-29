@@ -1,6 +1,9 @@
 import appConfig from "$capp/config";
 const {logger} = require("@fto-consult/node-utils");
-
-logger.setConfig("appName",appConfig.name);
+try {
+    logger.setConfig("appName",appConfig.name);
+} catch(e){
+    console.log("setting logger config ",e,logger);
+}
 
 export default logger;
