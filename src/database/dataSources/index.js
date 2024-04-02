@@ -30,7 +30,7 @@ export const getDataSource = (options)=>{
     opts.entities = Array.isArray(opts.entities) && opts.entities.length ? opts.entities : entities;
     opts.logging = (typeof opts.logging =='boolean' || Array.isArray(options.logging) && options.logging.length)? opts.logging : true;
     const isDev = String(process.env.NODE_ENV).toLowerCase().trim() !== 'production';
-    if(opts.logger && !isDev && !options.logger){
+    if(!isDev && !options.logger){
         options.logger =  new Logger();
     }
     opts = getOptions(opts);
