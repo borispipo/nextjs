@@ -91,6 +91,7 @@ module.exports = (opts)=>{
   ["transpileModules","base","projectRoot","alias","src","platform"].map((v)=>delete opts[v]);
   const {rewrites,eslint,headers:optsHeaders,webpack:nWebpack,extensions:cExtensions,transpilePackages,compiler:cCompiler,...nRest} = opts;
   const compiler = Object.assign({},cCompiler);
+  require("@fto-consult/common/bin/generate-jsonconfig")({...opts,alias});
   const nextConfig = {
     reactStrictMode: true,
     swcMinify: false,
