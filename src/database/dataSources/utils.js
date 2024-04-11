@@ -67,13 +67,13 @@ export const getConfig = (options)=>{
                     if(typeof tt =='object' && tt && !Array.isArray(tt)){
                         options = {
                             ...options,
-                            ...tt
+                            ...Object.assign({},tt)
                         }
                     }
                 } else if (typeof c ==='object' && !Array.isArray(c)){
                     options = {
-                        ...c,
-                        ...options
+                        ...options,
+                        ...Object.assign({},c),
                     }
                 }
             }
