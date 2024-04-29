@@ -20,8 +20,9 @@ module.exports = (opts)=>{
   if(projectRoot !== dir && fs.existsSync(path.resolve(projectRoot,"node_modules",package.name))){
       modToToTranspiles.unshift(package.name);
   }
-  const base = opts.base || projectRoot;
-  const alias = require("@fto-consult/common/babel.config.alias")({...opts,platform:"web",projectRoot,assets:path.resolve(base,"assets"),base});
+  const base = typeof opts.projectRoot =="string" && fs.existsSync(path.resolve(opts.projectRoot)) ? path.resolve(opts.projectRoot) : projectRoot;
+  const assets = fs.existsSync(path.resolve(base,"public"))? path.resolve(base,"public") : fs.existsSync(path.resolve(projectRoot,"public")) ? path.resolve(projectRoot,"public") : undefined;
+  const alias = require("@fto-consult/common/babel.config.alias")({assets,...opts,platform:"web",projectRoot:base});
   const src = alias.$src;
   const public = path.resolve(projectRoot,"public");
   const nextRoot = require("./next-path")();
