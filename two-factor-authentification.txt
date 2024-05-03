@@ -1,0 +1,1 @@
+https://lev.engineer/blog/implementing-2fa-in-your-next-js-app-with-google-authenticator
